@@ -75,36 +75,38 @@ namespace Mapbox.Unity.Telemetry
 			byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJsonString);
 
 #if UNITY_2017_1_OR_NEWER
-			UnityWebRequest postRequest = new UnityWebRequest(url, "POST");
-			postRequest.SetRequestHeader("Content-Type", "application/json");
-
-			postRequest.downloadHandler = new DownloadHandlerBuffer();
-			postRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
-
-			yield return postRequest.SendWebRequest();
-
-			while (!postRequest.isDone) { yield return null; }
-
-			if (!postRequest.isNetworkError)
+			using (UnityWebRequest postRequest = new UnityWebRequest(url, "POST"))
 			{
-#else
-				var headers = new Dictionary<string, string>();
-				headers.Add("Content-Type", "application/json");
-				headers.Add("user-agent", GetUserAgent());
-				var www = new WWW(url, bodyRaw, headers);
-				yield return www;
+				postRequest.SetRequestHeader("Content-Type", "application/json");
 
-				while (!www.isDone) { yield return null; }
+				postRequest.downloadHandler = new DownloadHandlerBuffer();
+				postRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
 
-				// www doesn't expose HTTP status code, relay on 'error' property
-				if (!string.IsNullOrEmpty(www.error))
+				yield return postRequest.SendWebRequest();
+
+				while (!postRequest.isDone) { yield return null; }
+
+				if (postRequest.result != UnityWebRequest.Result.ConnectionError)
 				{
+#else
+                var headers = new Dictionary<string, string>();
+                headers.Add("Content-Type", "application/json");
+                headers.Add("user-agent", GetUserAgent());
+                var www = new WWW(url, bodyRaw, headers);
+                yield return www;
+
+                while (!www.isDone) { yield return null; }
+
+                // www doesn't expose HTTP status code, relay on 'error' property
+                if (!string.IsNullOrEmpty(www.error))
+                {
 #endif
-				PlayerPrefs.SetString(Constants.Path.TELEMETRY_TURNSTILE_LAST_TICKS_EDITOR_KEY, "0");
-			}
-			else
-			{
-				PlayerPrefs.SetString(Constants.Path.TELEMETRY_TURNSTILE_LAST_TICKS_EDITOR_KEY, DateTime.Now.Ticks.ToString());
+					PlayerPrefs.SetString(Constants.Path.TELEMETRY_TURNSTILE_LAST_TICKS_EDITOR_KEY, "0");
+				}
+				else
+				{
+					PlayerPrefs.SetString(Constants.Path.TELEMETRY_TURNSTILE_LAST_TICKS_EDITOR_KEY, DateTime.Now.Ticks.ToString());
+				}
 			}
 		}
 

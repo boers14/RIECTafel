@@ -70,7 +70,7 @@ namespace Mapbox.Unity.Map
 		{
 			get
 			{
-				if(_mapVisualizer == null)
+				if (_mapVisualizer == null)
 				{
 					_mapVisualizer = ScriptableObject.CreateInstance<MapVisualizer>();
 				}
@@ -336,7 +336,8 @@ namespace Mapbox.Unity.Map
 
 		public virtual void UpdateMap()
 		{
-			UpdateMap(Conversions.StringToLatLon(_options.locationOptions.latitudeLongitude), Zoom);
+			Vector2d coordinate = ReturnCoordinateFromString(_options.locationOptions.latitudeLongitude);
+			UpdateMap(coordinate, Zoom);
 		}
 
 		public virtual void UpdateMap(Vector2d latLon)
@@ -388,7 +389,16 @@ namespace Mapbox.Unity.Map
 
 			//Set Center in Latitude Longitude and Mercator.
 			SetCenterLatitudeLongitude(new Vector2d(xDelta, zDelta));
+
+			if (Options.scalingOptions.scalingStrategy == null)
+			{
+				SetScalingStrategy();
+			}
 			Options.scalingOptions.scalingStrategy.SetUpScaling(this);
+			if (Options.placementOptions.placementStrategy == null)
+			{
+				SetPlacementStrategy();
+			}
 			Options.placementOptions.placementStrategy.SetUpPlacement(this);
 
 			//Scale the map accordingly.
@@ -408,6 +418,8 @@ namespace Mapbox.Unity.Map
 			{
 				OnUpdated();
 			}
+
+			transform.localScale = Vector3.one;
 		}
 
 		private void Reset()
@@ -422,7 +434,7 @@ namespace Mapbox.Unity.Map
 		[ContextMenu("ResetMap")]
 		public void ResetMap()
 		{
-			if(_previewOptions.isPreviewEnabled)
+			if (_previewOptions.isPreviewEnabled)
 			{
 				DisableEditorPreview();
 				EnableEditorPreview();
@@ -506,7 +518,7 @@ namespace Mapbox.Unity.Map
 			DestroyChildObjects();
 			// Setup a visualizer to get a "Starter" map.
 
-			if(_mapVisualizer == null)
+			if (_mapVisualizer == null)
 			{
 				_mapVisualizer = ScriptableObject.CreateInstance<MapVisualizer>();
 			}
@@ -529,7 +541,7 @@ namespace Mapbox.Unity.Map
 		{
 			if (Application.isPlaying)
 			{
-				if(coroutine)
+				if (coroutine)
 				{
 					StartCoroutine("SetupAccess");
 				}
@@ -578,7 +590,7 @@ namespace Mapbox.Unity.Map
 			_vectorData.SubLayerAdded -= OnVectorDataSubLayerAdded;
 			_vectorData.UpdateLayer -= OnVectorDataUpdateLayer;
 			_vectorData.UnbindAllEvents();
-			if(_mapVisualizer != null)
+			if (_mapVisualizer != null)
 			{
 				_mapVisualizer.ClearMap();
 			}
@@ -716,7 +728,7 @@ namespace Mapbox.Unity.Map
 			Options = options;
 			_worldHeightFixed = false;
 			_fileSource = MapboxAccess.Instance;
-			_centerLatitudeLongitude = Conversions.StringToLatLon(options.locationOptions.latitudeLongitude);
+			_centerLatitudeLongitude = ReturnCoordinateFromString(options.locationOptions.latitudeLongitude);
 			_initialZoom = (int)options.locationOptions.zoom;
 
 			options.scalingOptions.scalingStrategy.SetUpScaling(this);
@@ -1257,5 +1269,34 @@ namespace Mapbox.Unity.Map
 		/// </summary>
 		public event Action<List<UnwrappedTileId>> OnTilesDisposing = delegate { };
 		#endregion
+
+
+		private Vector2d ReturnCoordinateFromString(string worldCoordinate)
+		{
+			string s = worldCoordinate;
+			float latitude = 0;
+			float longtitude = 0;
+			string[] coordinatesArray = s.Split(',');
+
+			switch (coordinatesArray.Length)
+			{
+				case 2:
+					coordinatesArray[0] = coordinatesArray[0].Replace(".", ",");
+					coordinatesArray[1] = coordinatesArray[1].Replace(".", ",");
+
+					latitude = float.Parse(coordinatesArray[0]);
+					longtitude = float.Parse(coordinatesArray[1]);
+					break;
+				case 4:
+					latitude = float.Parse(coordinatesArray[0] + "," + coordinatesArray[1]);
+					longtitude = float.Parse(coordinatesArray[2] + "," + coordinatesArray[3]);
+					break;
+				default:
+					print("something went wrong with coordinate string: " + s);
+					break;
+			}
+
+			return new Vector2d(latitude, longtitude);
+		}
 	}
 }
