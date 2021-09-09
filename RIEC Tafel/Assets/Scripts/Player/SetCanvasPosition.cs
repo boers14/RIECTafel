@@ -10,6 +10,9 @@ public class SetCanvasPosition : MonoBehaviour
     [SerializeField]
     private LayerMask layer = 0;
 
+    [SerializeField]
+    private PlayerTable playerTable = null;
+
     private void Start()
     {
         ChangeCanvasPosition();
@@ -24,5 +27,7 @@ public class SetCanvasPosition : MonoBehaviour
             canvasRotation.y = wallRay.transform.eulerAngles.y + 90;
             canvas.eulerAngles = canvasRotation;
         }
+
+        playerTable.CheckYPosition();
     }
 }

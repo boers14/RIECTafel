@@ -21,9 +21,6 @@ public class GrabbebleObjects : MonoBehaviour
 
     private void Start()
     {
-        originalPos = transform.position;
-        originalRot = transform.eulerAngles;
-
         rigidbody = GetComponent<Rigidbody>();
         collider = GetComponent<Collider>();
 
@@ -52,6 +49,9 @@ public class GrabbebleObjects : MonoBehaviour
 
     private void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs)
     {
+        originalPos = transform.position;
+        originalRot = transform.eulerAngles;
+
         if (isPlayingTween)
         {
             iTween.Stop(gameObject);
