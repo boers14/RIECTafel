@@ -10,8 +10,21 @@ public class NetworkManagerRIECTafel : NetworkManager
 
     private Dictionary<NetworkConnection, Transform> clientSeatConnection = new Dictionary<NetworkConnection, Transform>();
 
+    [SerializeField]
+    private GameManager gameManagerPrefab = null;
+
+    private GameManager gameManager = null;
+
+    [SerializeField]
+    private string cityName = "";
+
+    [System.NonSerialized]
+    public int numberOfPlayers = 0;
+
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
+        numberOfPlayers++;
+
         Transform start = null;
 
         for (int i = 0; i < spawnPosses.Count; i++)
@@ -26,6 +39,14 @@ public class NetworkManagerRIECTafel : NetworkManager
 
         GameObject player = Instantiate(playerPrefab, start.position, start.rotation);
         NetworkServer.AddPlayerForConnection(conn, player);
+
+        if (GameObject.FindGameObjectWithTag("GameManager") == null)
+        {
+            gameManager = Instantiate(gameManagerPrefab);
+            NetworkServer.Spawn(gameManager.gameObject);
+            gameManager.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+            StartCoroutine(player.GetComponent<PlayerConnection>().StartConnectionWithGamemanager(cityName));
+        }
     }
 
     public override void OnServerDisconnect(NetworkConnection conn)

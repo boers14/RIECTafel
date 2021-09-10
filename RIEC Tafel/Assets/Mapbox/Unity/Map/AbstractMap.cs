@@ -1271,7 +1271,7 @@ namespace Mapbox.Unity.Map
 		#endregion
 
 
-		private Vector2d ReturnCoordinateFromString(string worldCoordinate)
+		public Vector2d ReturnCoordinateFromString(string worldCoordinate)
 		{
 			string s = worldCoordinate;
 			float latitude = 0;

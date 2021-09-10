@@ -11,22 +11,74 @@ public class PlayerConnection : NetworkBehaviour
     [SerializeField]
     private TextMesh nameText = null;
 
+    private GameManager gameManager = null;
+
+    private VRPlayer player = null;
+
+    [SyncVar, System.NonSerialized]
+    public int playerNumber = -1;
+
     private void Start()
     {
         nameText.text = playerName;
 
-        if (isLocalPlayer)
+        if (!isLocalPlayer) { return; }
+
+        CmdSetPlayerNumber();
+
+        tag = "PlayerConnection";
+        FetchVRPlayer();
+        player.transform.position = transform.position;
+        player.transform.rotation = transform.rotation;
+        player.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
+        CmdSetPlayerName("bob" + Random.Range(0, 100));
+        for (int i = 0; i < transform.childCount; i++)
         {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            player.transform.position = transform.position;
-            player.transform.rotation = transform.rotation;
-            player.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
-            CmdSetPlayerName("bob" + Random.Range(0, 100));
-            for (int i = 0; i  < transform.childCount; i++)
-            {
-                transform.GetChild(i).gameObject.SetActive(false);
-            }
+            transform.GetChild(i).gameObject.SetActive(false);
         }
+        FetchGameManager();
+        StartCoroutine(StartRequestLocationData());
+    }
+
+    public IEnumerator StartConnectionWithGamemanager(string cityName)
+    {
+        yield return new WaitForEndOfFrame();
+        CmdStartFillingLocationData(cityName);
+    }
+
+    [Command]
+    private void CmdStartFillingLocationData(string cityName)
+    {
+        FetchGameManager();
+        gameManager.CmdStartRetrieveCityData(cityName);
+    }
+
+    [Command]
+    private void CmdSetPlayerNumber()
+    {
+        playerNumber = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManagerRIECTafel>().numberOfPlayers;
+    }
+
+    private IEnumerator StartRequestLocationData()
+    {
+        yield return new WaitForSeconds(3f);
+        CmdRequestLocationData();
+    }
+
+    [Command]
+    private void CmdRequestLocationData()
+    {
+        FetchGameManager();
+        FetchVRPlayer();
+        gameManager.CmdGiveBackLocationData(player.dataType.ToString(), playerNumber);
+    }
+
+    [ClientRpc]
+    public void RpcSetLocationDataForPlayer(List<List<string>> locationData, List<string> dataTypes, int playerNumber)
+    {
+        if (playerNumber != this.playerNumber) { return; }
+
+        player.SetLocationData(locationData, dataTypes);
     }
 
     [Command]
@@ -41,5 +93,21 @@ public class PlayerConnection : NetworkBehaviour
     {
         playerName = name;
         nameText.text = playerName;
+    }
+
+    private void FetchVRPlayer()
+    {
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player").GetComponent<VRPlayer>();
+        }
+    }
+
+    private void FetchGameManager()
+    {
+        if (gameManager == null)
+        {
+            gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        }
     }
 }

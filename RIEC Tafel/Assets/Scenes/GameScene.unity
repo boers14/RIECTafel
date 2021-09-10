@@ -1439,6 +1439,7 @@ GameObject:
   - component: {fileID: 699483032}
   - component: {fileID: 699483033}
   - component: {fileID: 699483034}
+  - component: {fileID: 699483035}
   m_Layer: 0
   m_Name: VRPlayer
   m_TagString: Player
@@ -1498,6 +1499,25 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   playerTable: {fileID: 1374328693}
+--- !u!114 &699483035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699483031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea6180a5cb14066408a77d990711904b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  map: {fileID: 1538595737}
+  table: {fileID: 1970949413}
+  regularPOI: {fileID: 6848736350869708305, guid: cb7f8a1e92251364b9156b08135f9a80, type: 3}
+  policePOI: {fileID: 6848736350869708305, guid: fb8a2c59d47517141885a2170a4a095d, type: 3}
+  taxPOI: {fileID: 6848736350869708305, guid: 0f89e17314c035b47a2075f700e843d7, type: 3}
+  ppoPOI: {fileID: 6848736350869708305, guid: e50c1bfaa505d7b4da5dc04b8b4973cf, type: 3}
+  bankPOI: {fileID: 6848736350869708305, guid: 0a393e81a373c564ea77ff4409c1ec88, type: 3}
 --- !u!1 &807090826
 GameObject:
   m_ObjectHideFlags: 0
@@ -2623,6 +2643,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4187505068457818, guid: 5bb46bae81bf04608ac699be504c5e66, type: 3}
   m_PrefabInstance: {fileID: 1538595735}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1538595737 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114196496685157712, guid: 5bb46bae81bf04608ac699be504c5e66, type: 3}
+  m_PrefabInstance: {fileID: 1538595735}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783358202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd961b1c9541a4cee99686069ecce852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1689314175
 GameObject:
   m_ObjectHideFlags: 0
@@ -2871,7 +2902,7 @@ GameObject:
   - component: {fileID: 1799655087}
   m_Layer: 0
   m_Name: NetworkManager
-  m_TagString: Untagged
+  m_TagString: NetworkManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2929,7 +2960,8 @@ MonoBehaviour:
   playerPrefab: {fileID: 3582531981186701470, guid: ce67a5d0cfabb0645a536f9e5b351fcc, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 1
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 8712389858629822693, guid: 37f2597e0cfdbf1468747c55cc7e8239, type: 3}
   spawnPosses:
   - {fileID: 3169655455821710205}
   - {fileID: 3169655455559178259}
@@ -2937,6 +2969,8 @@ MonoBehaviour:
   - {fileID: 3169655454737914270}
   - {fileID: 3169655456032316832}
   - {fileID: 3169655455739026263}
+  gameManagerPrefab: {fileID: 8712389858629822692, guid: 37f2597e0cfdbf1468747c55cc7e8239, type: 3}
+  cityName: Hilversum
 --- !u!4 &1799655089
 Transform:
   m_ObjectHideFlags: 0
