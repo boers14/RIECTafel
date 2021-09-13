@@ -9,11 +9,8 @@ public class PlayerTable : MonoBehaviour
 
     public void CheckYPosition()
     {
-        if (transform.position.y - transform.localScale.y / 2 < ground.position.y)
-        {
-            Vector3 pos = transform.position;
-            pos.y = ground.position.y + transform.localScale.y / 2;
-            transform.position = pos;
-        }
+        Vector3 pos = transform.position;
+        pos.y = ground.position.y + transform.localScale.y / 2;
+        transform.position = pos;
     }
 }

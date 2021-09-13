@@ -16,10 +16,10 @@ public class VRPlayer : MonoBehaviour
     private Transform table = null;
 
     [System.NonSerialized]
-    public GameManager.DataType dataType = GameManager.DataType.Bank;
+    public GameManager.DataType dataType = GameManager.DataType.Regular;
 
     [SerializeField]
-    private GameObject regularPOI = null, policePOI = null, taxPOI = null, ppoPOI = null, bankPOI = null;
+    private GameObject regularPOI = null, policePOI = null, taxPOI = null, ppoPOI = null, bankPOI = null, emptyTransform = null;
 
     private Vector3 offset = Vector3.zero;
 
@@ -39,6 +39,7 @@ public class VRPlayer : MonoBehaviour
             Destroy(allPOIs[i]);
         }
         allPOIs.Clear();
+        GameObject rotationObject = Instantiate(emptyTransform, map.transform.position, Quaternion.identity);
 
         for (int i = 0; i < locationData.Count; i++)
         {
@@ -72,7 +73,36 @@ public class VRPlayer : MonoBehaviour
                 }
 
                 allPOIs.Add(POI);
+                POI.transform.SetParent(rotationObject.transform);
                 locationCoordinates.Add(coordinate);
+            }
+        }
+
+        Vector3 newRot = map.transform.eulerAngles;
+        rotationObject.transform.eulerAngles = newRot;
+
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            allPOIs[i].transform.SetParent(map.transform);
+        }
+        Destroy(rotationObject);
+
+        CheckPOIVisibility();
+    }
+
+    public void CheckPOIVisibility()
+    {
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            if (allPOIs[i].transform.position.x < table.position.x - table.localScale.x / 2 ||
+                allPOIs[i].transform.position.x > table.position.x + table.localScale.x / 2 ||
+                allPOIs[i].transform.position.z < table.position.z - table.localScale.z / 2 ||
+                allPOIs[i].transform.position.z > table.position.z + table.localScale.z / 2)
+            {
+                allPOIs[i].SetActive(false);
+            } else
+            {
+                allPOIs[i].SetActive(true);
             }
         }
     }

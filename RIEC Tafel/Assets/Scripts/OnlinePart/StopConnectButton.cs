@@ -12,6 +12,9 @@ public class StopConnectButton : MonoBehaviour
     private List<ConnectButton> connectButtons = new List<ConnectButton>();
 
     [SerializeField]
+    private Dropdown dataTypeDropdown = null;
+
+    [SerializeField]
     private Text clientConnectionStatus = null;
 
     [SerializeField]
@@ -130,5 +133,7 @@ public class StopConnectButton : MonoBehaviour
         {
             connectButtons[i].gameObject.SetActive(enabled);
         }
+
+        dataTypeDropdown.gameObject.SetActive(enabled);
     }
 }
