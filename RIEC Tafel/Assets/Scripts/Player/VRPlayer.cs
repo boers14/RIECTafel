@@ -39,7 +39,6 @@ public class VRPlayer : MonoBehaviour
             Destroy(allPOIs[i]);
         }
         allPOIs.Clear();
-        GameObject rotationObject = Instantiate(emptyTransform, map.transform.position, Quaternion.identity);
 
         for (int i = 0; i < locationData.Count; i++)
         {
@@ -49,33 +48,72 @@ public class VRPlayer : MonoBehaviour
             for (int j = 0; j < locations.Count; j++)
             {
                 Vector2d coordinate = map.ReturnCoordinateFromString(locations[j]);
-                Vector3 position = Conversions.GeoToWorldPosition(coordinate, map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
-                position = offset + (position * 0.02f);
                 GameObject POI = null;
 
                 switch (dataType)
                 {
                     case GameManager.DataType.Regular:
-                        POI = Instantiate(regularPOI, position, map.transform.rotation);
+                        POI = Instantiate(regularPOI, Vector3.zero, map.transform.rotation);
                         break;
                     case GameManager.DataType.Tax:
-                        POI = Instantiate(taxPOI, position, map.transform.rotation);
+                        POI = Instantiate(taxPOI, Vector3.zero, map.transform.rotation);
                         break;
                     case GameManager.DataType.Police:
-                        POI = Instantiate(policePOI, position, map.transform.rotation);
+                        POI = Instantiate(policePOI, Vector3.zero, map.transform.rotation);
                         break;
                     case GameManager.DataType.PPO:
-                        POI = Instantiate(ppoPOI, position, map.transform.rotation);
+                        POI = Instantiate(ppoPOI, Vector3.zero, map.transform.rotation);
                         break;
                     case GameManager.DataType.Bank:
-                        POI = Instantiate(bankPOI, position, map.transform.rotation);
+                        POI = Instantiate(bankPOI, Vector3.zero, map.transform.rotation);
                         break;
                 }
 
                 allPOIs.Add(POI);
-                POI.transform.SetParent(rotationObject.transform);
                 locationCoordinates.Add(coordinate);
             }
+        }
+
+        SetPOIMapPosition();
+    }
+
+    public void MovePOIs(Vector3 movement)
+    {
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            allPOIs[i].transform.position += movement;
+        }
+    }
+
+    public void ParentPOIs(Transform parentObject)
+    {
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            allPOIs[i].transform.SetParent(parentObject);
+        }
+    }
+
+    public void SetPOIsScale(Vector3 newScale)
+    {
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            allPOIs[i].transform.localScale = newScale;
+        }
+        SetPOIMapPosition();
+    }
+
+    public void SetPOIMapPosition()
+    {
+        GameObject rotationObject = Instantiate(emptyTransform, map.transform.position, Quaternion.identity);
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            allPOIs[i].transform.SetParent(null);
+            Vector3 position = Conversions.GeoToWorldPosition(locationCoordinates[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
+            // * the scale of the building
+            position = offset + (position * 0.02f * map.transform.localScale.x);
+            allPOIs[i].transform.position = position;
+
+            allPOIs[i].transform.SetParent(rotationObject.transform);
         }
 
         Vector3 newRot = map.transform.eulerAngles;
@@ -83,11 +121,9 @@ public class VRPlayer : MonoBehaviour
 
         for (int i = 0; i < allPOIs.Count; i++)
         {
-            allPOIs[i].transform.SetParent(map.transform);
+            allPOIs[i].transform.SetParent(null);
         }
         Destroy(rotationObject);
-
-        CheckPOIVisibility();
     }
 
     public void CheckPOIVisibility()
