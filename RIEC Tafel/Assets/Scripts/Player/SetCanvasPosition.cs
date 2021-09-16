@@ -13,10 +13,8 @@ public class SetCanvasPosition : MonoBehaviour
     [SerializeField]
     private PlayerTable playerTable = null;
 
-    private void Start()
-    {
-        ChangeCanvasPosition();
-    }
+    [SerializeField]
+    private MoveMap map = null;
 
     public void ChangeCanvasPosition()
     {
@@ -29,5 +27,13 @@ public class SetCanvasPosition : MonoBehaviour
         }
 
         playerTable.CheckYPosition();
+
+        float diffInYRotation = transform.eulerAngles.y - map.transform.eulerAngles.y;
+        bool clockWise = true;
+        if (diffInYRotation < 0)
+        {
+            clockWise = false;
+        }
+        map.RotateMap(diffInYRotation, clockWise);
     }
 }

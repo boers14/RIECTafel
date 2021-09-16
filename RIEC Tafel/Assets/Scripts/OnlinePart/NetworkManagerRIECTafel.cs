@@ -15,8 +15,8 @@ public class NetworkManagerRIECTafel : NetworkManager
 
     private GameManager gameManager = null;
 
-    [SerializeField]
-    private string cityName = "";
+    [System.NonSerialized]
+    public string cityName = "Hilversum";
 
     [System.NonSerialized]
     public int numberOfPlayers = 0;

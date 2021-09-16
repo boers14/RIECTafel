@@ -4,13 +4,14 @@ using UnityEngine;
 using Mapbox.Unity.Map;
 using UnityEngine.XR;
 using Mapbox.Utils;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class MoveMap : MonoBehaviour
 {
     [SerializeField]
     private Transform table = null;
 
-    private Vector3 offset = Vector3.zero;
+    private Vector3 offset = Vector3.zero, oldScale = Vector3.one;
 
     private AbstractMap abstractMap = null;
 
@@ -19,7 +20,7 @@ public class MoveMap : MonoBehaviour
 
     private InputDevice inputDevice;
 
-    private bool isTweening = false, clockWiseRotate = false;
+    private bool isTweening = false, clockWiseRotate = false, playerTargetsObject = false;
 
     [SerializeField]
     private VRPlayer player = null;
@@ -37,10 +38,22 @@ public class MoveMap : MonoBehaviour
 
     private Transform originalParent = null;
 
+    private float originalMaxTileOffset = 0;
+
+    [SerializeField]
+    private XRRayInteractor rightRayInteractor = null;
+
+    private LineRenderer lineVisual = null;
+
     private void Start()
     {
+        lineVisual = rightRayInteractor.GetComponent<LineRenderer>();
+        rightRayInteractor.selectEntered.AddListener(PlayerGrabsObject);
+        rightRayInteractor.selectExited.AddListener(PlayerDropsObject);
+
         originalParent = transform.parent;
 
+        originalMaxTileOffset = maxTileOffset;
         maxTileOffset -= table.localScale.z / 2;
         offset.y = table.transform.localScale.y / 2 + 0.01f;
 
@@ -49,50 +62,11 @@ public class MoveMap : MonoBehaviour
         inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
 
         transform.position = table.position + offset;
-        ChangeMapScale(1);
     }
 
     private void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.Z) && !isTweening)
-        {
-            RotateMap(90, true);
-        }
-
-        if (Input.GetKeyDown(KeyCode.X) && !isTweening)
-        {
-            RotateMap(-90, false);
-        }
-
-        if (Input.GetKey(KeyCode.RightArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(-1, 0));
-        }
-
-        if (Input.GetKey(KeyCode.LeftArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(1, 0));
-        }
-
-        if (Input.GetKey(KeyCode.UpArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(0, -1));
-        }
-
-        if (Input.GetKey(KeyCode.DownArrow ) && !isTweening)
-        {
-            MoveTheMap(new Vector2(0, 1));
-        }
-
-        if (Input.GetKey(KeyCode.C) && !isTweening)
-        {
-            ChangeMapScale(-scalePower);
-        }
-
-        if (Input.GetKey(KeyCode.V) && !isTweening)
-        {
-            ChangeMapScale(scalePower);
-        }
+        ComputerControls();
 
         if (!inputDevice.isValid)
         {
@@ -100,23 +74,38 @@ public class MoveMap : MonoBehaviour
             return;
         }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton && !isTweening)
+        if (isTweening || playerTargetsObject || lineVisual.colorGradient.alphaKeys[0].alpha != 0)
+        {
+            return;
+        }
+
+        if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
+        {
+            ChangeMapScale(-scalePower);
+        }
+
+        if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
+        {
+            ChangeMapScale(scalePower);
+        }
+
+        if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
         {
             RotateMap(90, true);
         }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton && !isTweening)
+        if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
         {
             RotateMap(-90, false);
         }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero && !isTweening)
+        if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
         {
-            MoveTheMap(steerStickInput);
+            MoveTheMap(steerStickInput, true);
         }
     }
 
-    private void RotateMap(float rotation, bool clockWise)
+    public void RotateMap(float rotation, bool clockWise)
     {
         clockWiseRotate = clockWise;
 
@@ -151,14 +140,19 @@ public class MoveMap : MonoBehaviour
         }
     }
 
-    private void MoveTheMap(Vector2 steerStickDirection)
+    private void MoveTheMap(Vector2 steerStickDirection, bool movePOIs)
     {
         if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f && steerStickDirection.y > -0.1f) { return; }
 
         Vector2 movement = new Vector2(steerStickDirection.x * moveMapPower, steerStickDirection.y * moveMapPower);
         offset.x += movement.x;
         offset.z += movement.y;
-        player.MovePOIs(new Vector3(movement.x, 0, movement.y));
+        player.SetExtraOffset(offset);
+
+        if (movePOIs)
+        {
+            player.MovePOIs(new Vector3(movement.x, 0, movement.y));
+        }
 
         CheckIfMapIsStillOnTable();
 
@@ -173,8 +167,8 @@ public class MoveMap : MonoBehaviour
         if (changedScale < 0 && transform.localScale.x == minimumScale || changedScale > 0 && transform.localScale.x == maximumScale) { return; }
 
         Vector3 nextScale = transform.localScale;
-        nextScale.x += changedScale;
-        nextScale.z += changedScale;
+        nextScale.x += changedScale * oldScale.x;
+        nextScale.z += changedScale * oldScale.x;
 
         if (nextScale.x < minimumScale)
         {
@@ -185,13 +179,33 @@ public class MoveMap : MonoBehaviour
             nextScale.x = maximumScale;
             nextScale.z = maximumScale;
         }
-        transform.localScale = nextScale;
 
+        SetScaleOfMap(nextScale);
+    }
+
+    private float CalculatePosDiff(float oldMaxTileOffset, float offsetParameter)
+    {
+        float xPercentageOnMap = offsetParameter / oldMaxTileOffset;
+        float newXPos = xPercentageOnMap * maxTileOffset;
+        float possDiff = newXPos - offsetParameter;
+        return possDiff / moveMapPower;
+    }
+
+    public void ChangeMapScaleToOne()
+    {
+        SetScaleOfMap(Vector3.one);
+    }
+
+    private void SetScaleOfMap(Vector3 nextScale)
+    {
+        transform.localScale = nextScale;
+        oldScale = nextScale;
+        float oldMaxTileOffset = maxTileOffset;
+        maxTileOffset = originalMaxTileOffset * nextScale.x - table.localScale.z / 2;
         nextScale.y = nextScale.z;
         player.SetPOIsScale(nextScale);
 
-        maxTileOffset = 12 * nextScale.x;
-        CheckIfMapIsStillOnTable();
+        MoveTheMap(new Vector2(CalculatePosDiff(oldMaxTileOffset, offset.x), CalculatePosDiff(oldMaxTileOffset, offset.z)), false);
     }
 
     private void CheckIfMapIsStillOnTable()
@@ -199,16 +213,77 @@ public class MoveMap : MonoBehaviour
         if (offset.x < -maxTileOffset || offset.x > maxTileOffset || offset.z < -maxTileOffset || offset.z > maxTileOffset)
         {
             SetNewMapCenter(abstractMap.WorldToGeoPosition(table.position));
-            offset = Vector3.zero;
-            offset.y = table.transform.localScale.y / 2 + 0.01f;
-            player.SetPOIMapPosition();
-            transform.position = table.position + offset;
         }
     }
 
-    private void SetNewMapCenter(Vector2d newCenter)
+    public void SetNewMapCenter(Vector2d newCenter)
     {
+        transform.localScale = Vector3.one;
+        float regularMaxTileOffset = originalMaxTileOffset - table.localScale.z / 2;
+        float percentageGrowth = maxTileOffset / regularMaxTileOffset;
+        offset.x /= percentageGrowth;
+        offset.z /= percentageGrowth;
+        transform.position = table.position + offset;
         abstractMap.SetCenterLatitudeLongitude(newCenter);
         abstractMap.UpdateMap();
+        offset = Vector3.zero;
+        offset.y = table.transform.localScale.y / 2 + 0.01f;
+        player.SetExtraOffset(offset);
+        player.SetPOIMapPosition();
+        transform.position = table.position + offset;
+        transform.localScale = oldScale;
+    }
+
+    private void PlayerGrabsObject(SelectEnterEventArgs args)
+    {
+        playerTargetsObject = true;
+    }
+
+    private void PlayerDropsObject(SelectExitEventArgs args)
+    {
+        playerTargetsObject = false;
+    }
+
+    private void ComputerControls()
+    {
+        if (Input.GetKeyDown(KeyCode.Z) && !isTweening)
+        {
+            RotateMap(90, true);
+        }
+
+        if (Input.GetKeyDown(KeyCode.X) && !isTweening)
+        {
+            RotateMap(-90, false);
+        }
+
+        if (Input.GetKey(KeyCode.RightArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(-1, 0), true);
+        }
+
+        if (Input.GetKey(KeyCode.LeftArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(1, 0), true);
+        }
+
+        if (Input.GetKey(KeyCode.UpArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(0, -1), true);
+        }
+
+        if (Input.GetKey(KeyCode.DownArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(0, 1), true);
+        }
+
+        if (Input.GetKey(KeyCode.C) && !isTweening)
+        {
+            ChangeMapScale(-scalePower);
+        }
+
+        if (Input.GetKey(KeyCode.V) && !isTweening)
+        {
+            ChangeMapScale(scalePower);
+        }
     }
 }

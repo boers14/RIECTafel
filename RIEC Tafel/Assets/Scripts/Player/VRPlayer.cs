@@ -21,9 +21,15 @@ public class VRPlayer : MonoBehaviour
     [SerializeField]
     private GameObject regularPOI = null, policePOI = null, taxPOI = null, ppoPOI = null, bankPOI = null, emptyTransform = null;
 
-    private Vector3 offset = Vector3.zero;
+    private Vector3 offset = Vector3.zero, extraOffset = Vector3.zero;
 
     private List<GameObject> allPOIs = new List<GameObject>();
+
+    [SerializeField]
+    private BackToStartPositionButton startPositionButton = null;
+
+    [SerializeField]
+    private POISelectionDropdown poiSelectionDropdown = null;
 
     private void Start()
     {
@@ -74,7 +80,10 @@ public class VRPlayer : MonoBehaviour
             }
         }
 
-        SetPOIMapPosition();
+        startPositionButton.startPosition = locationCoordinates[0];
+        poiSelectionDropdown.FillAllCoordinatesList(locationCoordinates);
+
+        map.GetComponent<MoveMap>().SetNewMapCenter(locationCoordinates[0]);
     }
 
     public void MovePOIs(Vector3 movement)
@@ -83,6 +92,8 @@ public class VRPlayer : MonoBehaviour
         {
             allPOIs[i].transform.position += movement;
         }
+
+        CheckPOIVisibility();
     }
 
     public void ParentPOIs(Transform parentObject)
@@ -97,7 +108,7 @@ public class VRPlayer : MonoBehaviour
     {
         for (int i = 0; i < allPOIs.Count; i++)
         {
-            allPOIs[i].transform.localScale = newScale;
+            allPOIs[i].transform.localScale = newScale / 10;
         }
         SetPOIMapPosition();
     }
@@ -110,7 +121,7 @@ public class VRPlayer : MonoBehaviour
             allPOIs[i].transform.SetParent(null);
             Vector3 position = Conversions.GeoToWorldPosition(locationCoordinates[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
             // * the scale of the building
-            position = offset + (position * 0.02f * map.transform.localScale.x);
+            position = offset + (position * 0.02f * map.transform.localScale.x) + extraOffset;
             allPOIs[i].transform.position = position;
 
             allPOIs[i].transform.SetParent(rotationObject.transform);
@@ -124,6 +135,14 @@ public class VRPlayer : MonoBehaviour
             allPOIs[i].transform.SetParent(null);
         }
         Destroy(rotationObject);
+
+        CheckPOIVisibility();
+    }
+
+    public void SetExtraOffset(Vector3 mapOffset)
+    {
+        extraOffset.x = mapOffset.x;
+        extraOffset.z = mapOffset.z;
     }
 
     public void CheckPOIVisibility()

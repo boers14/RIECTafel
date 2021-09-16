@@ -9,10 +9,7 @@ public class StopConnectButton : MonoBehaviour
     private ConnectButton.ButtonFunction currentFunction = ConnectButton.ButtonFunction.None;
 
     [SerializeField]
-    private List<ConnectButton> connectButtons = new List<ConnectButton>();
-
-    [SerializeField]
-    private Dropdown dataTypeDropdown = null;
+    private List<GameObject> connectMenuButtonsButtons = new List<GameObject>(), discussionButtons = new List<GameObject>();
 
     [SerializeField]
     private Text clientConnectionStatus = null;
@@ -74,7 +71,7 @@ public class StopConnectButton : MonoBehaviour
                 {
                     EnableConnectButtons(false, true);
                 }
-            } else if (!NetworkClient.active && !connectButtons[0].gameObject.activeSelf)
+            } else if (!NetworkClient.active && !connectMenuButtonsButtons[0].activeSelf)
             {
                 clientConnectionStatus.text = "Click a button to start";
                 EnableConnectButtons(true, true);
@@ -129,11 +126,14 @@ public class StopConnectButton : MonoBehaviour
             buttonText.enabled = !enabled;
         }
 
-        for (int i = 0; i < connectButtons.Count; i++)
+        for (int i = 0; i < discussionButtons.Count; i++)
         {
-            connectButtons[i].gameObject.SetActive(enabled);
+            discussionButtons[i].SetActive(!enabled);
         }
 
-        dataTypeDropdown.gameObject.SetActive(enabled);
+        for (int i = 0; i < connectMenuButtonsButtons.Count; i++)
+        {
+            connectMenuButtonsButtons[i].SetActive(enabled);
+        }
     }
 }
