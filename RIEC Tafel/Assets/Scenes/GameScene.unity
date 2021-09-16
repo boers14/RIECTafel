@@ -6019,7 +6019,7 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 8712389858629822693, guid: 37f2597e0cfdbf1468747c55cc7e8239, type: 3}
   spawnPosses:
-  - {fileID: 3169655455821710205}
+  - {fileID: 3169655454986751634}
   - {fileID: 3169655455559178259}
   - {fileID: 3169655454986751634}
   - {fileID: 3169655454737914270}

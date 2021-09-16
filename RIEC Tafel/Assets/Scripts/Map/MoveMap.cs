@@ -45,6 +45,9 @@ public class MoveMap : MonoBehaviour
 
     private LineRenderer lineVisual = null;
 
+    [System.NonSerialized]
+    public Transform playerConnectionTransform = null;
+
     private void Start()
     {
         lineVisual = rightRayInteractor.GetComponent<LineRenderer>();
@@ -101,6 +104,26 @@ public class MoveMap : MonoBehaviour
 
         if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
         {
+            if (playerConnectionTransform)
+            {
+                float xInput = steerStickInput.x;
+                switch (playerConnectionTransform.eulerAngles.y)
+                {
+                    case 90:
+                        steerStickInput.x = steerStickInput.y;
+                        steerStickInput.y = -xInput;
+                        break;
+                    case 180:
+                        steerStickInput.x = -steerStickInput.x;
+                        steerStickInput.y = -steerStickInput.y;
+                        break;
+                    case 270:
+                        steerStickInput.x = -steerStickInput.y;
+                        steerStickInput.y = xInput;
+                        break;
+                }
+            }
+
             MoveTheMap(steerStickInput, true);
         }
     }

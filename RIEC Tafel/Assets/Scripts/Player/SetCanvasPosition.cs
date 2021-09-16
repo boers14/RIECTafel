@@ -20,7 +20,7 @@ public class SetCanvasPosition : MonoBehaviour
     {
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit wallRay, Mathf.Infinity, layer))
         {
-            canvas.position = wallRay.transform.position + wallRay.transform.up * 0.15f;
+            canvas.position = wallRay.transform.position + wallRay.transform.up * 0.05f;
             Vector3 canvasRotation = Vector3.zero;
             canvasRotation.y = wallRay.transform.eulerAngles.y + 90;
             canvas.eulerAngles = canvasRotation;

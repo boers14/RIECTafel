@@ -38,6 +38,9 @@ public class PlayerConnection : NetworkBehaviour
         }
         FetchGameManager();
         StartCoroutine(StartRequestLocationData());
+
+        MoveMap[] map = FindObjectsOfType<MoveMap>();
+        map[0].playerConnectionTransform = transform;
     }
 
     public IEnumerator StartConnectionWithGamemanager(string cityName)
@@ -62,22 +65,22 @@ public class PlayerConnection : NetworkBehaviour
     private IEnumerator StartRequestLocationData()
     {
         yield return new WaitForSeconds(3f);
-        CmdRequestLocationData();
+        CmdRequestLocationData(player.dataType.ToString());
     }
 
     [Command]
-    private void CmdRequestLocationData()
+    private void CmdRequestLocationData(string dataType)
     {
         FetchGameManager();
-        FetchVRPlayer();
-        gameManager.CmdGiveBackLocationData(player.dataType.ToString(), playerNumber);
+        gameManager.CmdGiveBackLocationData(dataType, playerNumber);
     }
 
     [ClientRpc]
     public void RpcSetLocationDataForPlayer(List<List<string>> locationData, List<string> dataTypes, int playerNumber)
     {
-        if (playerNumber != this.playerNumber) { return; }
+        if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
 
+        FetchVRPlayer();
         player.SetLocationData(locationData, dataTypes);
     }
 
