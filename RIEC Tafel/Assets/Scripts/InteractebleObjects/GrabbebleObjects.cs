@@ -64,6 +64,7 @@ public class GrabbebleObjects : MonoBehaviour
 
     private void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
+        //
         transform.localScale = originalScale;
         rigidbody.useGravity = true;
         ReturnToPos();
