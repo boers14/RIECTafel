@@ -19,7 +19,7 @@ public class GrabbebleObjects : MonoBehaviour
     [SerializeField]
     private float distanceFactor = 0.3f;
 
-    private void Start()
+    public virtual void Start()
     {
         originalScale = transform.localScale;
 
@@ -49,7 +49,7 @@ public class GrabbebleObjects : MonoBehaviour
         isPlayingTween = false;
     }
 
-    private void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs)
+    public virtual void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs)
     {
         originalPos = transform.position;
         originalRot = transform.eulerAngles;
@@ -62,7 +62,7 @@ public class GrabbebleObjects : MonoBehaviour
         collider.enabled = false;
     }
 
-    private void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
+    public virtual void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
         transform.localScale = originalScale;
         rigidbody.useGravity = true;
