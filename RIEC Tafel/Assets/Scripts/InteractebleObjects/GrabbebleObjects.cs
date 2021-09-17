@@ -8,7 +8,7 @@ public class GrabbebleObjects : MonoBehaviour
 {
     private XRGrabInteractable grabInteractable = null;
 
-    private Vector3 originalPos = Vector3.zero, originalRot = Vector3.zero;
+    private Vector3 originalPos = Vector3.zero, originalRot = Vector3.zero, originalScale = Vector3.zero;
 
     private new Rigidbody rigidbody = null;
 
@@ -21,6 +21,8 @@ public class GrabbebleObjects : MonoBehaviour
 
     private void Start()
     {
+        originalScale = transform.localScale;
+
         rigidbody = GetComponent<Rigidbody>();
         collider = GetComponent<Collider>();
 
@@ -62,6 +64,7 @@ public class GrabbebleObjects : MonoBehaviour
 
     private void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
+        transform.localScale = originalScale;
         rigidbody.useGravity = true;
         ReturnToPos();
     }
