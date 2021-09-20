@@ -85,9 +85,7 @@ public class MoveMap : MonoBehaviour
         if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
         {
             ChangeMapScale(-scalePower);
-        }
-
-        if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
+        } else if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
         {
             ChangeMapScale(scalePower);
         }
@@ -95,9 +93,7 @@ public class MoveMap : MonoBehaviour
         if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
         {
             RotateMap(90, true);
-        }
-
-        if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
+        } else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
         {
             RotateMap(-90, false);
         }
@@ -206,14 +202,6 @@ public class MoveMap : MonoBehaviour
         SetScaleOfMap(nextScale);
     }
 
-    private float CalculatePosDiff(float oldMaxTileOffset, float offsetParameter)
-    {
-        float xPercentageOnMap = offsetParameter / oldMaxTileOffset;
-        float newXPos = xPercentageOnMap * maxTileOffset;
-        float possDiff = newXPos - offsetParameter;
-        return possDiff / moveMapPower;
-    }
-
     public void ChangeMapScaleToOne()
     {
         SetScaleOfMap(Vector3.one);
@@ -228,7 +216,8 @@ public class MoveMap : MonoBehaviour
         nextScale.y = nextScale.z;
         player.SetPOIsScale(nextScale);
 
-        MoveTheMap(new Vector2(CalculatePosDiff(oldMaxTileOffset, offset.x), CalculatePosDiff(oldMaxTileOffset, offset.z)), false);
+        MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x, moveMapPower),
+            BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z, moveMapPower)), false);
     }
 
     private void CheckIfMapIsStillOnTable()

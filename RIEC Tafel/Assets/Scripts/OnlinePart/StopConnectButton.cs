@@ -36,26 +36,26 @@ public class StopConnectButton : MonoBehaviour
             switch (currentFunction)
             {
                 case ConnectButton.ButtonFunction.ServerClient:
-                    clientConnectionStatus.text = "You're the server and client";
+                    clientConnectionStatus.text = "Je bent de server en een client";
                     if (!NetworkServer.active || !NetworkClient.isConnected)
                     {
-                        clientConnectionStatus.text = "Click a button to start";
+                        clientConnectionStatus.text = "Druk op een knop om te starten";
                         EnableConnectButtons(true, true);
                     }
                     break;
                 case ConnectButton.ButtonFunction.Server:
-                    clientConnectionStatus.text = "You're the server";
+                    clientConnectionStatus.text = "Je bent de server";
                     if (!NetworkServer.active)
                     {
-                        clientConnectionStatus.text = "Click a button to start";
+                        clientConnectionStatus.text = "Druk op een knop om te starten";
                         EnableConnectButtons(true, true);
                     }
                     break;
                 case ConnectButton.ButtonFunction.Client:
-                    clientConnectionStatus.text = "Connected to a server";
+                    clientConnectionStatus.text = "Je hebt connectie met een server";
                     if (!NetworkClient.active)
                     {
-                        clientConnectionStatus.text = "Click a button to start";
+                        clientConnectionStatus.text = "Druk op een knop om te starten";
                         EnableConnectButtons(true, true);
                     }
                     break;
@@ -73,7 +73,7 @@ public class StopConnectButton : MonoBehaviour
                 }
             } else if (!NetworkClient.active && !connectMenuButtonsButtons[0].activeSelf)
             {
-                clientConnectionStatus.text = "Click a button to start";
+                clientConnectionStatus.text = "Druk op een knop om te starten";
                 EnableConnectButtons(true, true);
             }
         }
@@ -86,7 +86,7 @@ public class StopConnectButton : MonoBehaviour
 
         if (currentFunction == ConnectButton.ButtonFunction.Client)
         {
-            clientConnectionStatus.text = "Trying to connect to server";
+            clientConnectionStatus.text = "Probeer connectie te krijgen met een server";
         }
     }
 
