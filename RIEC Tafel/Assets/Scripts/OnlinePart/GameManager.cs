@@ -32,6 +32,8 @@ public class GameManager : NetworkBehaviour
         if (www.text[0] == '0')
         {
             locationDataForClients.Clear();
+            //string input = "abc][rfd][5][,][.";
+            //string[] parts1 = input.Split(new string[] { "][" }, System.StringSplitOptions.None);
 
             string[] allLocationData = www.text.Split('/');
 
