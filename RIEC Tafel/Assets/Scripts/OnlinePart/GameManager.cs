@@ -14,7 +14,9 @@ public class GameManager : NetworkBehaviour
         Bank
     }
 
-    private Dictionary<DataType, List<string>> locationDataForClients = new Dictionary<DataType, List<string>>();
+    private List<DataType> dataTypes = new List<DataType>();
+
+    private List<string> allLocations = new List<string>(), conclusions = new List<string>(), indications = new List<string>();
 
     [Command]
     public void CmdStartRetrieveCityData(string cityName)
@@ -25,40 +27,35 @@ public class GameManager : NetworkBehaviour
     private IEnumerator RetrieveCityData(string cityName)
     {
         WWWForm form = new WWWForm();
+        cityName = cityName.ToLower();
+        cityName = System.Text.RegularExpressions.Regex.Replace(cityName, @"\s+", "");
         form.AddField("cityName", cityName);
         WWW www = new WWW("http://localhost/riectafel/retrievecitydata.php", form);
         yield return www;
 
         if (www.text[0] == '0')
         {
-            locationDataForClients.Clear();
-            //string input = "abc][rfd][5][,][.";
-            //string[] parts1 = input.Split(new string[] { "][" }, System.StringSplitOptions.None);
+            dataTypes.Clear();
+            allLocations.Clear();
+            conclusions.Clear();
+            indications.Clear();
 
-            string[] allLocationData = www.text.Split('/');
+            string allData = www.text;
+            allData = allData.Remove(0, 1);
 
-            DataType currentDataType = DataType.Regular;
-            List<List<string>> allDataTypesLists = new List<List<string>>();
-            for (int i = 0; i < System.Enum.GetNames(typeof(DataType)).Length; i++)
+            string[] allLocationData = allData.Split(new string[] { "/*endOfRow*/" }, System.StringSplitOptions.None);
+
+            for (int i = 0; i < allLocationData.Length - 1; i++)
             {
-                List<string> dataTypeList = new List<string>();
-                allDataTypesLists.Add(dataTypeList);
-            }
+                string[] location = allLocationData[i].Split(new string[] { "/*datatype*/" }, System.StringSplitOptions.None);
+                allLocations.Add(location[0]);
 
-            for (int i = 1; i < allLocationData.Length; i++)
-            {
-                if (System.Enum.IsDefined(typeof(DataType), allLocationData[i]))
-                {
-                    currentDataType = (DataType)System.Enum.Parse(typeof(DataType), allLocationData[i]);
-                } else
-                {
-                    allDataTypesLists[(int)currentDataType].Add(allLocationData[i]);
-                }
-            }
+                string[] dataType = location[1].Split(new string[] { "/*conclusion*/" }, System.StringSplitOptions.None);
+                dataTypes.Add((DataType)System.Enum.Parse(typeof(DataType), dataType[0]));
 
-            for (int i = 0; i < allDataTypesLists.Count; i++)
-            {
-                locationDataForClients.Add((DataType)i, allDataTypesLists[i]);
+                string[] conclusionAndIndication = dataType[1].Split(new string[] { "/*indication*/" }, System.StringSplitOptions.None);
+                conclusions.Add(conclusionAndIndication[0]);
+                indications.Add(conclusionAndIndication[1]);
             }
         }
         else
@@ -75,17 +72,33 @@ public class GameManager : NetworkBehaviour
         PlayerConnection player = playerConnections.Find(i => i.playerNumber == playerNumber);
 
         DataType requiredDatatype = (DataType)System.Enum.Parse(typeof(DataType), dataType);
-        List<List<string>> locationData = new List<List<string>>();
+        List<string> locationData = new List<string>();
         List<string> dataTypes = new List<string>();
+        List<string> neededConclusions = new List<string>();
+        List<string> neededIndications = new List<string>();
 
-        locationData.Add(locationDataForClients[DataType.Regular]);
-        dataTypes.Add(DataType.Regular.ToString());
+        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, DataType.Regular);
+
         if (requiredDatatype != DataType.Regular)
         {
-            locationData.Add(locationDataForClients[requiredDatatype]);
-            dataTypes.Add(requiredDatatype.ToString());
+            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, requiredDatatype);
         }
 
-        player.RpcSetLocationDataForPlayer(locationData, dataTypes, playerNumber);
+        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededConclusions, neededIndications, playerNumber);
+    }
+
+    private void AddDataToLists(List<string> locationData, List<string> dataTypes, List<string> neededConclusions, List<string> neededIndications,
+        DataType requiredDatatype)
+    {
+        for (int i = 0; i < this.dataTypes.Count; i++)
+        {
+            if (this.dataTypes[i] == requiredDatatype)
+            {
+                dataTypes.Add(requiredDatatype.ToString());
+                locationData.Add(allLocations[i]);
+                neededConclusions.Add(conclusions[i]);
+                neededIndications.Add(indications[i]);
+            }
+        }
     }
 }

@@ -31,13 +31,16 @@ public class VRPlayer : MonoBehaviour
     [SerializeField]
     private POISelectionDropdown poiSelectionDropdown = null;
 
+    [System.NonSerialized]
+    private List<string> conclusions = new List<string>(), indications = new List<string>();
+
     private void Start()
     {
         offset = table.transform.position;
         offset.y += table.transform.localScale.y / 2;
     }
 
-    public void SetLocationData(List<List<string>> locationData, List<string> dataTypes)
+    public void SetLocationData(List<string> locationData, List<string> dataTypes, List<string> conclusions, List<string> indications)
     {
         locationCoordinates.Clear();
         for (int i = 0; i < allPOIs.Count; i++)
@@ -46,38 +49,36 @@ public class VRPlayer : MonoBehaviour
         }
         allPOIs.Clear();
 
-        for (int i = 0; i < locationData.Count; i++)
+        this.conclusions = conclusions;
+        this.indications = indications;
+
+        for (int i = 0; i < dataTypes.Count; i++)
         {
             GameManager.DataType dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataTypes[i]);
-            List<string> locations = locationData[i];
+            Vector2d coordinate = map.ReturnCoordinateFromString(locationData[i]);
+            GameObject POI = null;
 
-            for (int j = 0; j < locations.Count; j++)
+            switch (dataType)
             {
-                Vector2d coordinate = map.ReturnCoordinateFromString(locations[j]);
-                GameObject POI = null;
-
-                switch (dataType)
-                {
-                    case GameManager.DataType.Regular:
-                        POI = Instantiate(regularPOI, Vector3.zero, map.transform.rotation);
-                        break;
-                    case GameManager.DataType.Tax:
-                        POI = Instantiate(taxPOI, Vector3.zero, map.transform.rotation);
-                        break;
-                    case GameManager.DataType.Police:
-                        POI = Instantiate(policePOI, Vector3.zero, map.transform.rotation);
-                        break;
-                    case GameManager.DataType.PPO:
-                        POI = Instantiate(ppoPOI, Vector3.zero, map.transform.rotation);
-                        break;
-                    case GameManager.DataType.Bank:
-                        POI = Instantiate(bankPOI, Vector3.zero, map.transform.rotation);
-                        break;
-                }
-
-                allPOIs.Add(POI);
-                locationCoordinates.Add(coordinate);
+                case GameManager.DataType.Regular:
+                    POI = Instantiate(regularPOI, Vector3.zero, map.transform.rotation);
+                    break;
+                case GameManager.DataType.Tax:
+                    POI = Instantiate(taxPOI, Vector3.zero, map.transform.rotation);
+                    break;
+                case GameManager.DataType.Police:
+                    POI = Instantiate(policePOI, Vector3.zero, map.transform.rotation);
+                    break;
+                case GameManager.DataType.PPO:
+                    POI = Instantiate(ppoPOI, Vector3.zero, map.transform.rotation);
+                    break;
+                case GameManager.DataType.Bank:
+                    POI = Instantiate(bankPOI, Vector3.zero, map.transform.rotation);
+                    break;
             }
+
+            allPOIs.Add(POI);
+            locationCoordinates.Add(coordinate);
         }
 
         startPositionButton.startPosition = locationCoordinates[0];

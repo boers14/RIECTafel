@@ -53,7 +53,7 @@ public class DataGenerator : MonoBehaviour
         string conclusion = LoremIpsum(8, 15, 10, 40, 2);
         string indication = LoremIpsum(8, 15, 10, 40, 2);
 
-        string completeDataset = location + "/*datatype*/" + dataType + "/*conclusion*/" + conclusion + "/*indication*/" + indication;
+        string completeDataset = location + "/*datatype*/" + dataType + "/*conclusion*/" + conclusion + "/*indication*/" + indication + "/*endOfRow*/";
 
         WWWForm form = new WWWForm();
         form.AddField("cityName", cityName);

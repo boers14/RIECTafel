@@ -76,12 +76,13 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcSetLocationDataForPlayer(List<List<string>> locationData, List<string> dataTypes, int playerNumber)
+    public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> conclusions,
+        List<string> indications, int playerNumber)
     {
         if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
 
         FetchVRPlayer();
-        player.SetLocationData(locationData, dataTypes);
+        player.SetLocationData(locationData, dataTypes, conclusions, indications);
     }
 
     [Command]
