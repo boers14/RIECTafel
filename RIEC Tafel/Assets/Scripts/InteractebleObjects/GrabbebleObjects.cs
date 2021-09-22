@@ -50,10 +50,10 @@ public class GrabbebleObjects : MonoBehaviour
 
         if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool XButton) && XButton)
         {
-            ChangeImageScale(-scalePower, null, Vector3.zero, 0);
+            ChangeImageScale(scalePower, null, Vector3.zero, 0);
         } else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool YButton) && YButton)
         {
-            ChangeImageScale(scalePower, null, Vector3.zero, 0);
+            ChangeImageScale(-scalePower, null, Vector3.zero, 0);
         }
 
         if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
@@ -87,6 +87,7 @@ public class GrabbebleObjects : MonoBehaviour
         }
 
         imageRectTransform.localScale = nextScale;
+
         MoveImage(Vector2.one, image, originalPosition, extraYMovement, true);
     } 
 

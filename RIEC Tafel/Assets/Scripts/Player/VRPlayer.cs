@@ -7,7 +7,8 @@ using Mapbox.Unity.Utilities;
 
 public class VRPlayer : MonoBehaviour
 {
-    private List<Vector2d> locationCoordinates = new List<Vector2d>();
+    [System.NonSerialized]
+    public List<Vector2d> locationCoordinates = new List<Vector2d>();
 
     [SerializeField]
     private AbstractMap map = null;
@@ -32,7 +33,7 @@ public class VRPlayer : MonoBehaviour
     private POISelectionDropdown poiSelectionDropdown = null;
 
     [System.NonSerialized]
-    private List<string> conclusions = new List<string>(), indications = new List<string>();
+    public List<string> conclusions = new List<string>(), indications = new List<string>();
 
     private void Start()
     {
