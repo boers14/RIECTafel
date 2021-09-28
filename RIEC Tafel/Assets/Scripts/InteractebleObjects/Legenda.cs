@@ -35,9 +35,9 @@ public class Legenda : GrabbebleObjects
         base.MoveImage(steerStickInput, legendaImage.gameObject, originalPosition, 11, nullifyMovement);
     }
 
-    public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs)
+    public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
-        base.OnGrabEnter(selectEnterEventArgs);
+        base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
         legendaImage.rectTransform.localPosition = originalPosition;
         legendaImage.rectTransform.localScale = originalImageScale;
         legendaImage.transform.SetAsLastSibling();

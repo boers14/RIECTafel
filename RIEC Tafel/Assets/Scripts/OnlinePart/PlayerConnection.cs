@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using TMPro;
 
 public class PlayerConnection : NetworkBehaviour
 {
@@ -9,11 +10,11 @@ public class PlayerConnection : NetworkBehaviour
     private string playerName = "";
 
     [SerializeField]
-    private TextMesh nameText = null;
+    private TMP_Text nameText = null;
 
     private GameManager gameManager = null;
 
-    private VRPlayer player = null;
+    private POIManager poiManager = null;
 
     [SyncVar, System.NonSerialized]
     public int playerNumber = -1;
@@ -28,9 +29,9 @@ public class PlayerConnection : NetworkBehaviour
 
         tag = "PlayerConnection";
         FetchVRPlayer();
-        player.transform.position = transform.position;
-        player.transform.rotation = transform.rotation;
-        player.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
+        poiManager.transform.position = transform.position;
+        poiManager.transform.rotation = transform.rotation;
+        poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
         CmdSetPlayerName("bob" + Random.Range(0, 100));
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -65,7 +66,7 @@ public class PlayerConnection : NetworkBehaviour
     private IEnumerator StartRequestLocationData()
     {
         yield return new WaitForSeconds(3f);
-        CmdRequestLocationData(player.dataType.ToString());
+        CmdRequestLocationData(poiManager.dataType.ToString());
     }
 
     [Command]
@@ -76,13 +77,13 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> conclusions,
-        List<string> indications, int playerNumber)
+    public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededFeatureTypes,
+        List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber)
     {
         if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
 
         FetchVRPlayer();
-        player.SetLocationData(locationData, dataTypes, conclusions, indications);
+        poiManager.SetLocationData(locationData, dataTypes, neededFeatureTypes, neededExtraInfo, conclusions, indications);
     }
 
     [Command]
@@ -101,9 +102,9 @@ public class PlayerConnection : NetworkBehaviour
 
     private void FetchVRPlayer()
     {
-        if (player == null)
+        if (poiManager == null)
         {
-            player = GameObject.FindGameObjectWithTag("Player").GetComponent<VRPlayer>();
+            poiManager = GameObject.FindGameObjectWithTag("Player").GetComponent<POIManager>();
         }
     }
 

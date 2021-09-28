@@ -20,10 +20,10 @@ public class MoveMap : MonoBehaviour
 
     private InputDevice inputDevice;
 
-    private bool isTweening = false, clockWiseRotate = false, playerTargetsObject = false;
+    private bool isTweening = false, clockWiseRotate = false;
 
     [SerializeField]
-    private VRPlayer player = null;
+    private POIManager poiManager = null;
 
     [SerializeField]
     private float moveMapPower = 1, scalePower = 0.1f, minimumScale = 0.5f, maximumScale = 5;
@@ -36,9 +36,9 @@ public class MoveMap : MonoBehaviour
 
     private GameObject pivotObject = null;
 
-    private Transform originalParent = null;
+    private Transform originalParent = null, closestPOI = null;
 
-    private float originalMaxTileOffset = 0;
+    private float originalMaxTileOffset = 0, rotationPower = 2;
 
     [SerializeField]
     private XRRayInteractor rightRayInteractor = null;
@@ -48,11 +48,11 @@ public class MoveMap : MonoBehaviour
     [System.NonSerialized]
     public Transform playerConnectionTransform = null;
 
+    private int rotationCounter = 0;
+
     private void Start()
     {
         lineVisual = rightRayInteractor.GetComponent<LineRenderer>();
-        rightRayInteractor.selectEntered.AddListener(PlayerGrabsObject);
-        rightRayInteractor.selectExited.AddListener(PlayerDropsObject);
 
         originalParent = transform.parent;
 
@@ -77,25 +77,9 @@ public class MoveMap : MonoBehaviour
             return;
         }
 
-        if (isTweening || playerTargetsObject || lineVisual.colorGradient.alphaKeys[0].alpha != 0)
+        if (isTweening)
         {
             return;
-        }
-
-        if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
-        {
-            ChangeMapScale(-scalePower);
-        } else if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
-        {
-            ChangeMapScale(scalePower);
-        }
-
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
-        {
-            RotateMap(90, true);
-        } else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
-        {
-            RotateMap(-90, false);
         }
 
         if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
@@ -122,6 +106,28 @@ public class MoveMap : MonoBehaviour
 
             MoveTheMap(steerStickInput, true);
         }
+
+        if (lineVisual.colorGradient.alphaKeys[0].alpha != 0)
+        {
+            return;
+        }
+
+        if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
+        {
+            RotateMap(rotationPower, true);
+        }
+        else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
+        {
+            RotateMap(-rotationPower, false);
+        }
+
+        if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
+        {
+            ChangeMapScale(-scalePower);
+        } else if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
+        {
+            ChangeMapScale(scalePower);
+        }
     }
 
     public void RotateMap(float rotation, bool clockWise)
@@ -132,30 +138,45 @@ public class MoveMap : MonoBehaviour
         nextRotation.y += rotation;
         isTweening = true;
 
-        pivotObject = Instantiate(emptyTransform, table.position, transform.rotation);
-        transform.SetParent(pivotObject.transform);
-        player.ParentPOIs(pivotObject.transform);
+        if (!closestPOI)
+        {
+            closestPOI = poiManager.ReturnClosestPOIToTransform(table.position);
+            if (!closestPOI)
+            {
+                closestPOI = table;
+            }
+        }
 
-        iTween.RotateTo(pivotObject, iTween.Hash("rotation", nextRotation, "time", 1f, "easetype", iTween.EaseType.linear,
+        pivotObject = Instantiate(emptyTransform, closestPOI.position, transform.rotation);
+        transform.SetParent(pivotObject.transform);
+        poiManager.ParentPOIs(pivotObject.transform, false);
+
+        iTween.RotateTo(pivotObject, iTween.Hash("rotation", nextRotation, "time", 0.01f, "easetype", iTween.EaseType.linear,
             "oncomplete", "CanTweenAgain", "oncompletetarget", gameObject));
     }
 
     private void CanTweenAgain()
     {
         isTweening = false;
-        player.ParentPOIs(null);
+        poiManager.ParentPOIs(null, true);
         transform.SetParent(originalParent);
         Destroy(pivotObject);
 
-        float xOffset = offset.x;
-        if (clockWiseRotate)
+        offset.x = transform.position.x - table.position.x;
+        offset.z = transform.position.z - table.position.z;
+
+        poiManager.CheckPOIVisibility();
+        StartCoroutine(CheckIfPayerStillRotates());
+    }
+
+    private IEnumerator CheckIfPayerStillRotates()
+    {
+        rotationCounter++;
+        yield return new WaitForSeconds(0.1f);
+        rotationCounter--;
+        if (rotationCounter == 0)
         {
-            offset.x = offset.z;
-            offset.z = -xOffset;
-        } else
-        {
-            offset.x = -offset.z;
-            offset.z = xOffset;
+            closestPOI = null;
         }
     }
 
@@ -166,11 +187,11 @@ public class MoveMap : MonoBehaviour
         Vector2 movement = new Vector2(steerStickDirection.x * moveMapPower, steerStickDirection.y * moveMapPower);
         offset.x += movement.x;
         offset.z += movement.y;
-        player.SetExtraOffset(offset);
+        poiManager.SetExtraOffset(offset);
 
         if (movePOIs)
         {
-            player.MovePOIs(new Vector3(movement.x, 0, movement.y));
+            poiManager.MovePOIs(new Vector3(movement.x, 0, movement.y));
         }
 
         CheckIfMapIsStillOnTable();
@@ -214,7 +235,7 @@ public class MoveMap : MonoBehaviour
         float oldMaxTileOffset = maxTileOffset;
         maxTileOffset = originalMaxTileOffset * nextScale.x - table.localScale.z / 2;
         nextScale.y = nextScale.z;
-        player.SetPOIsScale(nextScale);
+        poiManager.SetPOIsScale(nextScale);
 
         MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x, moveMapPower),
             BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z, moveMapPower)), false);
@@ -222,7 +243,10 @@ public class MoveMap : MonoBehaviour
 
     private void CheckIfMapIsStillOnTable()
     {
-        if (offset.x < -maxTileOffset || offset.x > maxTileOffset || offset.z < -maxTileOffset || offset.z > maxTileOffset)
+        Vector3 offsetValueWithYZero = offset;
+        offsetValueWithYZero.y = 0;
+
+        if (Vector3.Distance(Vector3.zero, offsetValueWithYZero) > maxTileOffset)
         {
             SetNewMapCenter(abstractMap.WorldToGeoPosition(table.position));
         }
@@ -240,32 +264,20 @@ public class MoveMap : MonoBehaviour
         abstractMap.UpdateMap();
         offset = Vector3.zero;
         offset.y = table.transform.localScale.y / 2 + 0.01f;
-        player.SetExtraOffset(offset);
-        player.SetPOIMapPosition();
+        poiManager.SetExtraOffset(offset);
+        poiManager.SetPOIMapPosition();
         transform.position = table.position + offset;
         transform.localScale = oldScale;
     }
 
-    private void PlayerGrabsObject(SelectEnterEventArgs args)
-    {
-        playerTargetsObject = true;
-    }
-
-    private void PlayerDropsObject(SelectExitEventArgs args)
-    {
-        playerTargetsObject = false;
-    }
-
     private void ComputerControls()
     {
-        if (Input.GetKeyDown(KeyCode.Z) && !isTweening)
+        if (Input.GetKey(KeyCode.Z) && !isTweening)
         {
-            RotateMap(90, true);
-        }
-
-        if (Input.GetKeyDown(KeyCode.X) && !isTweening)
+            RotateMap(rotationPower, true);
+        } else if (Input.GetKey(KeyCode.X) && !isTweening)
         {
-            RotateMap(-90, false);
+            RotateMap(-rotationPower, false);
         }
 
         if (Input.GetKey(KeyCode.RightArrow) && !isTweening)

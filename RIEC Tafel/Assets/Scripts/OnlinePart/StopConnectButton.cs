@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using TMPro;
 
 public class StopConnectButton : MonoBehaviour
 {
@@ -12,18 +13,18 @@ public class StopConnectButton : MonoBehaviour
     private List<GameObject> connectMenuButtonsButtons = new List<GameObject>(), discussionButtons = new List<GameObject>();
 
     [SerializeField]
-    private Text clientConnectionStatus = null;
+    private TMP_Text clientConnectionStatus = null;
 
     [SerializeField]
     private NetworkManager networkManager = null;
 
     private Image buttonVisual = null;
-    private Text buttonText = null;
+    private TMP_Text buttonText = null;
 
     private void Start()
     {
         buttonVisual = GetComponent<Image>();
-        buttonText = GetComponentInChildren<Text>();
+        buttonText = GetComponentInChildren<TMP_Text>();
         EnableConnectButtons(true, true);
 
         GetComponent<Button>().onClick.AddListener(StopOnlineConnection);

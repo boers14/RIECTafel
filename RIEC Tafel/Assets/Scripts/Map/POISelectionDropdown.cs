@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mapbox.Utils;
+using TMPro;
 
 public class POISelectionDropdown : MonoBehaviour
 {
     [SerializeField]
     private MoveMap map = null;
 
-    private Dropdown dropdown = null;
+    private TMP_Dropdown dropdown = null;
 
     private List<Vector2d> allPOICoordinates = new List<Vector2d>();
 
     private void Start()
     {
-        dropdown = GetComponent<Dropdown>();
+        dropdown = GetComponent<TMP_Dropdown>();
         dropdown.ClearOptions();
         dropdown.onValueChanged.AddListener(SetPOIAsCenterCoordinate);
     }
@@ -25,7 +26,7 @@ public class POISelectionDropdown : MonoBehaviour
         map.SetNewMapCenter(allPOICoordinates[selectedPOI]);
     }
 
-    public void FillAllCoordinatesList(List<Vector2d> allCoordinates)
+    public void FillAllCoordinatesList(List<Vector2d> allCoordinates, List<string> dutchNamesForRoles, List<string> featureTypes)
     {
         allPOICoordinates = allCoordinates;
         dropdown.ClearOptions();
@@ -33,7 +34,7 @@ public class POISelectionDropdown : MonoBehaviour
         List<string> options = new List<string>();
         for (int i = 0; i < allPOICoordinates.Count; i++)
         {
-            options.Add(allPOICoordinates[i].ToString());
+            options.Add(dutchNamesForRoles[i] + ": " + featureTypes[i] + ": " + allPOICoordinates[i].ToString());
         }
 
         dropdown.AddOptions(options);

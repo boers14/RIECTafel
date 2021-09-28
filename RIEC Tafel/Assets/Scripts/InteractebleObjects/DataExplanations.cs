@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
+using TMPro;
 
 public class DataExplanations : GrabbebleObjects
 {
@@ -10,16 +11,13 @@ public class DataExplanations : GrabbebleObjects
     private GameObject dataExplanationSet = null;
 
     [SerializeField]
-    private Image bgImage = null;
+    private TMP_Text explantionText = null, title = null, explanationTitle = null;
 
     [SerializeField]
-    private Text explantionText = null, title = null, explanationTitle = null;
+    private TMP_Dropdown poiConclusionSelectionDropdown = null;
 
     [SerializeField]
-    private Dropdown poiConclusionSelectionDropdown = null;
-
-    [SerializeField]
-    private VRPlayer player = null;
+    private POIManager poiManager = null;
 
     private Vector3 originalPosition = Vector3.zero, originalImageScale = Vector3.one, explanationTitlePos = Vector3.zero,
         explanationCenterPos = Vector3.zero;
@@ -37,6 +35,15 @@ public class DataExplanations : GrabbebleObjects
 
     private float changeFontSizeTimer = 0;
 
+    [SerializeField]
+    private string titleText = "";
+
+    [System.NonSerialized]
+    public bool dataSetIsOn = false;
+
+    [SerializeField]
+    private DataExplanations otherExplanation = null;
+
     public override void Start()
     {
         poiConclusionSelectionDropdown.onValueChanged.AddListener(ChangeExplanation);
@@ -51,7 +58,7 @@ public class DataExplanations : GrabbebleObjects
 
     public override void Update()
     {
-        if (!bgImage.enabled) { return; }
+        if (title.text != titleText || !dataSetIsOn) { return; }
 
         changeFontSizeTimer -= Time.deltaTime;
         base.Update();
@@ -59,19 +66,13 @@ public class DataExplanations : GrabbebleObjects
 
     public override void ChangeImageScale(float scalePower, GameObject image, Vector3 vector3, float extraYMovement)
     {
-        if (changeFontSizeTimer > 0) { return; }
+        if (changeFontSizeTimer > 0 || explantionText.fontSize == maximumScale && scalePower > 0 || 
+            explantionText.fontSize == minimumScale && scalePower < 0) { return; }
         changeFontSizeTimer = 0.3f;
         oldYSize = explantionText.rectTransform.sizeDelta.y;
         explantionText.fontSize += (int)scalePower;
 
-        if (explantionText.fontSize > maximumScale)
-        {
-            explantionText.fontSize = (int)maximumScale;
-        } else if (explantionText.fontSize < minimumScale)
-        {
-            explantionText.fontSize = (int)minimumScale;
-        }
-        StartCoroutine(SetExplanationTextPos(true));
+        StartCoroutine(SetExplanationTextPos(true, scalePower));
     }
 
     public override void MoveImage(Vector2 steerStickInput, GameObject image, Vector3 vector3, float extraYMovement, bool nullifyMovement)
@@ -79,30 +80,22 @@ public class DataExplanations : GrabbebleObjects
         base.MoveImage(steerStickInput, explantionText.gameObject, explanationCenterPos, 25, nullifyMovement);
     }
 
-    public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs)
+    public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
-        base.OnGrabEnter(selectEnterEventArgs);
+        base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
+        dataSetIsOn = true;
 
         poiConclusionSelectionDropdown.ClearOptions();
         List<string> options = new List<string>();
-        for (int i = 0; i < player.locationCoordinates.Count; i++)
+        for (int i = 0; i < poiManager.locationCoordinates.Count; i++)
         {
-            options.Add(player.locationCoordinates[i].ToString());
+            options.Add(poiManager.dutchNamesForRoles[i] + ": " + poiManager.featureTypes[i] + ": " + poiManager.locationCoordinates[i].ToString());
         }
         poiConclusionSelectionDropdown.AddOptions(options);
 
         dataExplanationSet.transform.SetAsLastSibling();
         EnableMenu(true);
-
-        switch (dataSetNeeded)
-        {
-            case DataSetNeeded.Conclusion:
-                title.text = "Conclusie";
-                break;
-            case DataSetNeeded.Indication:
-                title.text = "Indicatie";
-                break;
-        }
+        title.text = titleText;
 
         if (poiConclusionSelectionDropdown.options.Count > 0)
         {
@@ -113,7 +106,15 @@ public class DataExplanations : GrabbebleObjects
     public override void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
         base.OnSelectExit(selectExitEventArgs);
-        EnableMenu(false);
+        dataSetIsOn = false;
+
+        if (title.text == titleText && !otherExplanation.dataSetIsOn)
+        {
+            EnableMenu(false);
+        } else if (title.text == titleText && otherExplanation.dataSetIsOn)
+        {
+            otherExplanation.OnGrabEnter(new SelectEnterEventArgs(), false);
+        }
     }
 
     private void EnableMenu(bool enabled)
@@ -133,16 +134,16 @@ public class DataExplanations : GrabbebleObjects
         switch(dataSetNeeded)
         {
             case DataSetNeeded.Conclusion:
-                explantionText.text = player.conclusions[value];
+                explantionText.text = poiManager.conclusions[value];
                 break;
             case DataSetNeeded.Indication:
-                explantionText.text = player.indications[value];
+                explantionText.text = poiManager.indications[value];
                 break;
         }
         StartCoroutine(SetExplanationTextPos(false));
     }
 
-    private IEnumerator SetExplanationTextPos(bool setOffset)
+    private IEnumerator SetExplanationTextPos(bool setOffset, float fontSizeDiff = 0)
     {
         yield return new WaitForEndOfFrame();
         Vector3 oldPos = explantionText.rectTransform.localPosition;
@@ -157,6 +158,7 @@ public class DataExplanations : GrabbebleObjects
         if (setOffset)
         {
             oldPos.y += BaseCalculations.CalculatePosDiff(oldYSize, explantionText.rectTransform.sizeDelta.y, originalYPos, 1);
+            oldPos.y += -fontSizeDiff * explantionText.fontSize;
             explantionText.rectTransform.localPosition = oldPos;
             MoveImage(Vector2.one, explantionText.gameObject, explanationCenterPos, 25, true);
         }

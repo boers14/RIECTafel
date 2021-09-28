@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR;
+using UnityEngine.Events;
 
 public class GrabbebleObjects : MonoBehaviour
 {
@@ -34,7 +35,8 @@ public class GrabbebleObjects : MonoBehaviour
         collider = GetComponent<Collider>();
 
         grabInteractable = GetComponent<XRGrabInteractable>();
-        grabInteractable.selectEntered.AddListener(OnGrabEnter);
+        SelectEnterEventArgs selectEnterEventArgs = new SelectEnterEventArgs();
+        grabInteractable.selectEntered.AddListener((selectEnterEventArgs) => OnGrabEnter(selectEnterEventArgs, true));
         grabInteractable.selectExited.AddListener(OnSelectExit);
 
         inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
@@ -148,10 +150,13 @@ public class GrabbebleObjects : MonoBehaviour
         isPlayingTween = false;
     }
 
-    public virtual void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs)
+    public virtual void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
-        originalPos = transform.position;
-        originalRot = transform.eulerAngles;
+        if (setOriginalVectors)
+        {
+            originalPos = transform.position;
+            originalRot = transform.eulerAngles;
+        }
 
         if (isPlayingTween)
         {

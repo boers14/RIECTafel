@@ -2,17 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class DataTypeDropdown : MonoBehaviour
 {
     [SerializeField]
-    private VRPlayer player = null;
+    private POIManager poiManager = null;
 
-    private Dropdown dropdown = null;
+    private TMP_Dropdown dropdown = null;
 
     private void Start()
     {
-        dropdown = GetComponent<Dropdown>();
+        dropdown = GetComponent<TMP_Dropdown>();
         dropdown.onValueChanged.AddListener(ChangePlayerDataType);
 
         dropdown.ClearOptions();
@@ -27,6 +28,6 @@ public class DataTypeDropdown : MonoBehaviour
 
     private void ChangePlayerDataType(int value)
     {
-        player.dataType = (GameManager.DataType)value;
+        poiManager.dataType = (GameManager.DataType)value;
     }
 }
