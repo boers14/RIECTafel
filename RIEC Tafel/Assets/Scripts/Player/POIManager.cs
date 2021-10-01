@@ -13,6 +13,8 @@ public class POIManager : MonoBehaviour
     [SerializeField]
     private AbstractMap map = null;
 
+    private MoveMap moveMap = null;
+
     [SerializeField]
     private Transform table = null;
 
@@ -20,17 +22,26 @@ public class POIManager : MonoBehaviour
     public GameManager.DataType dataType = GameManager.DataType.Regular;
 
     [SerializeField]
-    private GameObject regularPOI = null, policePOI = null, taxPOI = null, ppoPOI = null, bankPOI = null, emptyTransform = null;
+    private GameObject poiPrefab = null, emptyTransform = null;
+
+    [SerializeField]
+    private Color32 regularPOIColor = Color.green, policePOIColor = Color.blue, taxPOIColor = Color.red, ppoPOIColor = Color.magenta, 
+        bankPOIColor = Color.yellow;
 
     private Vector3 offset = Vector3.zero, extraOffset = Vector3.zero;
 
     private List<GameObject> allPOIs = new List<GameObject>();
+
+    private List<Vector3> poiOffsets = new List<Vector3>();
 
     [SerializeField]
     private BackToStartPositionButton startPositionButton = null;
 
     [SerializeField]
     private POISelectionDropdown poiSelectionDropdown = null;
+
+    [SerializeField]
+    private float poiScale = 0.2f;
 
     [System.NonSerialized]
     public List<string> conclusions = new List<string>(), indications = new List<string>(), featureTypes = new List<string>(), 
@@ -40,6 +51,8 @@ public class POIManager : MonoBehaviour
 
     private void Start()
     {
+        moveMap = map.GetComponent<MoveMap>();
+
         offset = table.transform.position;
         offset.y += table.transform.localScale.y / 2;
     }
@@ -70,23 +83,24 @@ public class POIManager : MonoBehaviour
             switch (dataType)
             {
                 case GameManager.DataType.Regular:
-                    POI = CreatePOI(POI, regularPOI, "Algemeen", i);
+                    POI = CreatePOI(POI, regularPOIColor, "Algemeen", i);
                     break;
                 case GameManager.DataType.Tax:
-                    POI = CreatePOI(POI, taxPOI, "Belasting", i);
+                    POI = CreatePOI(POI, taxPOIColor, "Belasting", i);
                     break;
                 case GameManager.DataType.Police:
-                    POI = CreatePOI(POI, policePOI, "Politie", i);
+                    POI = CreatePOI(POI, policePOIColor, "Politie", i);
                     break;
                 case GameManager.DataType.PPO:
-                    POI = CreatePOI(POI, ppoPOI, "OM", i);
+                    POI = CreatePOI(POI, ppoPOIColor, "OM", i);
                     break;
                 case GameManager.DataType.Bank:
-                    POI = CreatePOI(POI, bankPOI, "Bank", i);
+                    POI = CreatePOI(POI, bankPOIColor, "Bank", i);
                     break;
             }
             allPOIs.Add(POI);
             locationCoordinates.Add(coordinate);
+            poiOffsets.Add(new Vector3(Random.Range(-poiScale / 2, poiScale / 2), 0, Random.Range(-poiScale / 2, poiScale / 2)));
 
             int amountOfHits = 3;
             string[] amountOfHitsString = extraExplanations[i].Split(new string[] { "Hoeveelheid hits:" }, System.StringSplitOptions.None);
@@ -97,20 +111,21 @@ public class POIManager : MonoBehaviour
             amountOfHits -= 2;
             poiHits.Add(amountOfHits);
 
-            Vector3 newScale = POI.transform.localScale * 10;
-            POI.GetComponent<POIText>().UpdateScaleOfPoi(newScale, amountOfHits);
+            Vector3 newScale = POI.transform.localScale * (1 / poiScale);
+            POI.GetComponent<POIText>().UpdateScaleOfPoi(newScale, amountOfHits, moveMap.minimumScale, moveMap.maximumScale, poiScale);
         }
 
         startPositionButton.startPosition = locationCoordinates[0];
         poiSelectionDropdown.FillAllCoordinatesList(locationCoordinates, dutchNamesForRoles, featureTypes);
 
-        map.GetComponent<MoveMap>().SetNewMapCenter(locationCoordinates[0]);
+        moveMap.SetNewMapCenter(locationCoordinates[0]);
     }
 
-    private GameObject CreatePOI(GameObject POI, GameObject prefabPOI, string roleText, int index)
+    private GameObject CreatePOI(GameObject POI, Color32 color, string roleText, int index)
     {
         dutchNamesForRoles.Add(roleText);
-        POI = Instantiate(prefabPOI, Vector3.zero, Quaternion.identity);
+        POI = Instantiate(poiPrefab, Vector3.zero, Quaternion.identity);
+        POI.GetComponent<MeshRenderer>().material.color = color;
         POI.GetComponent<POIText>().SetText(roleText + ": " + featureTypes[index], extraExplanations[index]);
 
         return POI;
@@ -143,7 +158,7 @@ public class POIManager : MonoBehaviour
     {
         for (int i = 0; i < allPOIs.Count; i++)
         {
-            allPOIs[i].GetComponent<POIText>().UpdateScaleOfPoi(newScale, poiHits[i]);
+            allPOIs[i].GetComponent<POIText>().UpdateScaleOfPoi(newScale, poiHits[i], moveMap.minimumScale, moveMap.maximumScale, poiScale);
         }
         SetPOIMapPosition();
     }
@@ -157,7 +172,7 @@ public class POIManager : MonoBehaviour
             Vector3 position = Conversions.GeoToWorldPosition(locationCoordinates[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
             // * the scale of the building
             position = offset + (position * 0.02f * map.transform.localScale.x) + extraOffset;
-            allPOIs[i].transform.position = position;
+            allPOIs[i].transform.position = position + (poiOffsets[i] * map.transform.localScale.x);
             allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
 
             allPOIs[i].transform.SetParent(rotationObject.transform);

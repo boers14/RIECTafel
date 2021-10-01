@@ -25,6 +25,8 @@ public class DataGenerator : MonoBehaviour
     private List<List<string>> regularExtra = new List<List<string>>(), policeExtra = new List<List<string>>(), taxExtra = new List<List<string>>(), 
         ppoExtra = new List<List<string>>(), bankExtra = new List<List<string>>();
 
+    public int maxAmountOfHits = 10;
+
     private void Start()
     {
         string[] words = new string[]{"lorem", "ipsum", "dolor", "sit", "amet", "consectetuer",
@@ -96,7 +98,7 @@ public class DataGenerator : MonoBehaviour
         string featureAmount = "";
         if (dataType != GameManager.DataType.Regular)
         {
-            int hits = Random.Range(3, 11);
+            int hits = Random.Range(3, maxAmountOfHits + 1);
             featureAmount = "\nHoeveelheid hits: " + hits.ToString();
         }
 

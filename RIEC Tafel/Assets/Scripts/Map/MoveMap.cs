@@ -20,13 +20,15 @@ public class MoveMap : MonoBehaviour
 
     private InputDevice inputDevice;
 
-    private bool isTweening = false, clockWiseRotate = false;
+    private bool isTweening = false;
 
     [SerializeField]
     private POIManager poiManager = null;
 
     [SerializeField]
-    private float moveMapPower = 1, scalePower = 0.1f, minimumScale = 0.5f, maximumScale = 5;
+    private float moveMapPower = 1, scalePower = 0.1f;
+
+    public float minimumScale = 0.5f, maximumScale = 5;
 
     [SerializeField, Tooltip("UnityTileSize * 2 / 10")]
     private float maxTileOffset = 12f;
@@ -114,26 +116,25 @@ public class MoveMap : MonoBehaviour
 
         if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
         {
-            RotateMap(rotationPower, true);
+            ChangeMapScale(scalePower);
         }
         else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
         {
-            RotateMap(-rotationPower, false);
+            ChangeMapScale(-scalePower);
         }
 
         if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
         {
-            ChangeMapScale(-scalePower);
-        } else if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
+            RotateMap(rotationPower);
+        }
+        else if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
         {
-            ChangeMapScale(scalePower);
+            RotateMap(-rotationPower);
         }
     }
 
-    public void RotateMap(float rotation, bool clockWise)
+    public void RotateMap(float rotation)
     {
-        clockWiseRotate = clockWise;
-
         Vector3 nextRotation = transform.eulerAngles;
         nextRotation.y += rotation;
         isTweening = true;
@@ -223,9 +224,9 @@ public class MoveMap : MonoBehaviour
         SetScaleOfMap(nextScale);
     }
 
-    public void ChangeMapScaleToOne()
+    public void ChangeMapScaleToChosenScale(Vector3 chosenScale)
     {
-        SetScaleOfMap(Vector3.one);
+        SetScaleOfMap(chosenScale);
     }
 
     private void SetScaleOfMap(Vector3 nextScale)
@@ -265,19 +266,19 @@ public class MoveMap : MonoBehaviour
         offset = Vector3.zero;
         offset.y = table.transform.localScale.y / 2 + 0.01f;
         poiManager.SetExtraOffset(offset);
-        poiManager.SetPOIMapPosition();
+        poiManager.SetPOIsScale(oldScale);
         transform.position = table.position + offset;
-        transform.localScale = oldScale;
+        ChangeMapScaleToChosenScale(oldScale);
     }
 
     private void ComputerControls()
     {
         if (Input.GetKey(KeyCode.Z) && !isTweening)
         {
-            RotateMap(rotationPower, true);
+            RotateMap(rotationPower);
         } else if (Input.GetKey(KeyCode.X) && !isTweening)
         {
-            RotateMap(-rotationPower, false);
+            RotateMap(-rotationPower);
         }
 
         if (Input.GetKey(KeyCode.RightArrow) && !isTweening)

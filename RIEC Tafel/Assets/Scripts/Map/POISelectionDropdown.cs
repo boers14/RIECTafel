@@ -5,18 +5,16 @@ using UnityEngine.UI;
 using Mapbox.Utils;
 using TMPro;
 
-public class POISelectionDropdown : MonoBehaviour
+public class POISelectionDropdown : DropdownSelection
 {
     [SerializeField]
     private MoveMap map = null;
 
-    private TMP_Dropdown dropdown = null;
-
     private List<Vector2d> allPOICoordinates = new List<Vector2d>();
 
-    private void Start()
+    public override void Start()
     {
-        dropdown = GetComponent<TMP_Dropdown>();
+        base.Start();
         dropdown.ClearOptions();
         dropdown.onValueChanged.AddListener(SetPOIAsCenterCoordinate);
     }

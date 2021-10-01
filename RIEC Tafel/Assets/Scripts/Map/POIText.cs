@@ -15,6 +15,9 @@ public class POIText : MonoBehaviour
 
     private int amountOfHits = 0;
 
+    private float originalScale = 0, originalYvalue = 0, maxStandardDeviation = 0.19f,
+        minStandardDeviation = 0.425f;
+
     private void Start()
     {
         if (originalPos != Vector3.zero) { return; }
@@ -46,9 +49,8 @@ public class POIText : MonoBehaviour
     {
         float fontSize = poiText.fontSize;
         poiText.enableWordWrapping = true;
-        poiText.enableAutoSizing = false;
         poiText.fontSize = fontSize;
-        gameObject.AddComponent<ContentSizeFitter>();
+        poiText.gameObject.AddComponent<ContentSizeFitter>();
         poiText.text += "\n" + textExtend;
         StartCoroutine(ChangeTextPos());
     }
@@ -56,17 +58,20 @@ public class POIText : MonoBehaviour
     private IEnumerator ChangeTextPos()
     {
         yield return new WaitForEndOfFrame();
-        CalculateNewTextPos();
-    }
-
-    private void CalculateNewTextPos()
-    {
         Vector3 newPos = originalPos;
-        newPos.y += poiText.rectTransform.sizeDelta.y / amountOfHits;
+        newPos.y += poiText.rectTransform.sizeDelta.y / amountOfHits / (transform.localScale.x / originalScale);
         poiText.rectTransform.localPosition = newPos;
     }
 
-    public void UpdateScaleOfPoi(Vector3 newScale, int amountOfHits)
+    private void UnExpandText(HoverExitEventArgs args)
+    {
+        poiText.text = normalText;
+        Destroy(poiText.GetComponent<ContentSizeFitter>());
+        poiText.enableWordWrapping = false;
+        poiText.rectTransform.localPosition = originalPos;
+    }
+
+    public void UpdateScaleOfPoi(Vector3 newScale, int amountOfHits, float minMapScale, float maxMapScale, float poiScale)
     {
         if (originalPos == Vector3.zero)
         {
@@ -74,28 +79,38 @@ public class POIText : MonoBehaviour
 
             float completeReduction = 0;
             float addedReduction = 0.27f;
+            float maxStandardPowerReduction = 2.6f;
             for (int i = 0; i < amountOfHits - 1; i++)
             {
                 completeReduction += addedReduction;
                 addedReduction /= 3;
+                maxStandardDeviation /= 1.15f;
+                minStandardDeviation /= maxStandardPowerReduction;
+                maxStandardPowerReduction -= 0.35f;
             }
             originalPos.y -= completeReduction;
             this.amountOfHits = amountOfHits;
-        }
-        
-        poiText.transform.SetParent(null);
-        newScale.y *= amountOfHits;
-        transform.localScale = newScale / 10;
-        poiText.transform.SetParent(transform);
-        poiText.rectTransform.localPosition = originalPos;
-    }
 
-    private void UnExpandText(HoverExitEventArgs args)
-    {
-        poiText.text = normalText;
-        Destroy(gameObject.GetComponent<ContentSizeFitter>());
-        poiText.enableWordWrapping = false;
-        poiText.enableAutoSizing = true;
+            originalYvalue = originalPos.y;
+            originalScale = newScale.x * poiScale;
+        }
+
+        float addedY = 0;
+        if (newScale.x * poiScale < originalScale - 0.01f)
+        {
+            addedY = maxStandardDeviation * ((1f - newScale.x) / (1f - minMapScale));
+        } else if (newScale.x * poiScale > originalScale)
+        {
+            addedY -= minStandardDeviation * (newScale.x / maxMapScale);
+        }
+        originalPos.y = originalYvalue + addedY;
+
+        poiText.transform.SetParent(null);
+        newScale.y = newScale.y * 0.1f * amountOfHits;
+        newScale.x *= poiScale;
+        newScale.z *= poiScale;
+        transform.localScale = newScale;
+        poiText.transform.SetParent(transform);
         poiText.rectTransform.localPosition = originalPos;
     }
 

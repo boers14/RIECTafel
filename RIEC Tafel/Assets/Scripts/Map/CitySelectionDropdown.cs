@@ -4,16 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class CitySelectionDropdown : MonoBehaviour
+public class CitySelectionDropdown : DropdownSelection
 {
     [SerializeField]
     private NetworkManagerRIECTafel networkManager = null;
 
-    private TMP_Dropdown dropdown = null;
-
-    private void Start()
+    public override void Start()
     {
-        dropdown = GetComponent<TMP_Dropdown>();
+        base.Start();
         dropdown.onValueChanged.AddListener(SetCityForNetworkManager);
         SetCityForNetworkManager(0);
     }

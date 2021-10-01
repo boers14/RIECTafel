@@ -4,16 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class DataTypeDropdown : MonoBehaviour
+public class DataTypeDropdown : DropdownSelection
 {
     [SerializeField]
     private POIManager poiManager = null;
 
-    private TMP_Dropdown dropdown = null;
-
-    private void Start()
+    public override void Start()
     {
-        dropdown = GetComponent<TMP_Dropdown>();
+        base.Start();
         dropdown.onValueChanged.AddListener(ChangePlayerDataType);
 
         dropdown.ClearOptions();

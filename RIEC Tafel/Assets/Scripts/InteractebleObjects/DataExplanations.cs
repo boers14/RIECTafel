@@ -38,8 +38,7 @@ public class DataExplanations : GrabbebleObjects
     [SerializeField]
     private string titleText = "";
 
-    [System.NonSerialized]
-    public bool dataSetIsOn = false;
+    private bool dataSetIsOn = false, poiSelectionDropdownIsHovered = false;
 
     [SerializeField]
     private DataExplanations otherExplanation = null;
@@ -58,7 +57,8 @@ public class DataExplanations : GrabbebleObjects
 
     public override void Update()
     {
-        if (title.text != titleText || !dataSetIsOn) { return; }
+        if (title.text != titleText || !dataSetIsOn || poiConclusionSelectionDropdown.transform.childCount == 4 || poiSelectionDropdownIsHovered) 
+        { return; }
 
         changeFontSizeTimer -= Time.deltaTime;
         base.Update();
@@ -162,5 +162,15 @@ public class DataExplanations : GrabbebleObjects
             explantionText.rectTransform.localPosition = oldPos;
             MoveImage(Vector2.one, explantionText.gameObject, explanationCenterPos, 25, true);
         }
+    }
+
+    public void SetPOISelectionDropDownToHovered()
+    {
+        poiSelectionDropdownIsHovered = true;
+    }
+
+    public void SetPOISelectionDropDownToIsNotHovered()
+    {
+        poiSelectionDropdownIsHovered = false;
     }
 }

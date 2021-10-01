@@ -24,7 +24,7 @@ public class BackToStartPositionButton : MonoBehaviour
 
     private void ChangeMapPositionAndScale()
     {
-        mapMovement.ChangeMapScaleToOne();
+        mapMovement.ChangeMapScaleToChosenScale(Vector3.one);
         mapMovement.SetNewMapCenter(startPosition);
     }
 }

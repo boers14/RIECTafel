@@ -1291,6 +1291,7 @@ GameObject:
   - component: {fileID: 191425543}
   - component: {fileID: 191425542}
   - component: {fileID: 191425546}
+  - component: {fileID: 191425547}
   m_Layer: 0
   m_Name: Right Ray Interactor
   m_TagString: Untagged
@@ -1644,9 +1645,9 @@ MonoBehaviour:
   m_ModelSelectTransition: 
   m_ModelDeSelectTransition: 
   m_ControllerNode: 5
-  m_SelectUsage: 3
-  m_ActivateUsage: 3
-  m_UIPressUsage: 3
+  m_SelectUsage: 2
+  m_ActivateUsage: 2
+  m_UIPressUsage: 6
   m_AxisToPressThreshold: 0.1
   m_RotateAnchorLeft: 0
   m_RotateAnchorRight: 0
@@ -1665,6 +1666,77 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcecbc4f5fd5e7b429ae86be5caef102, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &191425547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 191425540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 178bed710b361de41b4f77dac8268e8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectsToHit:
+  - {fileID: 771404722}
+  objectHoverEnterEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 252577279}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 473423778}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  objectHoverExitEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 473423778}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToIsNotHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 252577279}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToIsNotHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  mask:
+    serializedVersion: 2
+    m_Bits: 251
 --- !u!1 &247065378
 GameObject:
   m_ObjectHideFlags: 0
@@ -1719,7 +1791,7 @@ GameObject:
   - component: {fileID: 252577275}
   - component: {fileID: 252577274}
   - component: {fileID: 252577279}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Conclusions
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3383,7 +3455,7 @@ GameObject:
   - component: {fileID: 473423780}
   - component: {fileID: 473423779}
   - component: {fileID: 473423778}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Indications
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4066,6 +4138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 610f2d4668ce2d94986f3ad04b039156, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characteristics: 320
   map: {fileID: 1783358203}
 --- !u!114 &633192238
 MonoBehaviour:
@@ -4532,14 +4605,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   map: {fileID: 1538595737}
   table: {fileID: 1970949413}
-  regularPOI: {fileID: 6848736350869708305, guid: cb7f8a1e92251364b9156b08135f9a80, type: 3}
-  policePOI: {fileID: 6848736350869708305, guid: fb8a2c59d47517141885a2170a4a095d, type: 3}
-  taxPOI: {fileID: 6848736350869708305, guid: 0f89e17314c035b47a2075f700e843d7, type: 3}
-  ppoPOI: {fileID: 6848736350869708305, guid: e50c1bfaa505d7b4da5dc04b8b4973cf, type: 3}
-  bankPOI: {fileID: 6848736350869708305, guid: 0a393e81a373c564ea77ff4409c1ec88, type: 3}
+  poiPrefab: {fileID: 6848736350869708305, guid: cb7f8a1e92251364b9156b08135f9a80, type: 3}
   emptyTransform: {fileID: 2112735124966847659, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
+  regularPOIColor:
+    serializedVersion: 2
+    rgba: 2516647680
+  policePOIColor:
+    serializedVersion: 2
+    rgba: 2533294080
+  taxPOIColor:
+    serializedVersion: 2
+    rgba: 2516582655
+  ppoPOIColor:
+    serializedVersion: 2
+    rgba: 2533294335
+  bankPOIColor:
+    serializedVersion: 2
+    rgba: 2516647935
   startPositionButton: {fileID: 91434131}
   poiSelectionDropdown: {fileID: 633192237}
+  poiScale: 0.25
 --- !u!1 &746133754
 GameObject:
   m_ObjectHideFlags: 0
@@ -4722,6 +4807,8 @@ GameObject:
   - component: {fileID: 771404726}
   - component: {fileID: 771404725}
   - component: {fileID: 771404724}
+  - component: {fileID: 771404727}
+  - component: {fileID: 771404728}
   m_Layer: 5
   m_Name: Data explanation dropdown
   m_TagString: Untagged
@@ -4773,7 +4860,7 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_HighlightedColor: {r: 0.88235295, g: 0.88235295, b: 0.88235295, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
@@ -4849,6 +4936,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 771404722}
   m_CullTransparentMesh: 1
+--- !u!114 &771404727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 771404722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2ced95095874f4f8fe99bf38448d07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characteristics: 320
+--- !u!65 &771404728
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 771404722}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 157.91942, y: 27.932653, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &779866331
 GameObject:
   m_ObjectHideFlags: 0
@@ -5523,6 +5636,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e395eee8ab8a6e44da6fe3defcb81add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characteristics: 320
   networkManager: {fileID: 1799655088}
 --- !u!222 &855159789
 CanvasRenderer:
@@ -6334,6 +6448,7 @@ MonoBehaviour:
   - Eigenaar
   - Financiering
   - Transacties
+  maxAmountOfHits: 10
 --- !u!4 &1087588105
 Transform:
   m_ObjectHideFlags: 0
@@ -7054,6 +7169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1096f203e1a2c54fb30c7cfd67edf6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characteristics: 320
   poiManager: {fileID: 699483035}
 --- !u!114 &1252171352
 MonoBehaviour:
@@ -8146,7 +8262,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114196496685157712, guid: 5bb46bae81bf04608ac699be504c5e66, type: 3}
       propertyPath: _imagery._layerProperty.sourceOptions.layerSource.Id
-      value: mapbox://styles/nets2000/ckto7bfv90zrd19padxup32c0
+      value: mapbox://styles/nets2000/cku5ia2jn2m9w18mno29ci74l
       objectReference: {fileID: 0}
     - target: {fileID: 114196496685157712, guid: 5bb46bae81bf04608ac699be504c5e66, type: 3}
       propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.size
@@ -9228,7 +9344,7 @@ MonoBehaviour:
   moveMapPower: 0.05
   scalePower: 0.01
   minimumScale: 0.3
-  maximumScale: 7
+  maximumScale: 5
   maxTileOffset: 12
   emptyTransform: {fileID: 2112735124966847659, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
   rightRayInteractor: {fileID: 191425544}
@@ -9752,6 +9868,7 @@ GameObject:
   - component: {fileID: 1960750906}
   - component: {fileID: 1960750905}
   - component: {fileID: 1960750909}
+  - component: {fileID: 1960750910}
   m_Layer: 0
   m_Name: Left Ray Interactor
   m_TagString: Untagged
@@ -10105,9 +10222,9 @@ MonoBehaviour:
   m_ModelSelectTransition: 
   m_ModelDeSelectTransition: 
   m_ControllerNode: 4
-  m_SelectUsage: 3
-  m_ActivateUsage: 3
-  m_UIPressUsage: 3
+  m_SelectUsage: 2
+  m_ActivateUsage: 2
+  m_UIPressUsage: 6
   m_AxisToPressThreshold: 0.1
   m_RotateAnchorLeft: 0
   m_RotateAnchorRight: 0
@@ -10126,6 +10243,77 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcecbc4f5fd5e7b429ae86be5caef102, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1960750910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1960750903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 178bed710b361de41b4f77dac8268e8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectsToHit:
+  - {fileID: 771404722}
+  objectHoverEnterEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 252577279}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 473423778}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  objectHoverExitEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 473423778}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToIsNotHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 252577279}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToIsNotHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  mask:
+    serializedVersion: 2
+    m_Bits: 251
 --- !u!1001 &1970949412
 PrefabInstance:
   m_ObjectHideFlags: 0
