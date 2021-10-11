@@ -41,13 +41,21 @@ public class POIManager : MonoBehaviour
     private POISelectionDropdown poiSelectionDropdown = null;
 
     [SerializeField]
+    private POIEnableDropdown poiEnableDropdown = null;
+
+    [SerializeField]
     private float poiScale = 0.2f;
 
     [System.NonSerialized]
-    public List<string> conclusions = new List<string>(), indications = new List<string>(), featureTypes = new List<string>(), 
+    public List<string> conclusions = new List<string>(), indications = new List<string>(), featureAmounts = new List<string>(), 
         extraExplanations = new List<string>(), dutchNamesForRoles = new List<string>();
 
     private List<int> poiHits = new List<int>();
+
+    private List<POIArrows> poiArrows = new List<POIArrows>();
+
+    [System.NonSerialized]
+    public List<bool> poiVisibility = new List<bool>();
 
     private void Start()
     {
@@ -55,9 +63,12 @@ public class POIManager : MonoBehaviour
 
         offset = table.transform.position;
         offset.y += table.transform.localScale.y / 2;
+
+        POIArrows[] poiArrows = FindObjectsOfType<POIArrows>();
+        this.poiArrows.AddRange(poiArrows);
     }
 
-    public void SetLocationData(List<string> locationData, List<string> dataTypes, List<string> neededFeatureTypes, List<string> neededExtraInfo, 
+    public void SetLocationData(List<string> locationData, List<string> dataTypes, List<string> neededAmounts, List<string> neededExtraInfo, 
         List<string> conclusions, List<string> indications)
     {
         poiHits.Clear();
@@ -69,7 +80,7 @@ public class POIManager : MonoBehaviour
         }
         allPOIs.Clear();
 
-        featureTypes = neededFeatureTypes;
+        featureAmounts = neededAmounts;
         extraExplanations = neededExtraInfo;
         this.conclusions = conclusions;
         this.indications = indications;
@@ -101,9 +112,10 @@ public class POIManager : MonoBehaviour
             allPOIs.Add(POI);
             locationCoordinates.Add(coordinate);
             poiOffsets.Add(new Vector3(Random.Range(-poiScale / 2, poiScale / 2), 0, Random.Range(-poiScale / 2, poiScale / 2)));
+            poiVisibility.Add(true);
 
             int amountOfHits = 3;
-            string[] amountOfHitsString = extraExplanations[i].Split(new string[] { "Hoeveelheid hits:" }, System.StringSplitOptions.None);
+            string[] amountOfHitsString = neededAmounts[i].Split(new string[] { "Hoeveelheid hits:" }, System.StringSplitOptions.None);
             if (amountOfHitsString.Length > 1)
             {
                 amountOfHits = int.Parse(amountOfHitsString[1]);
@@ -116,7 +128,8 @@ public class POIManager : MonoBehaviour
         }
 
         startPositionButton.startPosition = locationCoordinates[0];
-        poiSelectionDropdown.FillAllCoordinatesList(locationCoordinates, dutchNamesForRoles, featureTypes);
+        poiSelectionDropdown.FillAllCoordinatesList(locationCoordinates, dutchNamesForRoles, featureAmounts);
+        poiEnableDropdown.FillDropDownList(allPOIs, dutchNamesForRoles, this);
 
         moveMap.SetNewMapCenter(locationCoordinates[0]);
     }
@@ -126,7 +139,7 @@ public class POIManager : MonoBehaviour
         dutchNamesForRoles.Add(roleText);
         POI = Instantiate(poiPrefab, Vector3.zero, Quaternion.identity);
         POI.GetComponent<MeshRenderer>().material.color = color;
-        POI.GetComponent<POIText>().SetText(roleText + ": " + featureTypes[index], extraExplanations[index]);
+        POI.GetComponent<POIText>().SetText(roleText + ": " + featureAmounts[index], extraExplanations[index]);
 
         return POI;
     }
@@ -139,6 +152,7 @@ public class POIManager : MonoBehaviour
         }
 
         CheckPOIVisibility();
+        SetPOIArrowText();
     }
 
     public void ParentPOIs(Transform parentObject, bool rotateText)
@@ -169,10 +183,10 @@ public class POIManager : MonoBehaviour
         for (int i = 0; i < allPOIs.Count; i++)
         {
             allPOIs[i].transform.SetParent(null);
-            Vector3 position = Conversions.GeoToWorldPosition(locationCoordinates[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
+            Vector3 pos = Conversions.GeoToWorldPosition(locationCoordinates[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
             // * the scale of the building
-            position = offset + (position * 0.02f * map.transform.localScale.x) + extraOffset;
-            allPOIs[i].transform.position = position + (poiOffsets[i] * map.transform.localScale.x);
+            pos = offset + (pos * 0.02f * map.transform.localScale.x) + extraOffset + (poiOffsets[i] * map.transform.localScale.x);
+            allPOIs[i].transform.position = pos;
             allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
 
             allPOIs[i].transform.SetParent(rotationObject.transform);
@@ -188,6 +202,15 @@ public class POIManager : MonoBehaviour
         Destroy(rotationObject);
 
         CheckPOIVisibility();
+        SetPOIArrowText();
+    }
+
+    public void SetPOIArrowText()
+    {
+        for (int i = 0; i < poiArrows.Count; i++)
+        {
+            poiArrows[i].SetArrowText(allPOIs, dutchNamesForRoles, poiVisibility);
+        }
     }
 
     public void SetExtraOffset(Vector3 mapOffset)
@@ -200,6 +223,8 @@ public class POIManager : MonoBehaviour
     {
         for (int i = 0; i < allPOIs.Count; i++)
         {
+            if (!poiVisibility[i]) { continue; }
+
             if (allPOIs[i].transform.position.x < table.position.x - table.localScale.x / 2 ||
                 allPOIs[i].transform.position.x > table.position.x + table.localScale.x / 2 ||
                 allPOIs[i].transform.position.z < table.position.z - table.localScale.z / 2 ||
@@ -231,5 +256,12 @@ public class POIManager : MonoBehaviour
         }
 
         return closestPOI;
+    }
+
+    public void ChangePOIManagerTransform(Transform transform)
+    {
+        this.transform.position = transform.position;
+        this.transform.rotation = transform.rotation;
+        table.rotation = transform.rotation;
     }
 }

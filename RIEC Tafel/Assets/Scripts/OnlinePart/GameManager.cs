@@ -17,7 +17,7 @@ public class GameManager : NetworkBehaviour
     private List<DataType> dataTypes = new List<DataType>();
 
     private List<string> allLocations = new List<string>(), conclusions = new List<string>(), indications = new List<string>(), 
-        featureTypes = new List<string>(), extraExplanations = new List<string>();
+        featureAmounts = new List<string>(), extraExplanations = new List<string>();
 
     [Command]
     public void CmdStartRetrieveCityData(string cityName)
@@ -51,13 +51,13 @@ public class GameManager : NetworkBehaviour
                 string[] location = allLocationData[i].Split(new string[] { "/*datatype*/" }, System.StringSplitOptions.None);
                 allLocations.Add(location[0]);
 
-                string[] dataType = location[1].Split(new string[] { "/*featuretype*/" }, System.StringSplitOptions.None);
+                string[] dataType = location[1].Split(new string[] { "/*featureAmount*/" }, System.StringSplitOptions.None);
                 dataTypes.Add((DataType)System.Enum.Parse(typeof(DataType), dataType[0]));
 
-                string[] featureType = dataType[1].Split(new string[] { "/*extraDataExplanation*/" }, System.StringSplitOptions.None);
-                featureTypes.Add(featureType[0]);
+                string[] featureAmount = dataType[1].Split(new string[] { "/*extraDataExplanation*/" }, System.StringSplitOptions.None);
+                featureAmounts.Add(featureAmount[0]);
 
-                string[] extraExplanation = featureType[1].Split(new string[] { "/*conclusion*/" }, System.StringSplitOptions.None);
+                string[] extraExplanation = featureAmount[1].Split(new string[] { "/*conclusion*/" }, System.StringSplitOptions.None);
                 extraExplanations.Add(extraExplanation[0]);
 
                 string[] conclusionAndIndication = extraExplanation[1].Split(new string[] { "/*indication*/" }, System.StringSplitOptions.None);
@@ -81,23 +81,23 @@ public class GameManager : NetworkBehaviour
         DataType requiredDatatype = (DataType)System.Enum.Parse(typeof(DataType), dataType);
         List<string> locationData = new List<string>();
         List<string> dataTypes = new List<string>();
-        List<string> neededFeatureTypes = new List<string>();
+        List<string> neededAmounts = new List<string>();
         List<string> neededExtraInfo = new List<string>();
         List<string> neededConclusions = new List<string>();
         List<string> neededIndications = new List<string>();
 
-        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededFeatureTypes, neededExtraInfo, DataType.Regular);
+        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, DataType.Regular);
 
         if (requiredDatatype != DataType.Regular)
         {
-            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededFeatureTypes, neededExtraInfo, requiredDatatype);
+            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, requiredDatatype);
         }
 
-        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededFeatureTypes, neededExtraInfo, neededConclusions, neededIndications, playerNumber);
+        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, playerNumber);
     }
 
     private void AddDataToLists(List<string> locationData, List<string> dataTypes, List<string> neededConclusions, List<string> neededIndications,
-        List<string> neededFeatureTypes, List<string> neededExtraInfo, DataType requiredDatatype)
+        List<string> neededAmounts, List<string> neededExtraInfo, DataType requiredDatatype)
     {
         for (int i = 0; i < this.dataTypes.Count; i++)
         {
@@ -107,7 +107,7 @@ public class GameManager : NetworkBehaviour
                 locationData.Add(allLocations[i]);
                 neededConclusions.Add(conclusions[i]);
                 neededIndications.Add(indications[i]);
-                neededFeatureTypes.Add(featureTypes[i]);
+                neededAmounts.Add(featureAmounts[i]);
                 neededExtraInfo.Add(extraExplanations[i]);
             }
         }

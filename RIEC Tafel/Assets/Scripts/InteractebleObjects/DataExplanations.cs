@@ -66,6 +66,14 @@ public class DataExplanations : GrabbebleObjects
 
     public override void ChangeImageScale(float scalePower, GameObject image, Vector3 vector3, float extraYMovement)
     {
+        if (scalePower > 0)
+        {
+            scalePower = 1;
+        } else
+        {
+            scalePower = -1;
+        }
+
         if (changeFontSizeTimer > 0 || explantionText.fontSize == maximumScale && scalePower > 0 || 
             explantionText.fontSize == minimumScale && scalePower < 0) { return; }
         changeFontSizeTimer = 0.3f;
@@ -89,7 +97,7 @@ public class DataExplanations : GrabbebleObjects
         List<string> options = new List<string>();
         for (int i = 0; i < poiManager.locationCoordinates.Count; i++)
         {
-            options.Add(poiManager.dutchNamesForRoles[i] + ": " + poiManager.featureTypes[i] + ": " + poiManager.locationCoordinates[i].ToString());
+            options.Add(poiManager.dutchNamesForRoles[i] + ": " + poiManager.featureAmounts[i] + ": " + poiManager.locationCoordinates[i].ToString());
         }
         poiConclusionSelectionDropdown.AddOptions(options);
 

@@ -20,15 +20,25 @@ public class GrabbebleObjects : MonoBehaviour
     [SerializeField]
     private float distanceFactor = 0.3f;
 
-    [SerializeField]
-    private InputDeviceCharacteristics characteristics = InputDeviceCharacteristics.None;
-
     public float scalePower = 0.1f, minimumScale = 1, maximumScale = 5, movementPower = 0.1f;
 
-    private InputDevice inputDevice;
+    private List<InputDevice> inputDevices = new List<InputDevice>();
+
+    [SerializeField]
+    private int indexOfUIInHandRays = 2;
+
+    private List<PlayerGrab> hands = new List<PlayerGrab>();
+
+    private List<Vector3> prevHandPosses = new List<Vector3>();
+    private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
 
     public virtual void Start()
     {
+        for (int i = 0; i < 2; i++)
+        {
+            prevHandPosses.Add(Vector3.zero);
+        }
+
         originalScale = transform.localScale;
 
         rigidbody = GetComponent<Rigidbody>();
@@ -38,29 +48,71 @@ public class GrabbebleObjects : MonoBehaviour
         SelectEnterEventArgs selectEnterEventArgs = new SelectEnterEventArgs();
         grabInteractable.selectEntered.AddListener((selectEnterEventArgs) => OnGrabEnter(selectEnterEventArgs, true));
         grabInteractable.selectExited.AddListener(OnSelectExit);
-
-        inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
     }
 
     public virtual void Update()
     {
-        if (!inputDevice.isValid)
+        if (inputDevices.Count < 2)
         {
-            inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
             return;
         }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool XButton) && XButton)
+        if (hands[0].oneButtonControl)
         {
-            ChangeImageScale(scalePower, null, Vector3.zero, 0);
-        } else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool YButton) && YButton)
-        {
-            ChangeImageScale(-scalePower, null, Vector3.zero, 0);
-        }
+            int hoverCount = 0;
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
+            for (int i = 0; i < inputDevices.Count; i++)
+            {
+                if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
+                {
+                    if (handRays[i].objectsAreHovered[indexOfUIInHandRays])
+                    {
+                        hoverCount++;
+                    }
+                }
+            }
+
+            for (int i = 0; i < inputDevices.Count; i++)
+            {
+                if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
+                {
+                    if (handRays[i].objectsAreHovered[indexOfUIInHandRays])
+                    {
+                        if (hoverCount != inputDevices.Count)
+                        {
+                            Vector3 movement = hands[i].transform.position - prevHandPosses[i];
+                            movement.y *= -1000;
+                            movement.x *= -1000;
+                            movement.z = 0;
+                            MoveImage(movement, null, Vector3.zero, 0, false);
+                        }
+                        else
+                        {
+                            float oldDist = Vector3.Distance(prevHandPosses[0], prevHandPosses[1]);
+                            float newDist = Vector3.Distance(hands[0].transform.position, hands[1].transform.position);
+                            ChangeImageScale((newDist - oldDist), null, Vector3.zero, 0);
+                        }
+                    }
+                }
+
+                prevHandPosses[i] = hands[i].transform.position;
+            }
+        }
+        else
         {
-            MoveImage(steerStickInput, null, Vector3.zero, 0, false);
+            if (inputDevices[1].TryGetFeatureValue(CommonUsages.primaryButton, out bool XButton) && XButton)
+            {
+                ChangeImageScale(scalePower, null, Vector3.zero, 0);
+            }
+            else if (inputDevices[1].TryGetFeatureValue(CommonUsages.secondaryButton, out bool YButton) && YButton)
+            {
+                ChangeImageScale(-scalePower, null, Vector3.zero, 0);
+            }
+
+            if (inputDevices[1].TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
+            {
+                MoveImage(steerStickInput, null, Vector3.zero, 0, false);
+            }
         }
     }
 
@@ -135,9 +187,10 @@ public class GrabbebleObjects : MonoBehaviour
     private void ReturnToPos()
     {
         float time = Vector3.Distance(transform.position, originalPos) * distanceFactor;
-        iTween.MoveTo(gameObject, iTween.Hash("position", originalPos, "time", time, "easetype", iTween.EaseType.linear));
-        iTween.RotateTo(gameObject, iTween.Hash("rotation", originalRot, "time", time, "easetype", iTween.EaseType.linear,
+        originalPos.y += 0.075f;
+        iTween.MoveTo(gameObject, iTween.Hash("position", originalPos, "time", time, "easetype", iTween.EaseType.linear,
             "oncomplete", "TurnGravityBackOn", "oncompletetarget", gameObject));
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", originalRot, "time", time * 0.8f, "easetype", iTween.EaseType.linear));
         rigidbody.useGravity = false;
         isPlayingTween = true;
     }
@@ -171,5 +224,12 @@ public class GrabbebleObjects : MonoBehaviour
         transform.localScale = originalScale;
         rigidbody.useGravity = true;
         ReturnToPos();
+    }
+
+    public void SetInputDevices(List<InputDevice> inputDevices, List<PlayerGrab> hands, List<PlayerHandRays> handRays)
+    {
+        this.inputDevices = inputDevices;
+        this.hands = hands;
+        this.handRays = handRays;
     }
 }

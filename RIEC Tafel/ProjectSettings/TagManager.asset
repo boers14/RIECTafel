@@ -7,6 +7,8 @@ TagManager:
   - GameManager
   - PlayerConnection
   - NetworkManager
+  - DontDisableLineOnGrab
+  - DontDisableHandOnGrab
   layers:
   - Default
   - TransparentFX

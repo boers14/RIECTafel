@@ -11,16 +11,16 @@ public class MoveMap : MonoBehaviour
     [SerializeField]
     private Transform table = null;
 
-    private Vector3 offset = Vector3.zero, oldScale = Vector3.one;
+    private Vector3 offset = Vector3.zero, oldScale = Vector3.one, oldDir = Vector3.zero;
 
     private AbstractMap abstractMap = null;
 
     [SerializeField]
-    private InputDeviceCharacteristics characteristics = InputDeviceCharacteristics.None;
+    private InputDeviceCharacteristics rightCharacteristics = InputDeviceCharacteristics.None, leftCharacteristics = InputDeviceCharacteristics.None;
 
-    private InputDevice inputDevice;
+    private List<InputDevice> inputDevices = new List<InputDevice>();
 
-    private bool isTweening = false;
+    private bool isTweening = false, clockwise = true;
 
     [SerializeField]
     private POIManager poiManager = null;
@@ -50,10 +50,28 @@ public class MoveMap : MonoBehaviour
     [System.NonSerialized]
     public Transform playerConnectionTransform = null;
 
-    private int rotationCounter = 0;
+    private int rotationCounter = 0, indexOfTableInHandRays = 1;
+
+    [SerializeField]
+    private List<PlayerGrab> hands = new List<PlayerGrab>();
+
+    private List<Vector3> prevHandPosses = new List<Vector3>();
+    private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
+
+    private List<GrabbebleObjects> grabbebleObjects = new List<GrabbebleObjects>();
+    private List<int> rotationCounterList = new List<int>();
 
     private void Start()
     {
+        for (int i = 0; i < hands.Count; i++)
+        {
+            prevHandPosses.Add(Vector3.zero);
+            handRays.Add(hands[i].GetComponent<PlayerHandRays>());
+        }
+
+        GrabbebleObjects[] grabbebleObjects = FindObjectsOfType<GrabbebleObjects>();
+        this.grabbebleObjects.AddRange(grabbebleObjects);
+
         lineVisual = rightRayInteractor.GetComponent<LineRenderer>();
 
         originalParent = transform.parent;
@@ -64,7 +82,8 @@ public class MoveMap : MonoBehaviour
 
         abstractMap = GetComponent<AbstractMap>();
         abstractMap.SetPlacementType(MapPlacementType.AtTileCenter);
-        inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
+
+        GrabControllers();
 
         transform.position = table.position + offset;
     }
@@ -73,9 +92,9 @@ public class MoveMap : MonoBehaviour
     {
         ComputerControls();
 
-        if (!inputDevice.isValid)
+        if (inputDevices.Count < 2)
         {
-            inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
+            GrabControllers();
             return;
         }
 
@@ -84,52 +103,92 @@ public class MoveMap : MonoBehaviour
             return;
         }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
+        if (hands[0].oneButtonControl)
         {
-            if (playerConnectionTransform)
+            int hoverCount = 0;
+
+            for (int i = 0; i < inputDevices.Count; i++)
             {
-                float xInput = steerStickInput.x;
-                switch (playerConnectionTransform.eulerAngles.y)
+                if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
                 {
-                    case 90:
-                        steerStickInput.x = steerStickInput.y;
-                        steerStickInput.y = -xInput;
-                        break;
-                    case 180:
-                        steerStickInput.x = -steerStickInput.x;
-                        steerStickInput.y = -steerStickInput.y;
-                        break;
-                    case 270:
-                        steerStickInput.x = -steerStickInput.y;
-                        steerStickInput.y = xInput;
-                        break;
+                    if (handRays[i].objectsAreHovered[indexOfTableInHandRays])
+                    {
+                        hoverCount++;
+                    }
                 }
             }
 
-            MoveTheMap(steerStickInput, true);
-        }
+            for (int i = 0; i < inputDevices.Count; i++)
+            {
+                if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
+                {
+                    if (handRays[i].objectsAreHovered[indexOfTableInHandRays])
+                    {
+                        if (hoverCount != inputDevices.Count)
+                        {
+                            if (inputDevices[i].TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
+                            {
+                                Vector3 newAngle = hands[i].transform.position;
+                                newAngle.y = 0;
+                                Vector3 oldAngle = prevHandPosses[i];
+                                oldAngle.y = 0;
+                                float angle = Vector3.Angle(oldAngle, newAngle);
 
-        if (lineVisual.colorGradient.alphaKeys[0].alpha != 0)
-        {
-            return;
-        }
+                                Vector3 dir = oldAngle - newAngle;
+                                Vector3 cross = Vector3.Cross(oldDir, dir);
+                                oldDir = dir;
+                                if (Vector3.Dot(cross, Vector3.up) < 0)
+                                {
+                                    CheckRotationList(1, -1, false);
+                                } else
+                                {
+                                    CheckRotationList(-1, 1, true);
+                                }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
-        {
-            ChangeMapScale(scalePower);
-        }
-        else if (inputDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
-        {
-            ChangeMapScale(-scalePower);
-        }
+                                if (!clockwise)
+                                {
+                                    angle *= -1;
+                                }
 
-        if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
-        {
-            RotateMap(rotationPower);
+                                RotateMap(angle * 50);
+                            }
+                            else
+                            {
+                                Vector3 movement = hands[i].transform.position - prevHandPosses[i];
+                                movement.y = movement.z * 150;
+                                movement.x *= 100;
+                                movement.z = 0;
+                                MoveTheMap(movement, true);
+                            }
+                        } else
+                        {
+                            float oldDist = Vector3.Distance(prevHandPosses[0], prevHandPosses[1]);
+                            float newDist = Vector3.Distance(hands[0].transform.position, hands[1].transform.position);
+                            ChangeMapScale((newDist - oldDist));
+                        }
+                    }
+                }
+
+                prevHandPosses[i] = hands[i].transform.position;
+            }
         }
-        else if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
+        else
         {
-            RotateMap(-rotationPower);
+            TwoControllerControls();
+        }
+    }
+
+    private void CheckRotationList(int contains, int add, bool clockwise)
+    {
+        if (rotationCounterList.Contains(contains))
+        {
+            rotationCounterList.Clear();
+        }
+        rotationCounterList.Add(add);
+        if (rotationCounterList.Count >= 5)
+        {
+            this.clockwise = clockwise;
+            rotationCounterList.Clear();
         }
     }
 
@@ -221,15 +280,15 @@ public class MoveMap : MonoBehaviour
             nextScale.z = maximumScale;
         }
 
-        SetScaleOfMap(nextScale);
+        SetScaleOfMap(nextScale, true);
     }
 
     public void ChangeMapScaleToChosenScale(Vector3 chosenScale)
     {
-        SetScaleOfMap(chosenScale);
+        SetScaleOfMap(chosenScale, false);
     }
 
-    private void SetScaleOfMap(Vector3 nextScale)
+    private void SetScaleOfMap(Vector3 nextScale, bool limitMovement)
     {
         transform.localScale = nextScale;
         oldScale = nextScale;
@@ -239,7 +298,7 @@ public class MoveMap : MonoBehaviour
         poiManager.SetPOIsScale(nextScale);
 
         MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x, moveMapPower),
-            BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z, moveMapPower)), false);
+            BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z, moveMapPower)), limitMovement);
     }
 
     private void CheckIfMapIsStillOnTable()
@@ -269,6 +328,57 @@ public class MoveMap : MonoBehaviour
         poiManager.SetPOIsScale(oldScale);
         transform.position = table.position + offset;
         ChangeMapScaleToChosenScale(oldScale);
+    }
+
+    private void TwoControllerControls()
+    {
+        if (inputDevices[0].TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
+        {
+            if (playerConnectionTransform)
+            {
+                float xInput = steerStickInput.x;
+                switch (playerConnectionTransform.eulerAngles.y)
+                {
+                    case 90:
+                        steerStickInput.x = steerStickInput.y;
+                        steerStickInput.y = -xInput;
+                        break;
+                    case 180:
+                        steerStickInput.x = -steerStickInput.x;
+                        steerStickInput.y = -steerStickInput.y;
+                        break;
+                    case 270:
+                        steerStickInput.x = -steerStickInput.y;
+                        steerStickInput.y = xInput;
+                        break;
+                }
+            }
+
+            MoveTheMap(steerStickInput, true);
+        }
+
+        if (lineVisual.colorGradient.alphaKeys[0].alpha != 0)
+        {
+            return;
+        }
+
+        if (inputDevices[0].TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
+        {
+            ChangeMapScale(scalePower);
+        }
+        else if (inputDevices[0].TryGetFeatureValue(CommonUsages.secondaryButton, out bool BButton) && BButton)
+        {
+            ChangeMapScale(-scalePower);
+        }
+
+        if (inputDevices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
+        {
+            RotateMap(rotationPower);
+        }
+        else if (inputDevices[0].TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
+        {
+            RotateMap(-rotationPower);
+        }
     }
 
     private void ComputerControls()
@@ -309,6 +419,31 @@ public class MoveMap : MonoBehaviour
         if (Input.GetKey(KeyCode.V) && !isTweening)
         {
             ChangeMapScale(scalePower);
+        }
+    }
+
+    private void GrabControllers()
+    {
+        inputDevices.Clear();
+        AddControllersToList(rightCharacteristics);
+        AddControllersToList(leftCharacteristics);
+
+        if (inputDevices.Count == 2)
+        {
+            for (int i = 0; i < grabbebleObjects.Count; i++)
+            {
+                grabbebleObjects[i].SetInputDevices(inputDevices, hands, handRays);
+            }
+        }
+    }
+
+    private void AddControllersToList(InputDeviceCharacteristics characteristics)
+    {
+        List<InputDevice> inputDeviceList = new List<InputDevice>();
+        InputDevices.GetDevicesWithCharacteristics(characteristics, inputDeviceList);
+        if (inputDeviceList.Count > 0)
+        {
+            inputDevices.Add(inputDeviceList[0]);
         }
     }
 }

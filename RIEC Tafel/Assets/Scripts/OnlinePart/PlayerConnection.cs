@@ -29,8 +29,7 @@ public class PlayerConnection : NetworkBehaviour
 
         tag = "PlayerConnection";
         FetchVRPlayer();
-        poiManager.transform.position = transform.position;
-        poiManager.transform.rotation = transform.rotation;
+        //poiManager.ChangePOIManagerTransform(transform);
         poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
         CmdSetPlayerName("bob" + Random.Range(0, 100));
         for (int i = 0; i < transform.childCount; i++)
@@ -77,13 +76,13 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededFeatureTypes,
+    public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
         List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber)
     {
         if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
 
         FetchVRPlayer();
-        poiManager.SetLocationData(locationData, dataTypes, neededFeatureTypes, neededExtraInfo, conclusions, indications);
+        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications);
     }
 
     [Command]

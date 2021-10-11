@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerHandRays : MonoBehaviour
 {
@@ -11,11 +12,17 @@ public class PlayerHandRays : MonoBehaviour
     [SerializeField]
     private List<UnityEvent> objectHoverEnterEvents = new List<UnityEvent>(), objectHoverExitEvents = new List<UnityEvent>();
 
-    private List<bool> objectsAreHovered = new List<bool>();
+    [SerializeField]
+    private List<bool> drawRayLine = new List<bool>();
+
+    [System.NonSerialized]
+    public List<bool> objectsAreHovered = new List<bool>();
     private List<int> frameCounters = new List<int>();
 
     [SerializeField]
     private LayerMask mask = 0;
+
+    private XRInteractorLineVisual lineRenderer = null;
 
     private void Start()
     {
@@ -24,6 +31,8 @@ public class PlayerHandRays : MonoBehaviour
             objectsAreHovered.Add(false);
             frameCounters.Add(0);
         }
+
+        lineRenderer = GetComponent<XRInteractorLineVisual>();
     } 
 
     private void FixedUpdate()
@@ -35,8 +44,16 @@ public class PlayerHandRays : MonoBehaviour
                 int index = objectsToHit.IndexOf(hit.transform.gameObject);
                 if (!objectsAreHovered[index])
                 {
+                    if (drawRayLine[index])
+                    {
+                        ChangeInvalidColorGradientOfLineRenderer(1);
+                    }
+
                     objectsAreHovered[index] = true;
-                    objectHoverEnterEvents[index].Invoke();
+                    if (objectHoverEnterEvents[index] != null)
+                    {
+                        objectHoverEnterEvents[index].Invoke();
+                    }
                     frameCounters[index] = 2;
                 } else
                 {
@@ -53,9 +70,28 @@ public class PlayerHandRays : MonoBehaviour
                 if (frameCounters[i] <= 0)
                 {
                     objectsAreHovered[i] = false;
-                    objectHoverExitEvents[i].Invoke();
+
+                    if (drawRayLine[i])
+                    {
+                        ChangeInvalidColorGradientOfLineRenderer(0);
+                    }
+
+                    if (objectHoverExitEvents[i] != null)
+                    {
+                        objectHoverExitEvents[i].Invoke();
+                    }
                 }
             }
         }
+    }
+
+    private void ChangeInvalidColorGradientOfLineRenderer(float alpha)
+    {
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(Color.white, 0.0f), new GradientColorKey(Color.white, 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
+        );
+        lineRenderer.invalidColorGradient = gradient;
     }
 }

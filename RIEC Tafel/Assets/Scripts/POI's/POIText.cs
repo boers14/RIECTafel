@@ -18,6 +18,8 @@ public class POIText : MonoBehaviour
     private float originalScale = 0, originalYvalue = 0, maxStandardDeviation = 0.19f,
         minStandardDeviation = 0.425f;
 
+    private bool expanded = false;
+
     private void Start()
     {
         if (originalPos != Vector3.zero) { return; }
@@ -47,10 +49,14 @@ public class POIText : MonoBehaviour
 
     private void ExpandText(HoverEnterEventArgs args)
     {
+        if (expanded) { return; }
+
+        expanded = true;
         float fontSize = poiText.fontSize;
-        poiText.enableWordWrapping = true;
+        poiText.enableAutoSizing = false;
         poiText.fontSize = fontSize;
         poiText.gameObject.AddComponent<ContentSizeFitter>();
+        poiText.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         poiText.text += "\n" + textExtend;
         StartCoroutine(ChangeTextPos());
     }
@@ -59,15 +65,16 @@ public class POIText : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
         Vector3 newPos = originalPos;
-        newPos.y += poiText.rectTransform.sizeDelta.y / amountOfHits / (transform.localScale.x / originalScale);
+        newPos.y += poiText.rectTransform.sizeDelta.y / (amountOfHits * 2) / (transform.localScale.x / originalScale);
         poiText.rectTransform.localPosition = newPos;
     }
 
     private void UnExpandText(HoverExitEventArgs args)
     {
+        expanded = false;
         poiText.text = normalText;
         Destroy(poiText.GetComponent<ContentSizeFitter>());
-        poiText.enableWordWrapping = false;
+        poiText.enableAutoSizing = true;
         poiText.rectTransform.localPosition = originalPos;
     }
 
@@ -99,7 +106,8 @@ public class POIText : MonoBehaviour
         if (newScale.x * poiScale < originalScale - 0.01f)
         {
             addedY = maxStandardDeviation * ((1f - newScale.x) / (1f - minMapScale));
-        } else if (newScale.x * poiScale > originalScale)
+        }
+        else if (newScale.x * poiScale > originalScale)
         {
             addedY -= minStandardDeviation * (newScale.x / maxMapScale);
         }

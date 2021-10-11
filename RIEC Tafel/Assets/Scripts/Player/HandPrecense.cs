@@ -31,21 +31,6 @@ public class HandPrecense : MonoBehaviour
         }
 
         UpdateHandAnimations();
-
-        //if (inputDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
-        //{
-        //    print(primaryButton);
-        //}
-        //Grip is under button trigger upper button
-        //if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float trigger) && trigger >= 0.1f)
-        //{
-        //    print(trigger);
-        //}
-
-        //if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisInput) && axisInput != Vector2.zero)
-        //{
-        //    print(axisInput);
-        //}
     }
 
     private void UpdateHandAnimations()

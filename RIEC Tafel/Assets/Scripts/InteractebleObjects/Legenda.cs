@@ -15,13 +15,13 @@ public class Legenda : GrabbebleObjects
     {
         originalImageScale = legendaImage.rectTransform.localScale;
         originalPosition = legendaImage.rectTransform.localPosition;
-        legendaImage.enabled = false;
+        legendaImage.gameObject.SetActive(false);
         base.Start();
     }
 
     public override void Update()
     {
-        if (!legendaImage.enabled) { return; }
+        if (!legendaImage.gameObject.activeSelf) { return; }
         base.Update();
     }
 
@@ -41,12 +41,12 @@ public class Legenda : GrabbebleObjects
         legendaImage.rectTransform.localPosition = originalPosition;
         legendaImage.rectTransform.localScale = originalImageScale;
         legendaImage.transform.SetAsLastSibling();
-        legendaImage.enabled = true;
+        legendaImage.gameObject.SetActive(true);
     }
 
     public override void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
         base.OnSelectExit(selectExitEventArgs);
-        legendaImage.enabled = false;
+        legendaImage.gameObject.SetActive(false);
     }
 }

@@ -11,4 +11,10 @@ public static class BaseCalculations
         float possDiff = newPos - offsetParameter;
         return possDiff / movementPower;
     }
+
+    public static float Round(float value, int digits)
+    {
+        float mult = Mathf.Pow(10, digits);
+        return Mathf.Round(value * mult) / mult;
+    }
 }
