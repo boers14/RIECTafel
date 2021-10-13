@@ -40,6 +40,8 @@ public class GameManager : NetworkBehaviour
             allLocations.Clear();
             conclusions.Clear();
             indications.Clear();
+            featureAmounts.Clear();
+            extraExplanations.Clear();
 
             string allData = www.text;
             allData = allData.Remove(0, 1);

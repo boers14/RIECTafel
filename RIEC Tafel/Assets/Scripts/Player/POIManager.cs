@@ -24,8 +24,7 @@ public class POIManager : MonoBehaviour
     [SerializeField]
     private GameObject poiPrefab = null, emptyTransform = null;
 
-    [SerializeField]
-    private Color32 regularPOIColor = Color.green, policePOIColor = Color.blue, taxPOIColor = Color.red, ppoPOIColor = Color.magenta, 
+    public Color32 regularPOIColor = Color.green, policePOIColor = Color.blue, taxPOIColor = Color.red, ppoPOIColor = Color.magenta, 
         bankPOIColor = Color.yellow;
 
     private Vector3 offset = Vector3.zero, extraOffset = Vector3.zero;
@@ -138,7 +137,9 @@ public class POIManager : MonoBehaviour
     {
         dutchNamesForRoles.Add(roleText);
         POI = Instantiate(poiPrefab, Vector3.zero, Quaternion.identity);
-        POI.GetComponent<MeshRenderer>().material.color = color;
+        Color32 selectedColor = color;
+        selectedColor.a = 150;
+        POI.GetComponent<MeshRenderer>().material.color = selectedColor;
         POI.GetComponent<POIText>().SetText(roleText + ": " + featureAmounts[index], extraExplanations[index]);
 
         return POI;

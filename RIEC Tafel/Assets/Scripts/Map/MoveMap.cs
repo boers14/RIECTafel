@@ -55,7 +55,7 @@ public class MoveMap : MonoBehaviour
     [SerializeField]
     private List<PlayerGrab> hands = new List<PlayerGrab>();
 
-    private List<Vector3> prevHandPosses = new List<Vector3>();
+    private List<Vector3> prevHandPosses = new List<Vector3>(), prevHandRotations = new List<Vector3>();
     private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
 
     private List<GrabbebleObjects> grabbebleObjects = new List<GrabbebleObjects>();
@@ -66,6 +66,7 @@ public class MoveMap : MonoBehaviour
         for (int i = 0; i < hands.Count; i++)
         {
             prevHandPosses.Add(Vector3.zero);
+            prevHandRotations.Add(Vector3.zero);
             handRays.Add(hands[i].GetComponent<PlayerHandRays>());
         }
 
@@ -128,10 +129,8 @@ public class MoveMap : MonoBehaviour
                         {
                             if (inputDevices[i].TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
                             {
-                                Vector3 newAngle = hands[i].transform.position;
-                                newAngle.y = 0;
-                                Vector3 oldAngle = prevHandPosses[i];
-                                oldAngle.y = 0;
+                                Vector3 newAngle = hands[i].transform.eulerAngles;
+                                Vector3 oldAngle = prevHandRotations[i];
                                 float angle = Vector3.Angle(oldAngle, newAngle);
 
                                 Vector3 dir = oldAngle - newAngle;
@@ -150,7 +149,7 @@ public class MoveMap : MonoBehaviour
                                     angle *= -1;
                                 }
 
-                                RotateMap(angle * 50);
+                                RotateMap(angle * 1f);
                             }
                             else
                             {
@@ -170,6 +169,7 @@ public class MoveMap : MonoBehaviour
                 }
 
                 prevHandPosses[i] = hands[i].transform.position;
+                prevHandRotations[i] = hands[i].transform.eulerAngles;
             }
         }
         else
@@ -194,6 +194,8 @@ public class MoveMap : MonoBehaviour
 
     public void RotateMap(float rotation)
     {
+        if (rotation > 5 || rotation < -5) { return; }
+
         Vector3 nextRotation = transform.eulerAngles;
         nextRotation.y += rotation;
         isTweening = true;

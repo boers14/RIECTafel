@@ -16,6 +16,9 @@ public class PlayerConnection : NetworkBehaviour
 
     private POIManager poiManager = null;
 
+    [SyncVar]
+    private GameManager.DataType dataType = GameManager.DataType.Regular;
+
     [SyncVar, System.NonSerialized]
     public int playerNumber = -1;
 
@@ -29,9 +32,9 @@ public class PlayerConnection : NetworkBehaviour
 
         tag = "PlayerConnection";
         FetchVRPlayer();
-        //poiManager.ChangePOIManagerTransform(transform);
+        poiManager.ChangePOIManagerTransform(transform);
         poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
-        CmdSetPlayerName("bob" + Random.Range(0, 100));
+
         for (int i = 0; i < transform.childCount; i++)
         {
             transform.GetChild(i).gameObject.SetActive(false);
@@ -66,6 +69,37 @@ public class PlayerConnection : NetworkBehaviour
     {
         yield return new WaitForSeconds(3f);
         CmdRequestLocationData(poiManager.dataType.ToString());
+
+        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        for (int i = 0; i < currentConnections.Length; i++)
+        {
+            if (currentConnections[i] == this) { continue; }
+
+            MeshRenderer[] bodyParts = currentConnections[i].GetComponentsInChildren<MeshRenderer>();
+            ChangeBodyColorOfPlayer(currentConnections[i].dataType, bodyParts);
+        }
+
+        string nameString = "";
+        switch (poiManager.dataType)
+        {
+            case GameManager.DataType.Regular:
+                nameString += "Algemeen";
+                break;
+            case GameManager.DataType.Police:
+                nameString += "Politie";
+                break;
+            case GameManager.DataType.Tax:
+                nameString += "Belasting";
+                break;
+            case GameManager.DataType.PPO:
+                nameString += "OM";
+                break;
+            case GameManager.DataType.Bank:
+                nameString += "Bank";
+                break;
+        }
+        nameString += ":\nVictor de Roy van Zuydenwijn " + Random.Range(0, 100);
+        CmdSetPlayerName(nameString, poiManager.dataType.ToString());
     }
 
     [Command]
@@ -86,17 +120,55 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
-    public void CmdSetPlayerName(string name)
+    public void CmdSetPlayerName(string name, string dataType)
     {
         playerName = name;
-        RpcSetPlayerName(name);
+        RpcSetPlayerName(name, dataType, playerNumber);
     }
 
     [ClientRpc]
-    private void RpcSetPlayerName(string name)
+    private void RpcSetPlayerName(string name, string dataType, int playerNumber)
     {
+        FetchVRPlayer();
         playerName = name;
         nameText.text = playerName;
+
+        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        PlayerConnection player = playerConnections.Find(i => i.playerNumber == playerNumber);
+        MeshRenderer[] bodyParts = player.GetComponentsInChildren<MeshRenderer>();
+        player.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
+        ChangeBodyColorOfPlayer(player.dataType, bodyParts);
+    }
+
+    private void ChangeBodyColorOfPlayer(GameManager.DataType dataType, MeshRenderer[] bodyParts)
+    {
+        switch (dataType)
+        {
+            case GameManager.DataType.Regular:
+                ChangeBodyColor(bodyParts, poiManager.regularPOIColor);
+                break;
+            case GameManager.DataType.Police:
+                ChangeBodyColor(bodyParts, poiManager.policePOIColor);
+                break;
+            case GameManager.DataType.Tax:
+                ChangeBodyColor(bodyParts, poiManager.taxPOIColor);
+                break;
+            case GameManager.DataType.PPO:
+                ChangeBodyColor(bodyParts, poiManager.ppoPOIColor);
+                break;
+            case GameManager.DataType.Bank:
+                ChangeBodyColor(bodyParts, poiManager.bankPOIColor);
+                break;
+        }
+    }
+
+    private void ChangeBodyColor(MeshRenderer[] bodyParts, Color32 bodyColor)
+    {
+        for (int i = 0; i < bodyParts.Length; i++)
+        {
+            bodyParts[i].material.color = bodyColor;
+        }
     }
 
     private void FetchVRPlayer()

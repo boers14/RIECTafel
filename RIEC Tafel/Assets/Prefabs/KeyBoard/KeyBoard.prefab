@@ -1,0 +1,151 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2370482548155795126
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2370482548155795128}
+  - component: {fileID: 2370482548155795127}
+  m_Layer: 0
+  m_Name: KeyBoard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2370482548155795128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2370482548155795126}
+  m_LocalRotation: {x: -0.30070576, y: 0, z: 0, w: 0.953717}
+  m_LocalPosition: {x: 33.33, y: 5.149617, z: 5.855681}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: -35, y: 0, z: 0}
+--- !u!114 &2370482548155795127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2370482548155795126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5eb2afc3a7af6f4183a9ae85294cbdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: {fileID: 6395610488218556825, guid: 90617b246f158154bac05009359e1f38, type: 3}
+  keyBoardKeysInString:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 0
+  - Backspace
+  - q
+  - w
+  - e
+  - r
+  - t
+  - y
+  - u
+  - i
+  - o
+  - p
+  - '-'
+  - =
+  - a
+  - s
+  - d
+  - f
+  - g
+  - h
+  - j
+  - k
+  - l
+  - ;
+  - Enter
+  - Shift
+  - z
+  - x
+  - c
+  - v
+  - b
+  - n
+  - m
+  - ','
+  - .
+  - /
+  - Spatie
+  shiftKeyBoardKeysInString:
+  - '!'
+  - '@'
+  - '#'
+  - $
+  - '%'
+  - ^
+  - '&'
+  - '*'
+  - (
+  - )
+  - Backspace
+  - Q
+  - W
+  - E
+  - R
+  - T
+  - Y
+  - U
+  - I
+  - O
+  - P
+  - _
+  - +
+  - A
+  - S
+  - D
+  - F
+  - G
+  - H
+  - J
+  - K
+  - L
+  - ':'
+  - Enter
+  - Shift
+  - Z
+  - X
+  - C
+  - V
+  - B
+  - N
+  - M
+  - <
+  - '>'
+  - '?'
+  - Spatie
+  specialKeys:
+  - Backspace
+  - Enter
+  - Spatie
+  - Shift
+  specialKeyBoardKeys:
+  - {fileID: 6395610488218556825, guid: b0d6f659c75d7d24a9056887ef28d50c, type: 3}
+  - {fileID: 7490011326563616990, guid: 0b6971a5c3ddad84c9ea3631e4f02eb8, type: 3}
+  - {fileID: 541526474164961361, guid: f888b99e984d4124d81589b4293938ea, type: 3}
+  - {fileID: 1514167858139113311, guid: 75b3375d65d5f0549bb221c03748769f, type: 3}
+  keysPerRow: 0c0000000c0000000c0000000c00000005000000

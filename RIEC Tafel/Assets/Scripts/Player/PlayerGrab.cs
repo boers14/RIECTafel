@@ -71,11 +71,13 @@ public class PlayerGrab : MonoBehaviour
 
         if (grabbedObject.GetComponent<XRGrabInteractable>())
         {
-            followHand = false;
             grabbedObject.GetComponent<XRGrabInteractable>().selectEntered.Invoke(new SelectEnterEventArgs());
-            iTween.MoveTo(grabbedObject.gameObject, iTween.Hash("position", transform.position, "time",
-                grabbedObject.GetComponent<XRGrabInteractable>().attachEaseInTime, "easetype", iTween.EaseType.linear, 
+            if (grabbedObject.GetComponent<XRGrabInteractable>().trackPosition)
+            {
+                iTween.MoveTo(grabbedObject.gameObject, iTween.Hash("position", transform.position, "time",
+                grabbedObject.GetComponent<XRGrabInteractable>().attachEaseInTime, "easetype", iTween.EaseType.linear,
                 "oncomplete", "StartGrabbedObjectFollowHand", "oncompletetarget", gameObject));
+            }
         }
 
         if (grabbedObject.tag == "DontDisableLineOnGrab")
@@ -99,6 +101,7 @@ public class PlayerGrab : MonoBehaviour
 
     private void OnDetach()
     {
+        followHand = false;
         grabbedObject.SetParent(grabbedParentObject);
         grabCooldown = cooldown;
         if (grabbedObject.GetComponent<XRGrabInteractable>())
