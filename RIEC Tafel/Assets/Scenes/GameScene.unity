@@ -5130,7 +5130,6 @@ MonoBehaviour:
   keyBoard: {fileID: 1321054235}
   notesSet: {fileID: 1027683964}
   notesEditText: {fileID: 1532409091}
-  notesTitle: {fileID: 1679272845}
 --- !u!114 &614271964
 MonoBehaviour:
   m_ObjectHideFlags: 0

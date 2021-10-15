@@ -15,20 +15,16 @@ public class Notes : GrabbebleObjects
     [SerializeField]
     private EditebleText notesEditText = null;
 
-    [SerializeField]
-    private TMP_Text notesTitle = null;
-
     private TMP_Text notesText = null;
 
-    private Vector3 notesTitlePos = Vector3.zero, notesCenterPos = Vector3.zero;
+    private Vector3 notesCenterPos = Vector3.zero;
 
-    private float originalYPosOfExplanationText = 0, oldYSize = 0, changeFontSizeTimer = 0;
+    private float changeFontSizeTimer = 0;
 
     public override void Start()
     {
         base.Start();
         notesText = notesEditText.GetComponent<TMP_Text>();
-        notesTitlePos = notesTitle.rectTransform.position;
         notesCenterPos = notesText.rectTransform.localPosition;
     }
 
@@ -78,7 +74,6 @@ public class Notes : GrabbebleObjects
         if (changeFontSizeTimer > 0 || notesText.fontSize == maximumScale && scalePower > 0 ||
             notesText.fontSize == minimumScale && scalePower < 0 || keyBoard.keyBoardIsHovered) { return; }
         changeFontSizeTimer = 0.3f;
-        oldYSize = (float)notesText.textInfo.lineCount * (notesText.fontSize * 1.15f);
         notesText.fontSize += (int)scalePower;
         MoveImage(Vector3.one, notesText.gameObject, notesCenterPos, 0, true);
     }

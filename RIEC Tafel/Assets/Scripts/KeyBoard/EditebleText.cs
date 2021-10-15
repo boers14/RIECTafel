@@ -10,7 +10,7 @@ public class EditebleText : MonoBehaviour
     private bool showEditPlace = true;
 
     [System.NonSerialized]
-    public bool isCurrentlyEdited = true;
+    public bool isCurrentlyEdited = false;
 
     private TMP_Text text = null;
 

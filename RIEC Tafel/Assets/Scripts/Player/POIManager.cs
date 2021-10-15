@@ -188,7 +188,6 @@ public class POIManager : MonoBehaviour
             // * the scale of the building
             pos = offset + (pos * 0.02f * map.transform.localScale.x) + extraOffset + (poiOffsets[i] * map.transform.localScale.x);
             allPOIs[i].transform.position = pos;
-            allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
 
             allPOIs[i].transform.SetParent(rotationObject.transform);
         }
@@ -199,6 +198,7 @@ public class POIManager : MonoBehaviour
         for (int i = 0; i < allPOIs.Count; i++)
         {
             allPOIs[i].transform.SetParent(null);
+            allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
         }
         Destroy(rotationObject);
 
