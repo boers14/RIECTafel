@@ -22,7 +22,7 @@ public class DataExplanations : GrabbebleObjects
     private Vector3 originalPosition = Vector3.zero, originalImageScale = Vector3.one, explanationTitlePos = Vector3.zero,
         explanationCenterPos = Vector3.zero;
 
-    private float originalYPosOfExplanationText = 0, oldYSize = 0;
+    private float originalYPosOfExplanationText = 0, oldYSize = 0, changeFontSizeTimer = 0;
 
     private enum DataSetNeeded
     {
@@ -32,8 +32,6 @@ public class DataExplanations : GrabbebleObjects
 
     [SerializeField]
     private DataSetNeeded dataSetNeeded = DataSetNeeded.Conclusion;
-
-    private float changeFontSizeTimer = 0;
 
     [SerializeField]
     private string titleText = "";

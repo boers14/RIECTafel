@@ -24,6 +24,8 @@ public class PlayerHandRays : MonoBehaviour
 
     private XRInteractorLineVisual lineRenderer = null;
 
+    private PlayerGrab playerGrab = null;
+
     private void Start()
     {
         for (int i = 0; i < objectsToHit.Count; i++)
@@ -33,6 +35,7 @@ public class PlayerHandRays : MonoBehaviour
         }
 
         lineRenderer = GetComponent<XRInteractorLineVisual>();
+        playerGrab = GetComponent<PlayerGrab>();
     } 
 
     private void FixedUpdate()
@@ -44,7 +47,7 @@ public class PlayerHandRays : MonoBehaviour
                 int index = objectsToHit.IndexOf(hit.transform.gameObject);
                 if (!objectsAreHovered[index])
                 {
-                    if (drawRayLine[index])
+                    if (drawRayLine[index] && playerGrab.oneButtonControl)
                     {
                         ChangeInvalidColorGradientOfLineRenderer(1);
                     }
@@ -71,7 +74,7 @@ public class PlayerHandRays : MonoBehaviour
                 {
                     objectsAreHovered[i] = false;
 
-                    if (drawRayLine[i])
+                    if (drawRayLine[i] && playerGrab.oneButtonControl)
                     {
                         ChangeInvalidColorGradientOfLineRenderer(0);
                     }

@@ -20,7 +20,7 @@ public class KeyBoard : MonoBehaviour
     private List<int> keysPerRow = new List<int>();
 
     [System.NonSerialized]
-    public bool shiftState = true;
+    public bool shiftState = true, keyBoardIsHovered = false;
 
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
@@ -54,6 +54,14 @@ public class KeyBoard : MonoBehaviour
             AddInputDevices();
         }
 
+        if (shiftState)
+        {
+            CheckIfKeyboardIsHovered(shiftKeyBoardKeys);
+        } else
+        {
+            CheckIfKeyboardIsHovered(normalKeyBoardKeys);
+        }
+
         for (int i = 0; i < inputDevices.Count; i++)
         {
             if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool button) && button && !usedInputDevices[i])
@@ -79,6 +87,20 @@ public class KeyBoard : MonoBehaviour
                 usedInputDevices[i] = false;
             }
         }
+    }
+
+    private void CheckIfKeyboardIsHovered(List<KeyBoardKey> keyBoardKeys)
+    {
+        bool isHovered = false;
+        for (int i = 0; i < keyBoardKeys.Count; i++)
+        {
+            if (keyBoardKeys[i].isHovered)
+            {
+                isHovered = true;
+            }
+        }
+
+        keyBoardIsHovered = isHovered;
     }
 
     private KeyBoardKey GetSelectedKey(KeyBoardKey selectedKey, List<KeyBoardKey> keyBoardKeys, int index)
