@@ -11,16 +11,12 @@ public class DataGenerator : MonoBehaviour
     [SerializeField]
     private AbstractMap map = null;
 
-    [SerializeField]
-    private TMP_Dropdown dataTypeDropdown = null, cityDropdown = null;
-
     private bool isProcessingAddingData = false;
 
     private List<string> loremIpsumWords = new List<string>();
 
     [SerializeField]
-    private List<string> regularFeats = new List<string>(), policeFeats = new List<string>(), taxFeats = new List<string>(), 
-        ppoFeats = new List<string>(), bankFeats = new List<string>();
+    private List<string> feats = new List<string>();
 
     public int maxAmountOfHits = 10;
 
@@ -44,7 +40,7 @@ public class DataGenerator : MonoBehaviour
     {
         isProcessingAddingData = true;
 
-        string cityName = cityDropdown.options[cityDropdown.value].text;
+        string cityName = ConnectionManager.cityName;
         cityName = cityName.ToLower();
         cityName = System.Text.RegularExpressions.Regex.Replace(cityName, @"\s+", "");
 
@@ -56,8 +52,6 @@ public class DataGenerator : MonoBehaviour
         locationPoint.y = xLocationValue;
         string location = locationPoint.ToString();
 
-        string dataTypeString = dataTypeDropdown.options[dataTypeDropdown.value].text;
-        GameManager.DataType dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataTypeString);
         int hits = Random.Range(3, maxAmountOfHits + 1);
         string featureAmount = "Hoeveelheid hits: " + hits.ToString();
         string extraDataExplanation = "";
@@ -67,24 +61,7 @@ public class DataGenerator : MonoBehaviour
             string addedFeat = "";
             while (addedFeat == "" || extraDataExplanation.Contains(addedFeat))
             {
-                switch (dataType)
-                {
-                    case GameManager.DataType.Regular:
-                        addedFeat = regularFeats[Random.Range(0, regularFeats.Count)];
-                        break;
-                    case GameManager.DataType.Police:
-                        addedFeat = policeFeats[Random.Range(0, policeFeats.Count)];
-                        break;
-                    case GameManager.DataType.Tax:
-                        addedFeat = taxFeats[Random.Range(0, taxFeats.Count)];
-                        break;
-                    case GameManager.DataType.PPO:
-                        addedFeat = ppoFeats[Random.Range(0, ppoFeats.Count)];
-                        break;
-                    case GameManager.DataType.Bank:
-                        addedFeat = bankFeats[Random.Range(0, bankFeats.Count)];
-                        break;
-                }
+                addedFeat = feats[Random.Range(0, feats.Count)];
             }
 
             extraDataExplanation += addedFeat;
@@ -97,7 +74,7 @@ public class DataGenerator : MonoBehaviour
         string conclusion = LoremIpsum(8, 15, 10, 40, 2);
         string indication = LoremIpsum(8, 15, 10, 40, 2);
 
-        string completeDataset = location + "/*datatype*/" + dataTypeString + "/*featureAmount*/" + featureAmount + "/*extraDataExplanation*/" +
+        string completeDataset = location + "/*datatype*/" + LogInManager.datatype + "/*featureAmount*/" + featureAmount + "/*extraDataExplanation*/" +
              extraDataExplanation + "/*conclusion*/" + conclusion + "/*indication*/" + indication + "/*endOfRow*/";
 
         WWWForm form = new WWWForm();

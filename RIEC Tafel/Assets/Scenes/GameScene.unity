@@ -6606,73 +6606,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   map: {fileID: 1538595737}
-  dataTypeDropdown: {fileID: 0}
-  cityDropdown: {fileID: 0}
-  regularFeats:
-  - Moord
-  - Diefstal
-  - Witwas zaak
-  - IIligale drugs handel
-  - Geweld
-  - Vernieling
-  - Discriminatie
-  - Valse aangifte
-  - Seksueel misdrijf
-  - Oplichting
-  - Vuurwapens
-  - Verkeersmisdrijf
-  policeFeats:
-  - Diefstal en inbraak met geweld
-  - Diefstal/verduistering en inbraak
-  - Diefstal en inbraak zonder geweld
-  - Vernieling aan auto
-  - Vernieling aan openbaar gebouw
-  - Vernieling middel openb vervoer
-  - Openlijk geweld tegen persoon
-  - Openlijke geweld tegen goed
-  - Huisvredebreuk
-  - Lokaalvredebreuk
-  - Computervredebreuk
-  - Discriminatie
-  taxFeats:
-  - Buitelands R.P.
+  feats:
+  - Buitenlands R.P.
   - Snelle groeier
   - VT
+  - Inkomen
   - Geen hypotheek
   - '>3 hypotheken'
   - Hypotheeknemer NP
-  - Hypotheeknemer Niet erkend NP
+  - Hypotheeknemer Niet erkend RP
   - Hypotheeknemer buitenland
   - Hypotheeknemer risicoland
   - Veiling
   - ABC-Transactie
-  - Werkloos
-  ppoFeats:
-  - Diefstal en inbraak met geweld
-  - Diefstal/verduistering en inbraak
-  - Diefstal en inbraak zonder geweld
-  - Vernieling aan auto
-  - Vernieling aan openbaar gebouw
-  - Vernieling middel openb vervoer
-  - Openlijk geweld tegen persoon
-  - Openlijke geweld tegen goed
-  - Huisvredebreuk
-  - Lokaalvredebreuk
-  - Computervredebreuk
-  - Discriminatie
-  bankFeats:
-  - Buitelands R.P.
-  - Snelle groeier
-  - VT
-  - Geen hypotheek
-  - '>3 hypotheken'
-  - Hypotheeknemer NP
-  - Hypotheeknemer Niet erkend NP
-  - Hypotheeknemer buitenland
-  - Hypotheeknemer risicoland
-  - Veiling
-  - ABC-Transactie
-  - Werkloos
   maxAmountOfHits: 10
 --- !u!4 &1087588105
 Transform:
