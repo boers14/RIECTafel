@@ -1,57 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using Mirror;
 
-public class ConnectButton : MonoBehaviour
+public class ConnectButton : SwitchSceneButton
 {
     [SerializeField]
-    private NetworkManager networkManager = null;
+    private ConnectionManager.ConnectFunction buttonFunction = 0;
 
-    public enum ButtonFunction
+    public override void SwitchScene()
     {
-        ServerClient,
-        Server,
-        Client,
-        None
-    }
-
-    [SerializeField]
-    private ButtonFunction buttonFunction = ButtonFunction.None;
-
-    [SerializeField]
-    private StopConnectButton stopConnectButton = null;
-
-    private void Start()
-    {
-        GetComponent<Button>().onClick.AddListener(PerformConnectFunction);
-    }
-
-    private void PerformConnectFunction()
-    {
-        switch (buttonFunction)
-        {
-            case ButtonFunction.ServerClient:
-                if (Application.platform != RuntimePlatform.WebGLPlayer)
-                {
-                    networkManager.StartHost();
-                }
-                break;
-            case ButtonFunction.Server:
-                if (Application.platform != RuntimePlatform.WebGLPlayer)
-                {
-                    networkManager.StartServer();
-                }
-                break;
-            case ButtonFunction.Client:
-                networkManager.StartClient();
-                break;
-            case ButtonFunction.None:
-                print("Forgot to set button function!");
-                break;
-        }
-
-        stopConnectButton.SetButtonFunction(buttonFunction, false);
+        ConnectionManager.connectFunction = buttonFunction;
+        base.SwitchScene();
     }
 }

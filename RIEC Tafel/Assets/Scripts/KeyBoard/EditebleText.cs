@@ -12,33 +12,41 @@ public class EditebleText : MonoBehaviour
     [System.NonSerialized]
     public bool isCurrentlyEdited = false;
 
-    private TMP_Text text = null;
-
     private float blinkTimer = 0, blinkSwitch = 0.5f;
 
     private float prevYSize = 0;
 
-    private void Start()
+    private RectTransform rectTransform = null;
+
+    private bool isInputField = false, changeYPos = true;
+
+    public virtual void Start()
     {
-        text = GetComponent<TMP_Text>();
+        rectTransform = GetComponent<RectTransform>();
+        if (GetComponent<TMP_InputField>())
+        {
+            isInputField = true;
+            changeYPos = false;
+        }
     }
 
     private void FixedUpdate()
     {
-        if (text.rectTransform.sizeDelta.y != prevYSize)
+        if (rectTransform.sizeDelta.y != prevYSize && changeYPos)
         {
-            float difInSize = text.rectTransform.sizeDelta.y - prevYSize;
-            Vector3 newPos = text.rectTransform.localPosition;
+            float difInSize = rectTransform.sizeDelta.y - prevYSize;
+            Vector3 newPos = rectTransform.localPosition;
             if (difInSize > 0)
             {
                 newPos.y -= difInSize / 2;
-            } else
+            }
+            else
             {
                 newPos.y += difInSize / 2 * -1;
             }
-            text.rectTransform.localPosition = newPos;
-            prevYSize = text.rectTransform.sizeDelta.y;
-        } 
+            rectTransform.localPosition = newPos;
+            prevYSize = rectTransform.sizeDelta.y;
+        }
 
         if (!isCurrentlyEdited || !showEditPlace) { return; }
 
@@ -46,13 +54,17 @@ public class EditebleText : MonoBehaviour
         if (blinkTimer >= blinkSwitch)
         {
             blinkTimer = 0;
-            if (text.text.EndsWith("|"))
+            string text = GetText();
+
+            if (text.EndsWith("|"))
             {
-                text.text = text.text.Remove(text.text.Length - 1);
+                text = text.Remove(text.Length - 1);
             } else
             {
-                text.text += "|";
+                text += "|";
             }
+
+            SetText(text);
         }
     }
 
@@ -70,38 +82,64 @@ public class EditebleText : MonoBehaviour
 
     public void EditText(string addedText, bool removeText, KeyBoard keyBoard)
     {
+        string text = GetText();
+
         if (!removeText)
         {
-            if (text.text.EndsWith("|"))
+            if (text.EndsWith("|"))
             {
-                text.text = text.text.Remove(text.text.Length - 1);
-                text.text += addedText + "|";
+                text = text.Remove(text.Length - 1);
+                text += addedText + "|";
             }
             else
             {
-                text.text += addedText;
+                text += addedText;
             }
         }
         else
         {
-            if (text.text.EndsWith("|"))
+            if (text.EndsWith("|"))
             {
-                if (text.text.Length > 1)
+                if (text.Length > 1)
                 {
-                    text.text = text.text.Remove(text.text.Length - 2);
+                    text = text.Remove(text.Length - 2);
                 }
             } else
             {
-                if (text.text.Length > 0)
+                if (text.Length > 0)
                 {
-                    text.text = text.text.Remove(text.text.Length - 1);
+                    text = text.Remove(text.Length - 1);
                 }
             }
         }
 
+        SetText(text);
         if (keyBoard.shiftState)
         {
             keyBoard.SwapKeyBoardState();
+        }
+    }
+
+    private string GetText()
+    {
+        if (isInputField)
+        {
+            return GetComponent<TMP_InputField>().text;
+        } else
+        {
+            return GetComponent<TMP_Text>().text;
+        }
+    }
+
+    private void SetText(string text)
+    {
+        if (isInputField)
+        {
+            GetComponent<TMP_InputField>().text = text;
+        }
+        else
+        {
+            GetComponent<TMP_Text>().text = text;
         }
     }
 }

@@ -58,6 +58,8 @@ public class POIManager : MonoBehaviour
 
     private void Start()
     {
+        dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), LogInManager.datatype);
+
         moveMap = map.GetComponent<MoveMap>();
 
         offset = table.transform.position;

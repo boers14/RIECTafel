@@ -21,6 +21,30 @@ public class NetworkManagerRIECTafel : NetworkManager
     [System.NonSerialized]
     public int numberOfPlayers = 0;
 
+    public override void Start()
+    {
+        base.Start();
+        cityName = ConnectionManager.cityName;
+        switch (ConnectionManager.connectFunction)
+        {
+            case ConnectionManager.ConnectFunction.ServerClient:
+                if (Application.platform != RuntimePlatform.WebGLPlayer)
+                {
+                    StartHost();
+                }
+                break;
+            case ConnectionManager.ConnectFunction.Server:
+                if (Application.platform != RuntimePlatform.WebGLPlayer)
+                {
+                    StartServer();
+                }
+                break;
+            case ConnectionManager.ConnectFunction.Client:
+                StartClient();
+                break;
+        }
+    }
+
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
         numberOfPlayers++;

@@ -98,7 +98,7 @@ public class PlayerConnection : NetworkBehaviour
                 nameString += "Bank";
                 break;
         }
-        nameString += ":\nVictor de Roy van Zuydenwijn " + Random.Range(0, 100);
+        nameString += ":\n" + LogInManager.username;
         CmdSetPlayerName(nameString, poiManager.dataType.ToString());
     }
 

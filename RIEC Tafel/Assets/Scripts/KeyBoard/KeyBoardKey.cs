@@ -64,12 +64,18 @@ public class KeyBoardKey : MonoBehaviour
             FetchCurrentlyEditedText();
         }
 
-        if (!currentText.isCurrentlyEdited)
+        if (currentText)
         {
-            FetchCurrentlyEditedText();
-        }
+            if (!currentText.isCurrentlyEdited)
+            {
+                FetchCurrentlyEditedText();
+            }
 
-        KeyFunction();
+            if (currentText)
+            {
+                KeyFunction();
+            }
+        }
     }
 
     public virtual void KeyFunction()
@@ -80,6 +86,7 @@ public class KeyBoardKey : MonoBehaviour
     private void FetchCurrentlyEditedText()
     {
         EditebleText[] editebleTexts = FindObjectsOfType<EditebleText>();
+
         for (int i = 0; i < editebleTexts.Length; i++)
         {
             if (editebleTexts[i].isCurrentlyEdited)

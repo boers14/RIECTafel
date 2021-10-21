@@ -6,8 +6,8 @@ using TMPro;
 
 public class DataTypeDropdown : DropdownSelection
 {
-    [SerializeField]
-    private POIManager poiManager = null;
+    [System.NonSerialized]
+    public string dataType = "";
 
     public override void Start()
     {
@@ -22,10 +22,12 @@ public class DataTypeDropdown : DropdownSelection
             options.Add(option.ToString());
         }
         dropdown.AddOptions(options);
+
+        dataType = options[0];
     }
 
     private void ChangePlayerDataType(int value)
     {
-        poiManager.dataType = (GameManager.DataType)value;
+        dataType = dropdown.options[value].text;
     }
 }
