@@ -12,6 +12,7 @@ public class DataTypeDropdown : DropdownSelection
     public override void Start()
     {
         base.Start();
+        dataType = GameManager.DataType.Police.ToString();
         dropdown.onValueChanged.AddListener(ChangePlayerDataType);
 
         dropdown.ClearOptions();
@@ -19,7 +20,27 @@ public class DataTypeDropdown : DropdownSelection
         for (int i = 0; i < System.Enum.GetNames(typeof(GameManager.DataType)).Length; i++)
         {
             GameManager.DataType option = (GameManager.DataType)i;
-            options.Add(option.ToString());
+            string optionInDutch = "";
+
+            switch (option)
+            {
+                case GameManager.DataType.Regular:
+                    continue;
+                case GameManager.DataType.Police:
+                    optionInDutch = "Politie";
+                    break;
+                case GameManager.DataType.Tax:
+                    optionInDutch = "Belasting";
+                    break;
+                case GameManager.DataType.PPO:
+                    optionInDutch = "OM";
+                    break;
+                case GameManager.DataType.Bank:
+                    optionInDutch = "Bank";
+                    break;
+            }
+
+            options.Add(optionInDutch);
         }
         dropdown.AddOptions(options);
 
@@ -28,6 +49,6 @@ public class DataTypeDropdown : DropdownSelection
 
     private void ChangePlayerDataType(int value)
     {
-        dataType = dropdown.options[value].text;
+        dataType = ((GameManager.DataType)(value + 1)).ToString();
     }
 }

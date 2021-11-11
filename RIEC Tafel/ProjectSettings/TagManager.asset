@@ -9,6 +9,7 @@ TagManager:
   - NetworkManager
   - DontDisableLineOnGrab
   - DontDisableHandOnGrab
+  - Hand
   layers:
   - Default
   - TransparentFX

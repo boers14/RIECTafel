@@ -35,9 +35,9 @@ public class HandPrecense : MonoBehaviour
 
     private void UpdateHandAnimations()
     {
-        if (inputDevice.TryGetFeatureValue(CommonUsages.trigger, out float triggerValue))
+        if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripValue))
         {
-            handAnimator.SetFloat("Grip", triggerValue);
+            handAnimator.SetFloat("Grip", gripValue);
         }
         else
         {

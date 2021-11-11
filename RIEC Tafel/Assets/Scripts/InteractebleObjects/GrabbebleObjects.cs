@@ -32,6 +32,9 @@ public class GrabbebleObjects : MonoBehaviour
     private List<Vector3> prevHandPosses = new List<Vector3>();
     private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
 
+    [System.NonSerialized]
+    public bool isGrabbed = false;
+
     public virtual void Start()
     {
         for (int i = 0; i < 2; i++)
@@ -217,10 +220,12 @@ public class GrabbebleObjects : MonoBehaviour
             TurnGravityBackOn();
         }
         collider.enabled = false;
+        isGrabbed = true;
     }
 
     public virtual void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
+        isGrabbed = false;
         transform.localScale = originalScale;
         rigidbody.useGravity = true;
         ReturnToPos();

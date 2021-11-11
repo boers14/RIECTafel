@@ -31,6 +31,8 @@ public class KeyBoardKey : MonoBehaviour
     [System.NonSerialized]
     public List<XRNode> targetedNodes = new List<XRNode>();
 
+    private List<Collider> hands = new List<Collider>();
+
     public virtual void Start()
     {
         GetComponentInChildren<TMP_Text>().text = textForKey;
@@ -40,8 +42,32 @@ public class KeyBoardKey : MonoBehaviour
         renderer = GetComponent<MeshRenderer>();
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag != "Hand" || hands.Contains(other) || keyBoard.keyBoardIsHovered || !keyBoard.pushKeyBoard) { return; }
+
+        keyBoard.keyBoardIsHovered = true;
+        hands.Add(other);
+        renderer.material.color = gray;
+        OnKeySelect();
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!hands.Contains(other) || !keyBoard.pushKeyBoard) { return; }
+
+        hands.Remove(other);
+        if (hands.Count <= 0)
+        {
+            keyBoard.keyBoardIsHovered = false;
+            renderer.material.color = white;
+        }
+    }
+
     private void OnHoverEnter(HoverEnterEventArgs args)
     {
+        if (keyBoard.pushKeyBoard) { return; }
+
         targetedNodes.Add(args.interactor.GetComponent<XRController>().controllerNode);
         renderer.material.color = gray;
         isHovered = true;
@@ -49,6 +75,8 @@ public class KeyBoardKey : MonoBehaviour
 
     private void OnHoverLeave(HoverExitEventArgs args)
     {
+        if (keyBoard.pushKeyBoard) { return; }
+
         targetedNodes.Remove(args.interactor.GetComponent<XRController>().controllerNode);
         if (targetedNodes.Count == 0)
         {
@@ -75,6 +103,15 @@ public class KeyBoardKey : MonoBehaviour
             {
                 KeyFunction();
             }
+        }
+    }
+
+    private void OnDisable()
+    {
+        hands.Clear();
+        if (renderer)
+        {
+            renderer.material.color = white;
         }
     }
 

@@ -22,6 +22,8 @@ public class KeyBoard : MonoBehaviour
     [System.NonSerialized]
     public bool shiftState = true, keyBoardIsHovered = false;
 
+    public bool pushKeyBoard = false;
+
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
     private List<bool> usedInputDevices = new List<bool>();
@@ -30,6 +32,8 @@ public class KeyBoard : MonoBehaviour
         leftCharacteristics = InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left;
 
     private InputDevice inputDevice;
+
+    private Vector3 pushKeyboardPos = new Vector3(0, 0.8f, 0.1f);
 
     private void Start()
     {
@@ -45,10 +49,19 @@ public class KeyBoard : MonoBehaviour
         {
             usedInputDevices.Add(false);
         }
+
+        if (pushKeyBoard)
+        {
+            transform.localScale *= 0.5f;
+            pushKeyboardPos.x = transform.localPosition.x / 2;
+            transform.localPosition = pushKeyboardPos;
+        }
     }
 
     private void FixedUpdate()
     {
+        if (pushKeyBoard) { return; }
+
         if (inputDevices.Count < 2)
         {
             AddInputDevices();
@@ -191,6 +204,17 @@ public class KeyBoard : MonoBehaviour
         {
             EnableKeyBoardState(normalKeyBoardKeys, shiftKeyBoardKeys);
         }
+
+        if (pushKeyBoard)
+        {
+            StartCoroutine(SwapHoverState());
+        }
+    }
+
+    private IEnumerator SwapHoverState()
+    {
+        yield return new WaitForSeconds(0.05f);
+        keyBoardIsHovered = false;
     }
 
     private void EnableKeyBoardState(List<KeyBoardKey> keyBoardKeysToEnable, List<KeyBoardKey> keyBoardKeysToDisable)

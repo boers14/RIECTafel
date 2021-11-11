@@ -12,6 +12,27 @@ public class LoginButton : SwitchSceneButton
     [SerializeField]
     private TMP_Text disclaimerText = null;
 
+    [SerializeField]
+    private string tutorialScene = "";
+
+    public override void Start()
+    {
+        base.Start();
+        if (!SaveSytem.CheckIfFileExist()) 
+        {
+            TutorialSceneManager.sceneToSwitchTo = SceneManager.GetActiveScene().name;
+            SceneManager.LoadScene(tutorialScene);
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            SaveSytem.DeleteGame();
+        }
+    }
+
     public override void SwitchScene()
     {
         StartCoroutine(Login());

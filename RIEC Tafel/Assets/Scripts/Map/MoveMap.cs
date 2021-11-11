@@ -11,16 +11,17 @@ public class MoveMap : MonoBehaviour
     [SerializeField]
     private Transform table = null;
 
-    private Vector3 offset = Vector3.zero, oldScale = Vector3.one, oldDir = Vector3.zero;
+    private Vector3 offset = Vector3.zero, oldScale = Vector3.one;
 
     private AbstractMap abstractMap = null;
 
     [SerializeField]
     private InputDeviceCharacteristics rightCharacteristics = InputDeviceCharacteristics.None, leftCharacteristics = InputDeviceCharacteristics.None;
 
-    private List<InputDevice> inputDevices = new List<InputDevice>();
+    [System.NonSerialized]
+    public List<InputDevice> inputDevices = new List<InputDevice>();
 
-    private bool isTweening = false, clockwise = true;
+    private bool isTweening = false;
 
     [SerializeField]
     private POIManager poiManager = null;
@@ -50,23 +51,27 @@ public class MoveMap : MonoBehaviour
     [System.NonSerialized]
     public Transform playerConnectionTransform = null;
 
-    private int rotationCounter = 0, indexOfTableInHandRays = 1;
+    [SerializeField]
+    private int indexOfTableInHandRays = 1;
+
+    private int rotationCounter = 0;
 
     [SerializeField]
     private List<PlayerGrab> hands = new List<PlayerGrab>();
 
-    private List<Vector3> prevHandPosses = new List<Vector3>(), prevHandRotations = new List<Vector3>();
+    private List<Vector3> prevHandPosses = new List<Vector3>(), prevHandDirections = new List<Vector3>();
+    private List<Quaternion> prevHandRotations = new List<Quaternion>();
     private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
 
     private List<GrabbebleObjects> grabbebleObjects = new List<GrabbebleObjects>();
-    private List<int> rotationCounterList = new List<int>();
 
     private void Start()
     {
         for (int i = 0; i < hands.Count; i++)
         {
+            prevHandDirections.Add(Vector3.zero);
             prevHandPosses.Add(Vector3.zero);
-            prevHandRotations.Add(Vector3.zero);
+            prevHandRotations.Add(Quaternion.identity);
             handRays.Add(hands[i].GetComponent<PlayerHandRays>());
         }
 
@@ -91,8 +96,6 @@ public class MoveMap : MonoBehaviour
 
     private void FixedUpdate()
     {
-        ComputerControls();
-
         if (inputDevices.Count < 2)
         {
             GrabControllers();
@@ -127,29 +130,18 @@ public class MoveMap : MonoBehaviour
                     {
                         if (hoverCount != inputDevices.Count)
                         {
-                            if (inputDevices[i].TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
+                            if (inputDevices[i].TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
                             {
-                                Vector3 newAngle = hands[i].transform.eulerAngles;
-                                Vector3 oldAngle = prevHandRotations[i];
-                                float angle = Vector3.Angle(oldAngle, newAngle);
+                                Quaternion newAngle = hands[i].transform.rotation;
+                                Quaternion oldAngle = prevHandRotations[i];
+                                float angle = Quaternion.Angle(oldAngle, newAngle);
 
-                                Vector3 dir = oldAngle - newAngle;
-                                Vector3 cross = Vector3.Cross(oldDir, dir);
-                                oldDir = dir;
-                                if (Vector3.Dot(cross, Vector3.up) < 0)
-                                {
-                                    CheckRotationList(1, -1, false);
-                                } else
-                                {
-                                    CheckRotationList(-1, 1, true);
-                                }
-
-                                if (!clockwise)
+                                if (GetRotationDirection(oldAngle, newAngle))
                                 {
                                     angle *= -1;
                                 }
 
-                                RotateMap(angle * 1f);
+                                RotateMap(angle);
                             }
                             else
                             {
@@ -157,7 +149,7 @@ public class MoveMap : MonoBehaviour
                                 movement.y = movement.z * 150;
                                 movement.x *= 100;
                                 movement.z = 0;
-                                MoveTheMap(movement, true);
+                                MoveTheMap(movement, true, false);
                             }
                         } else
                         {
@@ -168,8 +160,9 @@ public class MoveMap : MonoBehaviour
                     }
                 }
 
+                prevHandDirections[i] = hands[i].transform.eulerAngles - prevHandRotations[i].eulerAngles;
                 prevHandPosses[i] = hands[i].transform.position;
-                prevHandRotations[i] = hands[i].transform.eulerAngles;
+                prevHandRotations[i] = hands[i].transform.rotation;
             }
         }
         else
@@ -178,18 +171,24 @@ public class MoveMap : MonoBehaviour
         }
     }
 
-    private void CheckRotationList(int contains, int add, bool clockwise)
+    private bool GetRotationDirection(Quaternion from, Quaternion to)
     {
-        if (rotationCounterList.Contains(contains))
+        float fromY = from.eulerAngles.y;
+        float toY = to.eulerAngles.y;
+        float clockWise = 0;
+        float counterClockWise = 0;
+
+        if (fromY <= toY)
         {
-            rotationCounterList.Clear();
+            clockWise = toY - fromY;
+            counterClockWise = fromY + (360 - toY);
         }
-        rotationCounterList.Add(add);
-        if (rotationCounterList.Count >= 5)
+        else
         {
-            this.clockwise = clockwise;
-            rotationCounterList.Clear();
+            clockWise = (360 - fromY) + toY;
+            counterClockWise = fromY - toY;
         }
+        return clockWise <= counterClockWise;
     }
 
     public void RotateMap(float rotation)
@@ -242,11 +241,15 @@ public class MoveMap : MonoBehaviour
         }
     }
 
-    private void MoveTheMap(Vector2 steerStickDirection, bool movePOIs)
+    public void MoveTheMap(Vector2 steerStickDirection, bool movePOIs, bool disregardMoveMapPower)
     {
         if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f && steerStickDirection.y > -0.1f) { return; }
 
         Vector2 movement = new Vector2(steerStickDirection.x * moveMapPower, steerStickDirection.y * moveMapPower);
+        if (disregardMoveMapPower)
+        {
+            movement = steerStickDirection;
+        }
         offset.x += movement.x;
         offset.z += movement.y;
         poiManager.SetExtraOffset(offset);
@@ -299,8 +302,8 @@ public class MoveMap : MonoBehaviour
         nextScale.y = nextScale.z;
         poiManager.SetPOIsScale(nextScale);
 
-        MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x, moveMapPower),
-            BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z, moveMapPower)), limitMovement);
+        MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x),
+            BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z)), limitMovement, true);
     }
 
     private void CheckIfMapIsStillOnTable()
@@ -356,10 +359,13 @@ public class MoveMap : MonoBehaviour
                 }
             }
 
-            MoveTheMap(steerStickInput, true);
+            steerStickInput.x *= -1;
+            steerStickInput.y *= -1;
+
+            MoveTheMap(steerStickInput, true, false);
         }
 
-        if (lineVisual.colorGradient.alphaKeys[0].alpha != 0)
+        if (lineVisual.colorGradient.alphaKeys[0].alpha != 0 || hands[0].grabTimer > 0 )
         {
             return;
         }
@@ -380,47 +386,6 @@ public class MoveMap : MonoBehaviour
         else if (inputDevices[0].TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
         {
             RotateMap(-rotationPower);
-        }
-    }
-
-    private void ComputerControls()
-    {
-        if (Input.GetKey(KeyCode.Z) && !isTweening)
-        {
-            RotateMap(rotationPower);
-        } else if (Input.GetKey(KeyCode.X) && !isTweening)
-        {
-            RotateMap(-rotationPower);
-        }
-
-        if (Input.GetKey(KeyCode.RightArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(-1, 0), true);
-        }
-
-        if (Input.GetKey(KeyCode.LeftArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(1, 0), true);
-        }
-
-        if (Input.GetKey(KeyCode.UpArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(0, -1), true);
-        }
-
-        if (Input.GetKey(KeyCode.DownArrow) && !isTweening)
-        {
-            MoveTheMap(new Vector2(0, 1), true);
-        }
-
-        if (Input.GetKey(KeyCode.C) && !isTweening)
-        {
-            ChangeMapScale(-scalePower);
-        }
-
-        if (Input.GetKey(KeyCode.V) && !isTweening)
-        {
-            ChangeMapScale(scalePower);
         }
     }
 
@@ -445,7 +410,10 @@ public class MoveMap : MonoBehaviour
         InputDevices.GetDevicesWithCharacteristics(characteristics, inputDeviceList);
         if (inputDeviceList.Count > 0)
         {
-            inputDevices.Add(inputDeviceList[0]);
+            if (inputDeviceList[0].isValid)
+            {
+                inputDevices.Add(inputDeviceList[0]);
+            }
         }
     }
 }

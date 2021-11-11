@@ -24,14 +24,13 @@ public class DataExplanations : GrabbebleObjects
 
     private float originalYPosOfExplanationText = 0, oldYSize = 0, changeFontSizeTimer = 0;
 
-    private enum DataSetNeeded
+    public enum DataSetNeeded
     {
         Conclusion,
         Indication
     }
 
-    [SerializeField]
-    private DataSetNeeded dataSetNeeded = DataSetNeeded.Conclusion;
+    public DataSetNeeded dataSetNeeded = DataSetNeeded.Conclusion;
 
     [SerializeField]
     private string titleText = "";
@@ -41,14 +40,15 @@ public class DataExplanations : GrabbebleObjects
     [SerializeField]
     private DataExplanations otherExplanation = null;
 
+    private int lastChosenOption = 0;
+
     public override void Start()
     {
         poiConclusionSelectionDropdown.onValueChanged.AddListener(ChangeExplanation);
-        originalYPosOfExplanationText = explantionText.rectTransform.localPosition.y;
-
-        explanationTitlePos = explanationTitle.rectTransform.position;
         originalImageScale = explantionText.rectTransform.localScale;
-        originalPosition = explantionText.rectTransform.localPosition;
+
+        SetBasePosses();
+
         EnableMenu(false);
         base.Start();
     }
@@ -91,21 +91,13 @@ public class DataExplanations : GrabbebleObjects
         base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
         dataSetIsOn = true;
 
-        poiConclusionSelectionDropdown.ClearOptions();
-        List<string> options = new List<string>();
-        for (int i = 0; i < poiManager.locationCoordinates.Count; i++)
-        {
-            options.Add(poiManager.dutchNamesForRoles[i] + ": " + poiManager.featureAmounts[i] + ": " + poiManager.locationCoordinates[i].ToString());
-        }
-        poiConclusionSelectionDropdown.AddOptions(options);
-
         dataExplanationSet.transform.SetAsLastSibling();
         EnableMenu(true);
         title.text = titleText;
 
         if (poiConclusionSelectionDropdown.options.Count > 0)
         {
-            ChangeExplanation(0);
+            ChangeExplanation(lastChosenOption);
         }
     }
 
@@ -131,22 +123,27 @@ public class DataExplanations : GrabbebleObjects
 
     private void ChangeExplanation(int value)
     {
-        explantionText.gameObject.SetActive(true);
-        explantionText.rectTransform.localScale = originalImageScale;
-        explantionText.rectTransform.localPosition = originalPosition;
-
-        explanationTitle.text = poiConclusionSelectionDropdown.options[value].text;
-
-        switch(dataSetNeeded)
+        if (dataSetIsOn && title.text == titleText)
         {
-            case DataSetNeeded.Conclusion:
-                explantionText.text = poiManager.conclusions[value];
-                break;
-            case DataSetNeeded.Indication:
-                explantionText.text = poiManager.indications[value];
-                break;
+            lastChosenOption = value;
+
+            explantionText.gameObject.SetActive(true);
+            explantionText.rectTransform.localScale = originalImageScale;
+            explantionText.rectTransform.localPosition = originalPosition;
+
+            explanationTitle.text = poiConclusionSelectionDropdown.options[value].text;
+
+            switch (dataSetNeeded)
+            {
+                case DataSetNeeded.Conclusion:
+                    explantionText.text = poiManager.conclusions[value];
+                    break;
+                case DataSetNeeded.Indication:
+                    explantionText.text = poiManager.indications[value];
+                    break;
+            }
+            StartCoroutine(SetExplanationTextPos(false));
         }
-        StartCoroutine(SetExplanationTextPos(false));
     }
 
     private IEnumerator SetExplanationTextPos(bool setOffset, float fontSizeDiff = 0)
@@ -163,11 +160,29 @@ public class DataExplanations : GrabbebleObjects
 
         if (setOffset)
         {
-            oldPos.y += BaseCalculations.CalculatePosDiff(oldYSize, explantionText.rectTransform.sizeDelta.y, originalYPos, 1);
+            oldPos.y += BaseCalculations.CalculatePosDiff(oldYSize, explantionText.rectTransform.sizeDelta.y, originalYPos);
             oldPos.y += -fontSizeDiff * explantionText.fontSize;
             explantionText.rectTransform.localPosition = oldPos;
             MoveImage(Vector2.one, explantionText.gameObject, explanationCenterPos, 25, true);
         }
+    }
+
+    public void FillOptionsList()
+    {
+        poiConclusionSelectionDropdown.ClearOptions();
+        List<string> options = new List<string>();
+        for (int i = 0; i < poiManager.locationCoordinates.Count; i++)
+        {
+            options.Add(poiManager.dutchNamesForRoles[i] + ": " + poiManager.featureAmounts[i] + ": " + poiManager.locationCoordinates[i].ToString());
+        }
+        poiConclusionSelectionDropdown.AddOptions(options);
+    }
+
+    public void SetBasePosses()
+    {
+        originalYPosOfExplanationText = explantionText.rectTransform.localPosition.y;
+        explanationTitlePos = explanationTitle.rectTransform.position;
+        originalPosition = explantionText.rectTransform.localPosition;
     }
 
     public void SetPOISelectionDropDownToHovered()

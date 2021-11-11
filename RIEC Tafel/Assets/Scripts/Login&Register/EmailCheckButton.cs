@@ -71,7 +71,7 @@ public class EmailCheckButton : SwitchSceneButton
         } else
         {
             SceneManager.LoadScene(failedPincodeScene);
-            LogInManager.LogOut();
+            LogInManager.LogOut(this);
             Debug.LogError("Update lock count down failed. Error#" + www.text);
         }
     }
@@ -91,6 +91,11 @@ public class EmailCheckButton : SwitchSceneButton
         }
 
         SceneManager.LoadScene(failedPincodeScene);
-        LogInManager.LogOut();
+        LogInManager.LogOut(this);
+    }
+
+    private void OnApplicationQuit()
+    {
+        LogInManager.LogOut(this);
     }
 }

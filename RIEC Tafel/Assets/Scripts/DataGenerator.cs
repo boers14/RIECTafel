@@ -55,6 +55,7 @@ public class DataGenerator : MonoBehaviour
         int hits = Random.Range(3, maxAmountOfHits + 1);
         string featureAmount = "Hoeveelheid hits: " + hits.ToString();
         string extraDataExplanation = "";
+        List<string> addedFeats = new List<string>();
 
         for (int i = 0; i < hits; i++)
         {
@@ -63,6 +64,7 @@ public class DataGenerator : MonoBehaviour
             {
                 addedFeat = feats[Random.Range(0, feats.Count)];
             }
+            addedFeats.Add(addedFeat);
 
             extraDataExplanation += addedFeat;
             if (i < hits - 1)
@@ -71,8 +73,8 @@ public class DataGenerator : MonoBehaviour
             }
         }
 
-        string conclusion = LoremIpsum(8, 15, 10, 40, 2);
-        string indication = LoremIpsum(8, 15, 10, 40, 2);
+        string conclusion = LoremIpsum(5, 15, 2, 11, addedFeats);
+        string indication = LoremIpsum(5, 15, 2, 11, addedFeats);
 
         string completeDataset = location + "/*datatype*/" + LogInManager.datatype + "/*featureAmount*/" + featureAmount + "/*extraDataExplanation*/" +
              extraDataExplanation + "/*conclusion*/" + conclusion + "/*indication*/" + indication + "/*endOfRow*/";
@@ -93,19 +95,21 @@ public class DataGenerator : MonoBehaviour
         }
     }
 
-    private string LoremIpsum(int minWords, int maxWords, int minSentences, int maxSentences, int numParagraphs)
+    private string LoremIpsum(int minWords, int maxWords, int minSentences, int maxSentences, List<string> addedFeats)
     {
         System.Text.StringBuilder result = new System.Text.StringBuilder();
 
-        for (int p = 0; p < numParagraphs; p++)
+        for (int p = 0; p < addedFeats.Count; p++)
         {
+            result.Append("<b>" + addedFeats[p] + ":</b>\n");
             int numSentences = Random.Range(minSentences, maxSentences + 1);
             for (int s = 0; s < numSentences; s++)
             {
+                result.Append("\t-");
                 int numWords = Random.Range(minWords, maxWords + 1);
                 for (int w = 0; w < numWords; w++)
                 {
-                    if (w > 0) { result.Append(" "); }
+                    result.Append(" ");
                     string word = loremIpsumWords[Random.Range(0, loremIpsumWords.Count)];
 
                     if (w == 0)
@@ -115,9 +119,9 @@ public class DataGenerator : MonoBehaviour
 
                     result.Append(word);
                 }
-                result.Append(". ");
+                result.Append(". \n");
             }
-            result.Append("\n\n");
+            result.Append("\n");
         }
 
         return result.ToString();

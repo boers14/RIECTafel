@@ -7,6 +7,11 @@ public class LogoutButton : SwitchSceneButton
     public override void SwitchScene()
     {
         base.SwitchScene();
-        LogInManager.LogOut();
+        LogInManager.LogOut(this);
+    }
+
+    private void OnApplicationQuit()
+    {
+        LogInManager.LogOut(this);
     }
 }

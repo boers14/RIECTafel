@@ -18,8 +18,11 @@ public class DropdownSelection : MonoBehaviour
 
     private Scrollbar scrollBar = null;
 
+    private PlayerGrab hand = null;
+
     public virtual void Start()
     {
+        hand = FindObjectOfType<PlayerGrab>();
         inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
         dropdown = GetComponent<TMP_Dropdown>();
     }
@@ -30,6 +33,14 @@ public class DropdownSelection : MonoBehaviour
         {
             inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
             return;
+        }
+
+        if (hand)
+        {
+            if (hand.oneButtonControl)
+            {
+                return;
+            }
         }
 
         if (dropdown.transform.childCount == 4)
@@ -43,9 +54,14 @@ public class DropdownSelection : MonoBehaviour
                 if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
                 {
                     if (dropdown.options.Count == 0) { return; }
-                    scrollBar.value = Mathf.Clamp(scrollBar.value + (1 / ((float)dropdown.options.Count * 2) / 10 * steerStickInput.y), 0, 1);
+                    UpdateScrollbarValue(steerStickInput);
                 }
             }
         }
+    }
+
+    public virtual void UpdateScrollbarValue(Vector2 steerStickInput)
+    {
+        scrollBar.value = Mathf.Clamp(scrollBar.value + (1 / ((float)dropdown.options.Count * 2) / 10 * steerStickInput.y), 0, 1);
     }
 }

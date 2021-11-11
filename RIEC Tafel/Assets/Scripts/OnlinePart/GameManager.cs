@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Mapbox.Unity.Map;
+using Mapbox.Utils;
 
 public class GameManager : NetworkBehaviour
 {
@@ -25,7 +27,7 @@ public class GameManager : NetworkBehaviour
         StartCoroutine(RetrieveCityData(cityName));
     }
 
-    private IEnumerator RetrieveCityData(string cityName)
+    public IEnumerator RetrieveCityData(string cityName)
     {
         WWWForm form = new WWWForm();
         cityName = cityName.ToLower();
@@ -73,6 +75,41 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void CreateTutorialLocationData(string dataType, POIManager poiManager, AbstractMap abstractMap)
+    {
+        DataType requiredDatatype = (DataType)System.Enum.Parse(typeof(DataType), dataType);
+        List<string> locationData = new List<string>();
+        List<string> dataTypes = new List<string>();
+        List<string> neededAmounts = new List<string>();
+        List<string> neededExtraInfo = new List<string>();
+        List<string> neededConclusions = new List<string>();
+        List<string> neededIndications = new List<string>();
+
+        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, DataType.Regular);
+
+        if (requiredDatatype != DataType.Regular)
+        {
+            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, requiredDatatype);
+        }
+
+        for (int i = locationData.Count - 1; i > 0; i--)
+        {
+            locationData.RemoveAt(i);
+            dataTypes.RemoveAt(i);
+            neededAmounts.RemoveAt(i);
+            neededExtraInfo.RemoveAt(i);
+            neededConclusions.RemoveAt(i);
+            neededIndications.RemoveAt(i);
+        }
+
+        Vector2d coordinate = abstractMap.CenterLatitudeLongitude;
+        double xCoordinate = coordinate.x;
+        coordinate.x = coordinate.y;
+        coordinate.y = xCoordinate;
+        locationData[0] = coordinate.ToString();
+        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications);
+    }
+
     [Command (channel = 0, requiresAuthority = false)]
     public void CmdGiveBackLocationData(string dataType, int playerNumber)
     {
@@ -113,5 +150,10 @@ public class GameManager : NetworkBehaviour
                 neededExtraInfo.Add(extraExplanations[i]);
             }
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        LogInManager.LogOut(this);
     }
 }

@@ -14,14 +14,16 @@ public class PlayerGrab : MonoBehaviour
 
     public bool oneButtonControl = false;
 
-    private bool followHand = false;
+    private bool followHand = false, pressedButton = false;
 
     [SerializeField]
     private LayerMask mask = 0;
 
-    private Transform grabbedObject = null, grabbedParentObject = null;
+    public float grabTimer { get; set; } = 0;
 
-    private float grabCooldown = 0, cooldown = 0.35f;
+    private float grabTimerCooldown = 0.5f;
+
+    private Transform grabbedParentObject = null, grabbedObject = null;
 
     private void Start()
     {
@@ -39,34 +41,38 @@ public class PlayerGrab : MonoBehaviour
 
         if (grabbedObject)
         {
+            grabTimer = grabTimerCooldown;
             if (followHand)
             {
                 grabbedObject.position = transform.position;
                 grabbedObject.rotation = transform.rotation;
             }
 
-            if (inputDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool trigger) && trigger && grabCooldown <= 0)
+            if (inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool grip) && grip && !pressedButton)
             {
                 OnDetach();
+            } else if (!grip)
+            {
+                pressedButton = false;
             }
         }
         else
         {
             if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, Mathf.Infinity, mask))
             {
-                if (inputDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool trigger) && trigger && grabCooldown <= 0)
+                if (inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool grip) && grip && grabTimer < 0)
                 {
                     OnGrab(hit.transform);
                 }
             }
         }
 
-        grabCooldown -= Time.deltaTime;
+        grabTimer -= Time.deltaTime;
     }
 
     private void OnGrab(Transform grabbedObject)
     {
-        grabCooldown = cooldown;
+        pressedButton = true;
         this.grabbedObject = grabbedObject;
 
         if (grabbedObject.GetComponent<XRGrabInteractable>())
@@ -82,12 +88,12 @@ public class PlayerGrab : MonoBehaviour
 
         if (grabbedObject.tag == "DontDisableLineOnGrab")
         {
-            GetComponentInChildren<SkinnedMeshRenderer>().enabled = false;
+            EnableHandModel(false);
         }
         else if (grabbedObject.tag != "DontDisableHandOnGrab")
         {
             lineRenderer.enabled = false;
-            GetComponentInChildren<SkinnedMeshRenderer>().enabled = false;
+            EnableHandModel(false);
         }
 
         grabbedParentObject = grabbedObject.parent;
@@ -103,13 +109,37 @@ public class PlayerGrab : MonoBehaviour
     {
         followHand = false;
         grabbedObject.SetParent(grabbedParentObject);
-        grabCooldown = cooldown;
         if (grabbedObject.GetComponent<XRGrabInteractable>())
         {
             grabbedObject.GetComponent<XRGrabInteractable>().selectExited.Invoke(new SelectExitEventArgs());
         }
         grabbedObject = null;
         lineRenderer.enabled = true;
-        GetComponentInChildren<SkinnedMeshRenderer>().enabled = true;
+        EnableHandModel(true);
+    }
+
+    private void EnableHandModel(bool enabled)
+    {
+        if (GetComponentInChildren<SkinnedMeshRenderer>() != null)
+        {
+            GetComponentInChildren<SkinnedMeshRenderer>().enabled = enabled;
+        } else
+        {
+            GetComponentInChildren<MeshRenderer>().enabled = enabled;
+            DisableAllSpriteRenderers(transform, enabled);
+        }
+    }
+
+    private void DisableAllSpriteRenderers(Transform child, bool enabled)
+    {
+        for (int i = 0; i < child.childCount; i++)
+        {
+            if (child.GetChild(i).GetComponent<SpriteRenderer>() != null)
+            {
+                child.GetChild(i).GetComponent<SpriteRenderer>().enabled = enabled;
+            }
+
+            DisableAllSpriteRenderers(child.GetChild(i), enabled);
+        }
     }
 }

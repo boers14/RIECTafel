@@ -16,6 +16,13 @@ public class SetCanvasPosition : MonoBehaviour
     [SerializeField]
     private MoveMap map = null;
 
+    private List<DataExplanations> dataExplanations = new List<DataExplanations>();
+
+    private void Start()
+    {
+        dataExplanations.AddRange(FindObjectsOfType<DataExplanations>());
+    }
+
     public void ChangeCanvasPosition()
     {
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit wallRay, Mathf.Infinity, layer))
@@ -27,6 +34,11 @@ public class SetCanvasPosition : MonoBehaviour
         }
 
         playerTable.CheckYPosition();
+
+        for (int i = 0; i < dataExplanations.Count; i++)
+        {
+            dataExplanations[i].SetBasePosses();
+        }
 
         float diffInYRotation = transform.eulerAngles.y - map.transform.eulerAngles.y;
         map.RotateMap(diffInYRotation);
