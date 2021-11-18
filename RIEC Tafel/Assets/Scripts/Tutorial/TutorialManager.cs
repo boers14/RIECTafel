@@ -72,6 +72,7 @@ public class TutorialManager : MonoBehaviour
     [SerializeField]
     private List<GameObject> objectsToDeactivate = new List<GameObject>(), canvasObjects = new List<GameObject>();
 
+    [SerializeField]
     private OculusAnimations oculusAnimations = null;
 
     private TutorialPOIText poi = null;
@@ -93,13 +94,19 @@ public class TutorialManager : MonoBehaviour
     [SerializeField]
     private TutorialDropdown tutorialDropdown = null;
 
+    private List<float> buttonPressTimers = new List<float>();
+
     private void Start()
     {
         SaveSytem.SaveGame();
         abstractMap = map.GetComponent<AbstractMap>();
         buttonCommandText = FindObjectOfType<ButtonCommandText>();
         buttonCommandTextText = buttonCommandText.GetComponent<TMP_Text>();
-        oculusAnimations = FindObjectOfType<OculusAnimations>();
+
+        for (int i = 0; i < 2; i++)
+        {
+            buttonPressTimers.Add(0);
+        }
 
         StartCoroutine(StartTutorial());
         InitializeControllers();
@@ -155,9 +162,16 @@ public class TutorialManager : MonoBehaviour
         {
             if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
             {
-                tutorialHasStarted = true;
-                TurnOffAllHandArrows();
-                StartNextStepInTutorial();
+                buttonPressTimers[i] += Time.deltaTime;
+                if (buttonPressTimers[i] >= 1)
+                {
+                    tutorialHasStarted = true;
+                    TurnOffAllHandArrows();
+                    StartNextStepInTutorial();
+                }
+            } else
+            {
+                buttonPressTimers[i] = 0;
             }
         }
     }
@@ -166,7 +180,7 @@ public class TutorialManager : MonoBehaviour
     {
         learnUIButton.gameObject.SetActive(true);
         oculusAnimations.gameObject.SetActive(true);
-        oculusAnimations.ShowExampleButtonAnimation();
+        oculusAnimations.ShowExampleButtonAnimationFirstStep();
         EnablePrimaryArrows();
     }
 
@@ -183,8 +197,8 @@ public class TutorialManager : MonoBehaviour
     {
         learnUIInputField.gameObject.SetActive(true);
         keyBoard.gameObject.SetActive(true);
-        oculusAnimations.ShowExampleInputFieldAnimation();
         EnablePrimaryArrows();
+        oculusAnimations.ShowExampleInputfieldAnimationFirstStep();
     }
 
     public void SecondStepOfTutorial()
@@ -199,15 +213,15 @@ public class TutorialManager : MonoBehaviour
 
     public void StartThirdStepOfTutorial()
     {
+        oculusAnimations.ShowExampleMoveMapFirstStep();
         BaseThirdStepOfTutorial();
-        oculusAnimations.StartExampleMoveMap();
         EnablePrimaryArrows();
     }
 
     public void StartThirdStepOfTutorialWithControllers()
     {
+        oculusAnimations.ShowExampleMoveMapFirstStepWithControllers();
         BaseThirdStepOfTutorial();
-        oculusAnimations.ShowExampleMoveMapWithControllerFirstStep();
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableSteerStickArrow(true);
     }
 
@@ -229,7 +243,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartFourthStepOfTutorial()
     {
-        oculusAnimations.StartExampleRotateMap();
+        oculusAnimations.ShowExampleRotateMapFirstStep();
         neededTutorialTransform = map.transform.eulerAngles;
         EnablePrimaryArrows();
         EnableGripArrows();
@@ -237,7 +251,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartFourthStepOfTutorialWithControllers()
     {
-        oculusAnimations.ShowExampleRotateMapWithControllersFirstStep();
+        oculusAnimations.ShowExampleRotateMapFirstStepWithControllers();
         neededTutorialTransform = map.transform.eulerAngles;
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableTriggerArrow(true);
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableGripArrow(true);
@@ -253,14 +267,14 @@ public class TutorialManager : MonoBehaviour
 
     public void StartFifthStepOfTutorial()
     {
-        oculusAnimations.StartExampleScaleMap();
+        oculusAnimations.ShowExampleScaleMapFirstStep();
         neededTutorialTransform = map.transform.lossyScale;
         EnablePrimaryArrows();
     }
 
     public void StartFifthStepOfTutorialWithControllers()
     {
-        oculusAnimations.ShowExampleScaleMapWithControllersFirstStep();
+        oculusAnimations.ShowExampleScaleMapFirstStepWithControllers();
         neededTutorialTransform = map.transform.lossyScale;
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnablePrimaryButtonArrow(true);
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableSecondaryButtonArrow(true);
@@ -310,10 +324,10 @@ public class TutorialManager : MonoBehaviour
 
     public void StartSeventhStepOfTutorial()
     {
-        oculusAnimations.ShowExampleShowingExtraPOIInformation();
         explanationText.fontSize = 17;
         tutorialTitle.fontSize = 27;
         poi = FindObjectOfType<TutorialPOIText>();
+        oculusAnimations.ShowExampleOpenPOIInformation();
         checkForPOIOpen = true;
     }
 
@@ -327,8 +341,8 @@ public class TutorialManager : MonoBehaviour
 
     public void StartEightStepOfTutorial()
     {
+        oculusAnimations.ShowExamplePullPOI();
         tutorialTitle.fontSize = 22;
-        oculusAnimations.ShowExamplePullingPOITowardsPlayer();
         EnablePrimaryArrows();
         checkForPOIPull = true;
     }
@@ -358,10 +372,9 @@ public class TutorialManager : MonoBehaviour
         legenda.gameObject.SetActive(true);
         grabbebleObjectArrows[0].SetTweenPosition(legendaArrowBasePos);
         grabbebleObjectArrows[0].connectedGameObject = legenda;
-        oculusAnimations.StartExampleGrabObject();
-        EnablePrimaryArrows();
         EnableGripArrows();
         grabbebleObjectArrows[0].gameObject.SetActive(true);
+        oculusAnimations.ShowExampleGrabObjectFirstStep();
     }
 
     public void TenthStepOfTutorial()
@@ -379,16 +392,16 @@ public class TutorialManager : MonoBehaviour
 
     public void StartEleventhStepOfTutorial()
     {
+        oculusAnimations.ShowExampleMoveGrabbedObjectFirstStep();
         BaseStartEleventhStepOfTutorial();
-        oculusAnimations.StartExampleMoveCanvasObject();
         EnablePrimaryArrows();
     }
 
     public void StartEleventhStepOfTutorialWithControllers()
     {
+        oculusAnimations.ShowExampleMoveGrabbedObjectFirstStepWithControllers();
         BaseStartEleventhStepOfTutorial();
         legenda.gameObject.SetActive(true);
-        oculusAnimations.ShowExampleMoveUIWithControllersFirstStep();
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnableSteerStickArrow(true);
     }
 
@@ -420,15 +433,15 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTwelvethStepOfTutorial()
     {
+        oculusAnimations.ShowExampleScaleGrabbedObjectFirstStep();
         BaseStartTwelvethStepOfTutorial();
-        oculusAnimations.StartExampleScaleCanvasObject();
         EnablePrimaryArrows();
     }
 
     public void StartTwelvethStepOfTutorialWithControllers()
     {
+        oculusAnimations.ShowExampleScaleGrabbedObjectFirstStepWithControllers();
         BaseStartTwelvethStepOfTutorial();
-        oculusAnimations.ShowExampleScaleUIWithControllersFirstStep();
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnableSecondaryButtonArrow(true);
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnablePrimaryButtonArrow(true);
     }
@@ -479,10 +492,10 @@ public class TutorialManager : MonoBehaviour
 
     public void StartThirthteenthStepOfTutorialWithControllers()
     {
+        oculusAnimations.ShowExampleMoveDropdownFirstStepWithControllers();
         EnablePrimaryArrows();
         EnableGripArrows();
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnableSteerStickArrow(true);
-        oculusAnimations.ShowExampleMoveOpenedDropdownWithControllersFirstStep();
         tutorialDropdown.gameObject.SetActive(true);
     }
 
@@ -508,6 +521,7 @@ public class TutorialManager : MonoBehaviour
         grabbebleObjectArrows[1].gameObject.SetActive(false);
         notes.gameObject.SetActive(true);
         CheckIfPrimaryButtonIsDown();
+        buttonCommandTextText.fontSize = 14.2f;
     }
 
     public void FourteenthStepOfTutorial()
@@ -530,6 +544,7 @@ public class TutorialManager : MonoBehaviour
 
     private void CheckIfPrimaryButtonIsDown()
     {
+        ResetButtonPressTimers();
         oculusAnimations.gameObject.SetActive(false);
         EnablePrimaryArrows();
 
@@ -627,6 +642,14 @@ public class TutorialManager : MonoBehaviour
                 inputDevices.Clear();
                 break;
             }
+        }
+    }
+
+    private void ResetButtonPressTimers()
+    {
+        for (int i = 0; i < buttonPressTimers.Count; i++)
+        {
+            buttonPressTimers[i] = 0;
         }
     }
 

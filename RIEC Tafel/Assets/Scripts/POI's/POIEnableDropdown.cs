@@ -74,7 +74,6 @@ public class POIEnableDropdown : DropdownSelection
 
         dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te (de)activeren";
         poiManager.CheckPOIVisibility();
-        poiManager.SetPOIArrowText();
     }
 
     private void SetActivePOIs(List<GameObject> pois, bool enabled)

@@ -6,906 +6,773 @@ using TMPro;
 
 public class OculusAnimations : MonoBehaviour
 {
-    private Vector3 basePos = Vector3.zero, exampleRayPos = Vector3.zero, exampleMapPos = Vector3.zero, exampleMapRot = Vector3.zero,
-        exampleMapScale = Vector3.zero, otherExampleRayPos = Vector3.zero, otherOculusControllerbasePos = Vector3.zero,
-        exampleGrabbebleObjectBasePos = Vector3.zero, exampleGrabbebleObjectOpenedBasePos = Vector3.zero,
-        exampleGrabbebleObjectOpenedBaseScale = Vector3.zero;
-
-    private string neededFunctionAfterTurnOnButtonEffect = "", neededFunctionAfterSecondGrabPhase = "", neededFunctionAfterEndOfGrabAnimation = "";
-
-    [SerializeField]
-    private GameObject primaryButtonPressEffect = null, secondaryButtonPressEffect = null, triggerPressEffect = null, steerStickUseEffect = null,
-        steerStickLeftArrow = null, steerStickRightArrow = null, steerStickUpArrow = null, steerStickDownArrow = null, gripPressEffect = null,
-        mapOfNetherlands = null, exampleButton = null, exampleInputfield = null, exampleRay = null, exampleKeyboard = null, examplePOI = null,
-        otherOculusController = null, otherExampleRay = null, exampleGrabbebleObject = null, exampleGrabbebleObjectOpened = null;
-
-    [SerializeField]
-    private TMP_Text examplePOIText = null;
-
-    [SerializeField]
-    private TMP_Dropdown exampleDropdown = null;
-
-    private Scrollbar exampleDrowdownScrollbar = null;
-
-    [SerializeField]
-    private Transform beforeRayTransform = null, scaleMapTransform = null, exampleRayBasePosScaleMap = null, beforeRayTransformScaleMap = null,
-        otherBeforeRayTransformScaleMap = null;
-
-    [SerializeField]
-    private List<Transform> exampleKeyBoardPosses = new List<Transform>();
-
-    private Transform exampleRayParent = null;
-
-    private int keyBoardPosCount = 0;
-
-    private bool showGripAndPrimary = false, showPrimaryOnly = true, showGripOnly = false;
-
-    private string baseExampleText = "";
+    private Vector3 basePos = Vector3.zero, baseRot = Vector3.zero, baseRayPos = Vector3.zero, exampleLegendaBasePos = Vector3.zero,
+        exampleLegendaBaseRot = Vector3.zero, standardTweenStartPos = Vector3.zero;
 
     private List<GameObject> allTweenObjects = new List<GameObject>();
 
-    private Image ownImage = null;
+    [SerializeField]
+    private GameObject exampleButton = null, exampleInputField = null, table = null, exampleLegenda = null, exampleDropdown = null;
+
+    [SerializeField]
+    private OculusAnimations otherController = null;
+
+    [SerializeField]
+    private Transform keyBoard = null, canvas = null;
+
+    [SerializeField]
+    private List<string> requiredKeysFromKeyBoard = new List<string>();
+
+    private List<Transform> keyBoardKeysToBeSelectedInExample = new List<Transform>();
+
+    private LineRenderer exampleRay = null;
+
+    private string animationAfterButtonPressAnimation = "", startAnimationAfterEndDelay = "", animationAfterObjectGrab = "";
+
+    [SerializeField]
+    private TutorialControllerArrows primaryButtonArrow = null, secondaryButtonArrow = null, steerStickArrow = null, triggerArrow = null,
+        gripArrow = null, steerStickArrowUp = null, steerStickArrowDown = null, steerStickArrowLeft = null, steerStickArrowRight = null;
+
+    private GameObject rayEndPosGameObject = null, examplePOI = null;
+
+    private int keyBoardKeysCounter = 0;
+
+    [SerializeField]
+    private bool isControlledByOtherController = false;
+
+    private bool showPrimaryOnly = true, showGripOnly = false, showPrimaryAndGrip = false;
+
+    private float amountOfMovement = 0.55f;
 
     private void Start()
     {
-        ownImage = GetComponent<Image>();
-
-        exampleGrabbebleObjectBasePos = exampleGrabbebleObject.transform.position;
-        exampleGrabbebleObjectOpenedBasePos = exampleGrabbebleObjectOpened.transform.position;
-        exampleGrabbebleObjectOpenedBaseScale = exampleGrabbebleObjectOpened.transform.localScale;
-
-        baseExampleText = examplePOIText.text;
-
-        otherExampleRayPos = otherExampleRay.transform.position;
-        otherOculusControllerbasePos = otherOculusController.transform.position;
-
-        exampleRayParent = exampleRay.transform.parent;
-        exampleRayPos = exampleRay.transform.position;
-
         basePos = transform.position;
+        baseRot = transform.eulerAngles;
+        standardTweenStartPos = basePos + new Vector3(0, 0.3f, 0);
 
-        exampleMapPos = mapOfNetherlands.transform.position;
-        exampleMapRot = mapOfNetherlands.transform.eulerAngles;
-        exampleMapScale = mapOfNetherlands.transform.localScale;
+        exampleLegendaBasePos = exampleLegenda.transform.position;
+        exampleLegendaBaseRot = exampleLegenda.transform.eulerAngles;
 
-        allTweenObjects.AddRange(new GameObject[] { primaryButtonPressEffect, gripPressEffect, mapOfNetherlands, exampleButton, exampleInputfield,
-            exampleRay, exampleKeyboard, examplePOI, otherOculusController, otherExampleRay, examplePOIText.gameObject, exampleGrabbebleObject,
-            exampleGrabbebleObjectOpened, secondaryButtonPressEffect, steerStickDownArrow, steerStickLeftArrow, steerStickRightArrow,
-            steerStickUpArrow, steerStickUseEffect, triggerPressEffect, exampleDropdown.gameObject});
+        exampleRay = GetComponent<LineRenderer>();
+        exampleRay.enabled = false;
 
-        ShowExampleButtonAnimation();
+        allTweenObjects.AddRange(new GameObject[] { primaryButtonArrow.gameObject, secondaryButtonArrow.gameObject, steerStickArrow.gameObject, 
+            triggerArrow.gameObject, gripArrow.gameObject, otherController.gameObject, exampleLegenda, steerStickArrowDown.gameObject,
+            steerStickArrowLeft.gameObject, steerStickArrowRight.gameObject, steerStickArrowUp.gameObject });
     }
 
-    public void ShowExampleButtonAnimation()
+    public void ShowExampleButtonAnimationFirstStep()
     {
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleButtonAnimation";
+        animationAfterButtonPressAnimation = "EndDelayAnimation";
+        startAnimationAfterEndDelay = "ShowExampleButtonAnimationFirstStep";
         TurnOffRayAndButtonEffect(true);
         exampleButton.SetActive(true);
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        rayEndPosGameObject = exampleButton;
+        BaseStartAnimation();
     }
 
-    public void ShowExampleInputFieldAnimation()
+    public void ShowExampleInputfieldAnimationFirstStep()
     {
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleTypeInInputFieldAnimation";
-        keyBoardPosCount = 0;
-        exampleInputfield.GetComponentInChildren<TMP_Text>().text = "";
-        exampleInputfield.SetActive(true);
-        exampleKeyboard.SetActive(true);
         TurnOffRayAndButtonEffect(true);
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        exampleInputField.SetActive(true);
+        keyBoardKeysCounter = 0;
+        animationAfterButtonPressAnimation = "ShowExampleInputfieldAnimationSecondStep";
+        startAnimationAfterEndDelay = "ShowExampleInputfieldAnimationFirstStep";
+        rayEndPosGameObject = exampleInputField;
+        BaseStartAnimation();
     }
 
-    private void ShowExampleTypeInInputFieldAnimation()
+    private void ShowExampleInputfieldAnimationSecondStep()
     {
-        exampleRay.transform.SetParent(transform);
+        if (keyBoardKeysToBeSelectedInExample.Count == 0)
+        {
+            StartCoroutine(SetNeccesaryKeyBoardKeys());
+        }
         TurnOffRayAndButtonEffect(false);
+        iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.45f + keyBoard.forward * 0.2f, "time", 2f, 
+            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleInputfieldAnimationThirdStep", "oncompletetarget", gameObject));
+    }
 
-        iTween.MoveTo(gameObject, iTween.Hash("position", exampleKeyBoardPosses[keyBoardPosCount].position, "time", 1.5f,
+    private IEnumerator SetNeccesaryKeyBoardKeys()
+    {
+        yield return new WaitForEndOfFrame();
+        KeyBoardKey[] keyBoardKeysArray = FindObjectsOfType<KeyBoardKey>();
+        List<KeyBoardKey> keyBoardKeys = new List<KeyBoardKey>();
+        keyBoardKeys.AddRange(keyBoardKeysArray);
+        for (int i = 0; i < requiredKeysFromKeyBoard.Count; i++)
+        {
+            keyBoardKeysToBeSelectedInExample.Add(keyBoardKeys.Find
+                (key => key.GetComponentInChildren<TMP_Text>().text == requiredKeysFromKeyBoard[i]).transform);
+        }
+    }
+
+    private void ShowExampleInputfieldAnimationThirdStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        iTween.LookTo(gameObject, iTween.Hash("looktarget", keyBoardKeysToBeSelectedInExample[keyBoardKeysCounter], "time", 1f,
             "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
-
-        switch (keyBoardPosCount)
+        rayEndPosGameObject = keyBoardKeysToBeSelectedInExample[keyBoardKeysCounter].gameObject;
+        keyBoardKeysCounter++;
+        if (keyBoardKeysCounter < keyBoardKeysToBeSelectedInExample.Count)
         {
-            case 1:
-                exampleInputfield.GetComponentInChildren<TMP_Text>().text += "h";
-                break;
-            case 2:
-                exampleInputfield.GetComponentInChildren<TMP_Text>().text += "a";
-                break;
-            case 3: case 4:
-                exampleInputfield.GetComponentInChildren<TMP_Text>().text += "l";
-                break;
-        }
-
-        keyBoardPosCount++;
-        if (keyBoardPosCount >= exampleKeyBoardPosses.Count)
+            animationAfterButtonPressAnimation = "ShowExampleInputfieldAnimationThirdStep";
+        } else
         {
-            neededFunctionAfterTurnOnButtonEffect = "AddLastLetterToInputField";
+            animationAfterButtonPressAnimation = "EndDelayAnimation";
         }
     }
 
-    private void AddLastLetterToInputField()
+    public void ShowExampleMoveMapFirstStep()
     {
-        TurnOffRayAndButtonEffect(false);
-        exampleInputfield.GetComponentInChildren<TMP_Text>().text += "o";
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 2f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleInputFieldAnimation", "oncompletetarget", gameObject));
-    }
-
-    public void StartExampleMoveMap()
-    {
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleMoveMapFirstStep";
+        animationAfterButtonPressAnimation = "ShowExampleMoveMapSecondStep";
+        startAnimationAfterEndDelay = "ShowExampleMoveMapFirstStep";
         TurnOffRayAndButtonEffect(true);
-        mapOfNetherlands.SetActive(true);
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveMapFirstStep()
-    {
-        mapOfNetherlands.transform.SetParent(transform);
-        exampleRay.transform.SetParent(transform);
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(-0.75f, 0.1f, 0), "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveMapSecondStep", "oncompletetarget", gameObject));
+        rayEndPosGameObject = table;
+        BaseStartAnimation();
     }
 
     private void ShowExampleMoveMapSecondStep()
     {
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(-0.5f, -0.2f, 0), "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveMapThirdStep", "oncompletetarget", gameObject));
+        Vector3 newPos = transform.position - transform.right * amountOfMovement;
+        if (isControlledByOtherController)
+        {
+            newPos = transform.position + transform.right * amountOfMovement;
+        }
+
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveMapThirdStep", "oncompletetarget", gameObject, "delay", 0.5f));
     }
 
     private void ShowExampleMoveMapThirdStep()
     {
-        neededFunctionAfterTurnOnButtonEffect = "StartExampleMoveMap";
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        Vector3 newPos = transform.position + transform.right * 2 * amountOfMovement;
+        if (isControlledByOtherController)
+        {
+            newPos = transform.position - transform.right * 2 * amountOfMovement;
+        }
+
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 4f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveMapFourthStep", "oncompletetarget", gameObject, "delay", 0.5f));
     }
 
-    public void StartExampleRotateMap()
+    private void ShowExampleMoveMapFourthStep()
     {
-        showGripAndPrimary = true;
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleRotateMapFirstStep";
+        Vector3 newPos = transform.position - transform.right * amountOfMovement;
+        if (isControlledByOtherController)
+        {
+            newPos = transform.position + transform.right * amountOfMovement;
+        }
+
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    public void ShowExampleRotateMapFirstStep()
+    {
+        showPrimaryAndGrip = true;
+        animationAfterButtonPressAnimation = "ShowExampleMoveMapSecondStep";
+        startAnimationAfterEndDelay = "ShowExampleRotateMapFirstStep";
         TurnOffRayAndButtonEffect(true);
-        mapOfNetherlands.SetActive(true);
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        rayEndPosGameObject = table;
+        BaseStartAnimation();
     }
 
-    private void ShowExampleRotateMapFirstStep()
+    public void ShowExampleScaleMapFirstStep()
     {
-        exampleRay.transform.SetParent(transform);
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(-0.45f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleRotateMapSecondStep", "oncompletetarget", gameObject));
-        iTween.RotateTo(mapOfNetherlands, iTween.Hash("rotation", new Vector3(0, 0, -75), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
+        if (!otherController.gameObject.activeSelf)
+        {
+            otherController.gameObject.SetActive(true);
+            if (otherController.exampleRay == null)
+            {
+                otherController.Start();
+            }
+            otherController.ShowExampleScaleMapFirstStep();
+        }
+
+        amountOfMovement = 0.4f;
+        rayEndPosGameObject = table;
+        showPrimaryAndGrip = false;
+        animationAfterButtonPressAnimation = "ShowExampleMoveMapSecondStep";
+        startAnimationAfterEndDelay = "ShowExampleScaleMapFirstStep";
+        TurnOffRayAndButtonEffect(true);
+        BaseStartAnimation();
     }
 
-    private void ShowExampleRotateMapSecondStep()
+    public void ShowExampleOpenPOIInformation()
     {
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(0.35f, 0, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleRotateMapThirdStep", "oncompletetarget", gameObject));
-        iTween.RotateTo(mapOfNetherlands, iTween.Hash("rotation", new Vector3(0, 0, 75), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine));
-    }
+        if (examplePOI == null)
+        {
+            examplePOI = FindObjectOfType<POIText>().gameObject;
+        }
 
-    private void ShowExampleRotateMapThirdStep()
-    {
-        neededFunctionAfterTurnOnButtonEffect = "StartExampleRotateMap";
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
-        iTween.RotateTo(mapOfNetherlands, iTween.Hash("rotation", Vector3.zero, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    public void StartExampleScaleMap()
-    {
-        showGripAndPrimary = false;
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleScaleMapFirstStep";
-
-        exampleRay.transform.SetParent(exampleRayParent);
-        otherExampleRay.transform.SetParent(exampleRayParent);
-
-        TurnOffRayAndButtonEffect(false);
-        mapOfNetherlands.SetActive(true);
-        otherOculusController.SetActive(true);
-        otherOculusController.transform.GetChild(0).gameObject.SetActive(false);
-        otherExampleRay.SetActive(false);
-
-        mapOfNetherlands.transform.eulerAngles = exampleMapRot;
-        mapOfNetherlands.transform.localScale = Vector3.one;
-        mapOfNetherlands.transform.position = scaleMapTransform.position;
-        transform.position = basePos;
-        otherOculusController.transform.position = otherOculusControllerbasePos;
-        exampleRay.transform.position = exampleRayBasePosScaleMap.position;
-        otherExampleRay.transform.position = otherExampleRayPos;
-
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransformScaleMap.position, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherBeforeRayTransformScaleMap.position, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnOtherExampleRay", "oncompletetarget", gameObject));
-    }
-
-    private void TurnOnOtherExampleRay()
-    {
-        otherExampleRay.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.75f, "onupdate", "EmptyUpdate",
-            "oncomplete", "TurnOnOtherOculusControllerPrimaryButtonEffect", "oncompletetarget", gameObject));
-    }
-
-    private void TurnOnOtherOculusControllerPrimaryButtonEffect()
-    {
-        otherOculusController.transform.GetChild(0).gameObject.SetActive(true);
-    }
-
-    private void ShowExampleScaleMapFirstStep()
-    {
-        exampleRay.transform.SetParent(transform);
-        otherExampleRay.transform.SetParent(otherOculusController.transform);
-
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransformScaleMap.position + new Vector3(0.25f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleMapSecondStep", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherBeforeRayTransformScaleMap.position + new Vector3(-0.25f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
-        iTween.ScaleTo(mapOfNetherlands, iTween.Hash("scale", new Vector3(1.5f, 1.5f, 1.5f), "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    private void ShowExampleScaleMapSecondStep()
-    {
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransformScaleMap.position + new Vector3(-0.4f, 0, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleMapThirdStep", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherBeforeRayTransformScaleMap.position + new Vector3(0.4f, 0, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine));
-        iTween.ScaleTo(mapOfNetherlands, iTween.Hash("scale", new Vector3(0.6f, 0.6f, 0.6f), "time", 3f, "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    private void ShowExampleScaleMapThirdStep()
-    {
-        neededFunctionAfterTurnOnButtonEffect = "StartExampleScaleMap";
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransformScaleMap.position, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherBeforeRayTransformScaleMap.position, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
-        iTween.ScaleTo(mapOfNetherlands, iTween.Hash("scale", Vector3.one, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    public void ShowExampleShowingExtraPOIInformation()
-    {
         showPrimaryOnly = false;
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleOpeningExtraPOIInformation";
+        animationAfterButtonPressAnimation = "ShowExampleOpenPOIInformation";
+        startAnimationAfterEndDelay = "ShowExampleOpenPOIInformation";
         TurnOffRayAndButtonEffect(true);
-        examplePOI.SetActive(true);
-        examplePOIText.gameObject.SetActive(true);
-        examplePOIText.text = baseExampleText;
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        rayEndPosGameObject = examplePOI;
+        BaseStartAnimation();
     }
 
-    private void ShowExampleOpeningExtraPOIInformation()
-    {
-        examplePOIText.text += "\nGeen hypotheek,\nHypotheeknemer buitenland,\nVeiling";
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 3f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleShowingExtraPOIInformation", "oncompletetarget", gameObject));
-    }
-
-    public void ShowExamplePullingPOITowardsPlayer()
+    public void ShowExamplePullPOI()
     {
         showPrimaryOnly = true;
-        neededFunctionAfterTurnOnButtonEffect = "ShowExamplePullingPOITowardsPlayer";
+        animationAfterButtonPressAnimation = "EndDelayAnimation";
+        startAnimationAfterEndDelay = "ShowExamplePullPOI";
         TurnOffRayAndButtonEffect(true);
-        examplePOI.SetActive(true);
-        examplePOIText.gameObject.SetActive(true);
-        examplePOIText.text = baseExampleText;
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        rayEndPosGameObject = examplePOI;
+        BaseStartAnimation();
     }
 
-    public void StartExampleGrabObject()
+    public void ShowExampleGrabObjectFirstStep()
     {
         showPrimaryOnly = false;
         showGripOnly = true;
         TurnOffRayAndButtonEffect(true);
-        exampleGrabbebleObject.SetActive(true);
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleGrabObjectFirstStep";
-        neededFunctionAfterSecondGrabPhase = "ShowExampleGrabObjectThirdStep";
-        neededFunctionAfterEndOfGrabAnimation = "StartExampleGrabObject";
-
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleGrabObjectFirstStep()
-    {
-        gripPressEffect.SetActive(false);
-        exampleRay.SetActive(false);
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject));
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "EndDelayAnimation";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
     }
 
     private void ShowExampleGrabObjectSecondStep()
     {
-        exampleGrabbebleObjectOpened.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 1.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", neededFunctionAfterSecondGrabPhase, "oncompletetarget", gameObject));
+        iTween.MoveTo(gameObject, iTween.Hash("position", exampleLegenda.transform.position + exampleLegenda.transform.up * 0.5f + 
+            exampleLegenda.transform.right * -0.35f, "time", 2f, "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "RotateToLookAtObject", 
+            "oncompletetarget", gameObject));
     }
 
     private void ShowExampleGrabObjectThirdStep()
     {
-        gripPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleGrabObjectFourthStep", "oncompletetarget", gameObject));
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectFourthStep";
+        startAnimationAfterEndDelay = "ShowPrimaryButtonPressAnimation";
+        TurnOffRayAndButtonEffect(false);
+        iTween.MoveTo(exampleLegenda, iTween.Hash("position", transform.position, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", animationAfterObjectGrab, "oncompletetarget", gameObject));
     }
 
     private void ShowExampleGrabObjectFourthStep()
     {
-        exampleGrabbebleObjectOpened.SetActive(false);
-        gripPressEffect.SetActive(false);
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", exampleGrabbebleObjectBasePos, "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", neededFunctionAfterEndOfGrabAnimation, "oncompletetarget", gameObject));
+        TurnOffRayAndButtonEffect(false);
+        startAnimationAfterEndDelay = "ShowExampleGrabObjectFirstStep";
+        iTween.MoveTo(exampleLegenda, iTween.Hash("position", exampleLegendaBasePos, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
     }
 
-    public void StartExampleMoveCanvasObject()
+    public void ShowExampleMoveGrabbedObjectFirstStep()
     {
-        StartExampleGrabObject();
-        neededFunctionAfterSecondGrabPhase = "SetUpExampleMoveCanvasObjectFirstStep";
-        neededFunctionAfterEndOfGrabAnimation = "StartExampleMoveCanvasObject";
-    }
-
-    private void SetUpExampleMoveCanvasObjectFirstStep()
-    {
-        gripPressEffect.SetActive(false);
-        showPrimaryOnly = true;
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleMoveCanvasObjectFirstStep";
-        TurnOnExampleRay();
-    }
-
-    private void ShowExampleMoveCanvasObjectFirstStep()
-    {
-        exampleGrabbebleObjectOpened.transform.SetParent(exampleGrabbebleObject.transform);
-        exampleRay.transform.SetParent(exampleGrabbebleObject.transform);
-        transform.SetParent(exampleGrabbebleObject.transform);
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(0, 0.3f, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveCanvasObjectSecondStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveCanvasObjectSecondStep()
-    {
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(0, -0.6f, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveCanvasObjectThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveCanvasObjectThirdStep()
-    {
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", beforeRayTransform.position, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveCanvasObjectFourthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveCanvasObjectFourthStep()
-    {
-        primaryButtonPressEffect.SetActive(false);
         showPrimaryOnly = false;
-        exampleGrabbebleObjectOpened.transform.SetParent(exampleRayParent);
-        exampleRay.transform.SetParent(exampleRayParent);
-        transform.SetParent(exampleRayParent);
-        exampleRay.SetActive(false);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleGrabObjectThirdStep", "oncompletetarget", gameObject));
-    }
-
-    public void StartExampleScaleCanvasObject()
-    {
-        StartExampleGrabObject();
-        neededFunctionAfterSecondGrabPhase = "SetUpExampleScaleCanvasObjectFirstStep";
-        neededFunctionAfterEndOfGrabAnimation = "StartExampleScaleCanvasObject";
-    }
-
-    private void SetUpExampleScaleCanvasObjectFirstStep()
-    {
-        gripPressEffect.SetActive(false);
-        showGripOnly = false;
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleScaleCanvasObjectFirstStep";
-        TurnOnExampleRay();
-    }
-
-    private void ShowExampleScaleCanvasObjectFirstStep()
-    {
-        exampleGrabbebleObject.transform.SetParent(exampleGrabbebleObjectOpened.transform);
-        exampleRay.transform.SetParent(exampleGrabbebleObjectOpened.transform);
-        transform.SetParent(exampleGrabbebleObjectOpened.transform);
-
-        iTween.MoveTo(exampleGrabbebleObjectOpened, iTween.Hash("position", scaleMapTransform.position, "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleCanvasObjectSecondStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleCanvasObjectSecondStep()
-    {
-        exampleGrabbebleObject.transform.SetParent(exampleRayParent);
-        exampleRay.transform.SetParent(exampleRayParent);
-        transform.SetParent(exampleRayParent);
-
-        otherOculusController.SetActive(true);
-        otherOculusController.transform.GetChild(0).gameObject.SetActive(false);
-        otherExampleRay.SetActive(false);
-
-        otherOculusController.transform.position = otherOculusControllerbasePos;
-        otherExampleRay.transform.position = new Vector3(otherExampleRayPos.x, exampleRay.transform.position.y, otherExampleRayPos.z);
-
-        iTween.MoveTo(otherOculusController, iTween.Hash("position",
-            new Vector3(otherBeforeRayTransformScaleMap.position.x, transform.position.y, transform.position.z), "time", 1f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleCanvasObjectThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleCanvasObjectThirdStep()
-    {
-        otherExampleRay.SetActive(true);
-        otherOculusController.transform.GetChild(0).gameObject.SetActive(true);
-        primaryButtonPressEffect.SetActive(true);
-
-        exampleRay.transform.SetParent(exampleGrabbebleObject.transform);
-        transform.SetParent(exampleGrabbebleObject.transform);
-        otherExampleRay.transform.SetParent(otherOculusController.transform);
-
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", exampleGrabbebleObject.transform.position + new Vector3(0.25f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleCanvasObjectFourthStep", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherOculusController.transform.position + new Vector3(-0.15f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
-        iTween.ScaleTo(exampleGrabbebleObjectOpened, iTween.Hash("scale", new Vector3(1.5f, 1.5f, 1.5f), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    private void ShowExampleScaleCanvasObjectFourthStep()
-    {
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", exampleGrabbebleObject.transform.position + new Vector3(-0.3f, 0, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleCanvasObjectFifthStep", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherOculusController.transform.position + new Vector3(0.4f, 0, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine));
-        iTween.ScaleTo(exampleGrabbebleObjectOpened, iTween.Hash("scale", new Vector3(0.6f, 0.6f, 0.6f), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    private void ShowExampleScaleCanvasObjectFifthStep()
-    {
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", exampleGrabbebleObject.transform.position + new Vector3(0.1f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleCanvasObjectSixthStep", "oncompletetarget", gameObject));
-        iTween.MoveTo(otherOculusController, iTween.Hash("position", otherOculusController.transform.position + new Vector3(-0.25f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine));
-        iTween.ScaleTo(exampleGrabbebleObjectOpened, iTween.Hash("scale", Vector3.one, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine));
-    }
-
-    private void ShowExampleScaleCanvasObjectSixthStep()
-    {
-        otherExampleRay.transform.SetParent(exampleRayParent);
-
-        otherOculusController.SetActive(false);
-        otherExampleRay.SetActive(false);
-        primaryButtonPressEffect.SetActive(false);
-
-        otherExampleRay.transform.position = otherExampleRayPos;
-
-        exampleGrabbebleObjectOpened.transform.SetParent(exampleGrabbebleObject.transform);
-        exampleRay.transform.SetParent(exampleGrabbebleObject.transform);
-        transform.SetParent(exampleGrabbebleObject.transform);
-
-        iTween.MoveTo(exampleGrabbebleObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "EndSetupForScaleAnimation", "oncompletetarget", gameObject));
-    }
-
-    private void EndSetupForScaleAnimation()
-    {
-        exampleRay.SetActive(false);
-
-        exampleGrabbebleObjectOpened.transform.SetParent(exampleRayParent);
-        exampleRay.transform.SetParent(exampleRayParent);
-        transform.SetParent(exampleRayParent);
-
-        ShowExampleGrabObjectThirdStep();
-    }
-
-    public void ShowExampleMoveMapWithControllerFirstStep()
-    {
+        showGripOnly = true;
         TurnOffRayAndButtonEffect(true);
-        mapOfNetherlands.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.75f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleMoveMapWithControllerSecondStep", "oncompletetarget", gameObject));
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleMoveGrabbedObjectSecondStep";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
     }
 
-    private void ShowExampleMoveMapWithControllerSecondStep()
+    private void ShowExampleMoveGrabbedObjectSecondStep()
     {
-        steerStickUseEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleMoveMapWithControllerThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveMapWithControllerThirdStep()
-    {
-        steerStickLeftArrow.SetActive(true);
-        iTween.MoveTo(mapOfNetherlands, iTween.Hash("position", exampleMapPos + new Vector3(-0.5f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveMapWithControllerFourthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveMapWithControllerFourthStep()
-    {
-        steerStickLeftArrow.SetActive(false);
-        steerStickUpArrow.SetActive(true);
-        iTween.MoveTo(mapOfNetherlands, iTween.Hash("position", exampleMapPos + new Vector3(-0.5f, 0.5f, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveMapWithControllerFifthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveMapWithControllerFifthStep()
-    {
-        steerStickUpArrow.SetActive(false);
-        steerStickDownArrow.SetActive(true);
-        iTween.MoveTo(mapOfNetherlands, iTween.Hash("position", exampleMapPos + new Vector3(-0.5f, -0.5f, 0), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveMapWithControllerSixthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveMapWithControllerSixthStep()
-    {
-        steerStickDownArrow.SetActive(false);
-        steerStickUpArrow.SetActive(true);
-        iTween.MoveTo(mapOfNetherlands, iTween.Hash("position", exampleMapPos + new Vector3(-0.5f, 0, 0), "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveMapWithControllerSeventhStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveMapWithControllerSeventhStep()
-    {
-        steerStickUpArrow.SetActive(false);
-        steerStickRightArrow.SetActive(true);
-        iTween.MoveTo(mapOfNetherlands, iTween.Hash("position", exampleMapPos, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleMoveMapWithControllerFirstStep", "oncompletetarget", gameObject));
-    }
-
-    public void ShowExampleRotateMapWithControllersFirstStep()
-    {
-        TurnOffRayAndButtonEffect(true);
-        mapOfNetherlands.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.75f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleRotateMapWithControllersSecondStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleRotateMapWithControllersSecondStep()
-    {
-        triggerPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleRotateMapWithControllersThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleRotateMapWithControllersThirdStep()
-    {
-        iTween.RotateTo(mapOfNetherlands, iTween.Hash("rotation", new Vector3(0, 0, 75), "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleRotateMapWithControllersFourthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleRotateMapWithControllersFourthStep()
-    {
-        triggerPressEffect.SetActive(false);
-        gripPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleRotateMapWithControllersFifthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleRotateMapWithControllersFifthStep()
-    {
-        iTween.RotateTo(mapOfNetherlands, iTween.Hash("rotation", new Vector3(0, 0, -75), "time", 3f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleRotateMapWithControllersSixthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleRotateMapWithControllersSixthStep()
-    {
-        gripPressEffect.SetActive(false);
-        triggerPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleRotateMapWithControllersSeventhStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleRotateMapWithControllersSeventhStep()
-    {
-        iTween.RotateTo(mapOfNetherlands, iTween.Hash("rotation", Vector3.zero, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleRotateMapWithControllersFirstStep", "oncompletetarget", gameObject));
-    }
-
-    public void ShowExampleScaleMapWithControllersFirstStep()
-    {
-        TurnOffRayAndButtonEffect(true);
-        mapOfNetherlands.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.75f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleMapWithControllersSecondStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleMapWithControllersSecondStep()
-    {
-        primaryButtonPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleMapWithControllersThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleMapWithControllersThirdStep()
-    {
-        iTween.ScaleTo(mapOfNetherlands, iTween.Hash("scale", new Vector3(1.5f, 1.5f, 1.5f), "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleScaleMapWithControllersFourthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleMapWithControllersFourthStep()
-    {
-        primaryButtonPressEffect.SetActive(false);
-        secondaryButtonPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleMapWithControllersFifthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleMapWithControllersFifthStep()
-    {
-        iTween.ScaleTo(mapOfNetherlands, iTween.Hash("scale", new Vector3(0.6f, 0.6f, 0.6f), "time", 3f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleScaleMapWithControllersSixthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleMapWithControllersSixthStep()
-    {
-        secondaryButtonPressEffect.SetActive(false);
-        primaryButtonPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleMapWithControllersSeventhStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleMapWithControllersSeventhStep()
-    {
-        iTween.ScaleTo(mapOfNetherlands, iTween.Hash("scale", Vector3.one, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "ShowExampleScaleMapWithControllersFirstStep", "oncompletetarget", gameObject));
-    }
-
-    public void ShowExampleMoveUIWithControllersFirstStep()
-    {
-        StartExampleGrabObject();
-        neededFunctionAfterSecondGrabPhase = "ShowExampleMoveUIWithControllersSecondStep";
-        neededFunctionAfterEndOfGrabAnimation = "ShowExampleMoveUIWithControllersFirstStep";
-    }
-
-    private void ShowExampleMoveUIWithControllersSecondStep()
-    {
-        gripPressEffect.SetActive(false);
-        steerStickUseEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleMoveUIWithControllersThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveUIWithControllersThirdStep()
-    {
-        steerStickUpArrow.SetActive(true);
-        iTween.MoveTo(exampleGrabbebleObjectOpened, iTween.Hash("position", exampleGrabbebleObjectOpenedBasePos + new Vector3(0, 0.5f, 0), 
-            "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveUIWithControllersFourthStep", 
-            "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveUIWithControllersFourthStep()
-    {
-        steerStickUpArrow.SetActive(false);
-        steerStickDownArrow.SetActive(true);
-        iTween.MoveTo(exampleGrabbebleObjectOpened, iTween.Hash("position", exampleGrabbebleObjectOpenedBasePos + new Vector3(0, -0.5f, 0), 
-            "time", 3f, "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveUIWithControllersFifthStep", 
-            "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveUIWithControllersFifthStep()
-    {
-        steerStickUpArrow.SetActive(true);
-        steerStickDownArrow.SetActive(false);
-        iTween.MoveTo(exampleGrabbebleObjectOpened, iTween.Hash("position", exampleGrabbebleObjectOpenedBasePos, "time", 1.5f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "EndSetupForExampleMoveUIWithControllers", "oncompletetarget", gameObject));
-    }
-
-    private void EndSetupForExampleMoveUIWithControllers()
-    {
-        steerStickUpArrow.SetActive(false);
-        steerStickUseEffect.SetActive(false);
-        ShowExampleGrabObjectThirdStep();
-    }
-
-    public void ShowExampleScaleUIWithControllersFirstStep()
-    {
-        StartExampleGrabObject();
-        neededFunctionAfterSecondGrabPhase = "ShowExampleScaleUIWithControllersSecondStep";
-        neededFunctionAfterEndOfGrabAnimation = "ShowExampleScaleUIWithControllersFirstStep";
-    }
-
-    private void ShowExampleScaleUIWithControllersSecondStep()
-    {
-        gripPressEffect.SetActive(false);
-        primaryButtonPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleUIWithControllersThirdStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleUIWithControllersThirdStep()
-    {
-        iTween.ScaleTo(exampleGrabbebleObjectOpened, iTween.Hash("scale", new Vector3(1.5f, 1.5f, 1.5f), "time", 1.5f, 
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleUIWithControllersFourthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleUIWithControllersFourthStep()
-    {
-        primaryButtonPressEffect.SetActive(false);
-        secondaryButtonPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleUIWithControllersFifthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleUIWithControllersFifthStep()
-    {
-        iTween.ScaleTo(exampleGrabbebleObjectOpened, iTween.Hash("scale", new Vector3(0.6f, 0.6f, 0.6f), "time", 3f,
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleScaleUIWithControllersSixthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleUIWithControllersSixthStep()
-    {
-        secondaryButtonPressEffect.SetActive(false);
-        primaryButtonPressEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleScaleUIWithControllersSeventhStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleScaleUIWithControllersSeventhStep()
-    {
-        iTween.ScaleTo(exampleGrabbebleObjectOpened, iTween.Hash("scale", Vector3.one, "time", 1.5f, "easetype", iTween.EaseType.easeInOutSine, 
-            "oncomplete", "EndSetupForExampleScaleUIWithControllers", "oncompletetarget", gameObject));
-    }
-
-    private void EndSetupForExampleScaleUIWithControllers()
-    {
-        primaryButtonPressEffect.SetActive(false);
-        steerStickUseEffect.SetActive(false);
-        ShowExampleGrabObjectThirdStep();
-    }
-
-    public void ShowExampleMoveOpenedDropdownWithControllersFirstStep()
-    {
-        exampleDropdown.gameObject.SetActive(true);
-        exampleDropdown.Hide();
-
+        exampleLegenda.transform.SetParent(transform);
+        rayEndPosGameObject = canvas.gameObject;
+        animationAfterButtonPressAnimation = "ShowExampleMoveGrabbedObjectThirdStep";
         showPrimaryOnly = true;
+        showGripOnly = false;
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveGrabbedObjectThirdStep()
+    {
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos + new Vector3(0, 0.6f, 0), "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveGrabbedObjectFourthStep", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleMoveGrabbedObjectFourthStep()
+    {
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos, "time", 3f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveGrabbedObjectFifthStep", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleMoveGrabbedObjectFifthStep()
+    {
+        startAnimationAfterEndDelay = "ShowExampleMoveGrabbedObjectFirstStep";
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "PrepareFinalStepMoveGrabbedObject", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void PrepareFinalStepMoveGrabbedObject()
+    {
+        exampleLegenda.transform.SetParent(null);
+        animationAfterButtonPressAnimation = "ShowExampleMoveGrabbedObjectSixthStep";
+        TurnOffRayAndButtonEffect(false);
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        ShowPrimaryButtonPressAnimation();
+    }
+
+    private void ShowExampleMoveGrabbedObjectSixthStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        iTween.MoveTo(exampleLegenda, iTween.Hash("position", exampleLegendaBasePos, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+        iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
+    }
+
+    public void ShowExampleScaleGrabbedObjectFirstStep()
+    {
+        showPrimaryOnly = false;
+        showGripOnly = true;
         TurnOffRayAndButtonEffect(true);
-        neededFunctionAfterTurnOnButtonEffect = "ShowExampleMoveOpenedDropdownWithControllersSecondStep";
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleScaleGrabbedObjectSecondStep";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
     }
 
-    private void ShowExampleMoveOpenedDropdownWithControllersSecondStep()
+    private void ShowExampleScaleGrabbedObjectSecondStep()
     {
-        exampleDropdown.Show();
-        primaryButtonPressEffect.SetActive(false);
-        exampleRay.transform.SetParent(transform);
-        StartCoroutine(RemoveSortingLayerPriorityFromExampleDropdown());
-        iTween.MoveTo(gameObject, iTween.Hash("position", beforeRayTransform.position + new Vector3(0, -0.5f, 0), "time", 1.5f, 
-            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleMoveOpenedDropdownWithControllersThirdStep", 
-            "oncompletetarget", gameObject));
-    }
+        rayEndPosGameObject = canvas.gameObject;
+        animationAfterButtonPressAnimation = "ShowExampleScaleGrabbedObjectThirdStep";
+        showPrimaryOnly = true;
+        showGripOnly = false;
+        amountOfMovement = 0.4f;
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
 
-    private IEnumerator RemoveSortingLayerPriorityFromExampleDropdown()
-    {
-        yield return new WaitForEndOfFrame();
-        exampleDropdown.GetComponentInChildren<Canvas>().overrideSorting = false;
-    }
-
-    private void ShowExampleMoveOpenedDropdownWithControllersThirdStep()
-    {
-        steerStickUseEffect.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleMoveOpenedDropdownWithControllersFourthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveOpenedDropdownWithControllersFourthStep()
-    {
-        steerStickDownArrow.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 1f, "to", 0f, "time", 4f, "onupdate", "ShowExampleMoveDropdownBarUpdate",
-            "oncomplete", "ShowExampleMoveOpenedDropdownWithControllersFifthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveOpenedDropdownWithControllersFifthStep()
-    {
-        steerStickDownArrow.SetActive(false);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleMoveOpenedDropdownWithControllersSixthStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveOpenedDropdownWithControllersSixthStep()
-    {
-        steerStickUpArrow.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 4f, "onupdate", "ShowExampleMoveDropdownBarUpdate",
-            "oncomplete", "ShowExampleMoveOpenedDropdownWithControllersSeventhStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveOpenedDropdownWithControllersSeventhStep()
-    {
-        steerStickUpArrow.SetActive(false);
-        steerStickUseEffect.SetActive(false);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", "ShowExampleMoveOpenedDropdownWithControllersFirstStep", "oncompletetarget", gameObject));
-    }
-
-    private void ShowExampleMoveDropdownBarUpdate(float value)
-    {
-        if (exampleDrowdownScrollbar == null)
+        if (!isControlledByOtherController)
         {
-            exampleDrowdownScrollbar = exampleDropdown.GetComponentInChildren<Scrollbar>();
+            exampleLegenda.transform.SetParent(transform);
+            otherController.gameObject.SetActive(true);
+            otherController.ShowExampleScaleGrabbedObjectSecondStep();
+        }
+    }
+
+    private void ShowExampleScaleGrabbedObjectThirdStep()
+    {
+        Vector3 newPos = transform.position - transform.right * amountOfMovement;
+        if (isControlledByOtherController)
+        {
+            newPos = transform.position + transform.right * amountOfMovement;
         }
 
-        exampleDrowdownScrollbar.value = value;
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleScaleGrabbedObjectFourthStep", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleScaleGrabbedObjectFourthStep()
+    {
+        Vector3 newPos = transform.position + transform.right * 2 * amountOfMovement;
+        if (isControlledByOtherController)
+        {
+            newPos = transform.position - transform.right * 2 * amountOfMovement;
+        }
+
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleScaleGrabbedObjectFifthStep", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleScaleGrabbedObjectFifthStep()
+    {
+        Vector3 newPos = transform.position - transform.right * amountOfMovement;
+        if (isControlledByOtherController)
+        {
+            newPos = transform.position + transform.right * amountOfMovement;
+        }
+
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "PrepareFinalStepScaleGrabbedObject", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void PrepareFinalStepScaleGrabbedObject()
+    {
+        if (isControlledByOtherController)
+        {
+            TurnOffRayAndButtonEffect(false);
+            transform.position = basePos;
+            transform.eulerAngles = baseRot;
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            exampleLegenda.transform.SetParent(null);
+            startAnimationAfterEndDelay = "ShowExampleScaleGrabbedObjectFirstStep";
+            animationAfterButtonPressAnimation = "ShowExampleMoveGrabbedObjectSixthStep";
+            TurnOffRayAndButtonEffect(false);
+            showPrimaryOnly = false;
+            showGripOnly = true;
+            ShowPrimaryButtonPressAnimation();
+        }
+    }
+
+    public void ShowExampleMoveMapFirstStepWithControllers()
+    {
+        startAnimationAfterEndDelay = "ShowExampleMoveMapFirstStepWithControllers";
+        TurnOffRayAndButtonEffect(true);
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleMoveMapSecondStepWithControllers", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void ShowExampleMoveMapSecondStepWithControllers()
+    {
+        steerStickArrow.gameObject.SetActive(true);
+        steerStickArrow.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveMapThirdStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveMapThirdStepWithControllers()
+    {
+        steerStickArrowUp.gameObject.SetActive(true);
+        steerStickArrowUp.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveMapFourthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveMapFourthStepWithControllers()
+    {
+        steerStickArrowUp.gameObject.SetActive(false);
+        steerStickArrowLeft.gameObject.SetActive(true);
+        steerStickArrowLeft.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveMapFifthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveMapFifthStepWithControllers()
+    {
+        steerStickArrowLeft.gameObject.SetActive(false);
+        steerStickArrowDown.gameObject.SetActive(true);
+        steerStickArrowDown.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveMapSixthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveMapSixthStepWithControllers()
+    {
+        steerStickArrowDown.gameObject.SetActive(false);
+        steerStickArrowRight.gameObject.SetActive(true);
+        steerStickArrowRight.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveMapSeventhStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveMapSeventhStepWithControllers()
+    {
+        if (isControlledByOtherController)
+        {
+            otherController.startAnimationAfterEndDelay = "ShowExampleMoveGrabbedObjectFirstStepWithControllers";
+            otherController.PrepareFinalStepMoveGrabbedObject();
+            TurnOffRayAndButtonEffect(true);
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            steerStickArrowRight.gameObject.SetActive(false);
+            EndDelayAnimation();
+        }
+    }
+
+    public void ShowExampleRotateMapFirstStepWithControllers()
+    {
+        TurnOffRayAndButtonEffect(true);
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleRotateMapSecondStepWithControllers", "oncompletetarget", gameObject, "delay", 1f));
+    }
+    private void ShowExampleRotateMapSecondStepWithControllers()
+    {
+        startAnimationAfterEndDelay = "ShowExampleRotateMapThirdStepWithControllers";
+        triggerArrow.gameObject.SetActive(true);
+        triggerArrow.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", triggerArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleRotateMapThirdStepWithControllers()
+    {
+        startAnimationAfterEndDelay = "ShowExampleMoveMapRotateFourthStepWithControllers";
+        triggerArrow.gameObject.SetActive(false);
+        gripArrow.gameObject.SetActive(true);
+        gripArrow.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", gripArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveMapRotateFourthStepWithControllers()
+    {
+        gripArrow.gameObject.SetActive(false);
+        startAnimationAfterEndDelay = "ShowExampleRotateMapFirstStepWithControllers";
+        EndDelayAnimation();
+    }
+
+    public void ShowExampleScaleMapFirstStepWithControllers()
+    {
+        TurnOffRayAndButtonEffect(true);
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleScaleMapSecondStepWithControllers", "oncompletetarget", gameObject, "delay", 1f));
+    }
+    private void ShowExampleScaleMapSecondStepWithControllers()
+    {
+        startAnimationAfterEndDelay = "ShowExampleScaleMapThirdStepWithControllers";
+        primaryButtonArrow.gameObject.SetActive(true);
+        primaryButtonArrow.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", primaryButtonArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleScaleMapThirdStepWithControllers()
+    {
+        startAnimationAfterEndDelay = "ShowExampleScaleMapRotateFourthStepWithControllers";
+        primaryButtonArrow.gameObject.SetActive(false);
+        secondaryButtonArrow.gameObject.SetActive(true);
+        secondaryButtonArrow.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", secondaryButtonArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleScaleMapRotateFourthStepWithControllers()
+    {
+        if (isControlledByOtherController)
+        {
+            otherController.startAnimationAfterEndDelay = "ShowExampleScaleGrabbedObjectFirstStepWithControllers";
+            otherController.PrepareFinalStepMoveGrabbedObject();
+            TurnOffRayAndButtonEffect(true);
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            secondaryButtonArrow.gameObject.SetActive(false);
+            startAnimationAfterEndDelay = "ShowExampleScaleMapFirstStepWithControllers";
+            EndDelayAnimation();
+        }
+    }
+
+    public void ShowExampleMoveGrabbedObjectFirstStepWithControllers()
+    {
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        TurnOffRayAndButtonEffect(true);
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleMoveGrabbedObjectSecondStepWithControllers";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void ShowExampleMoveGrabbedObjectSecondStepWithControllers()
+    {
+        exampleLegenda.transform.SetParent(transform);
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleMoveGrabbedObjectThirdStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveGrabbedObjectThirdStepWithControllers()
+    {
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleMoveGrabbedObjectFourthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveGrabbedObjectFourthStepWithControllers()
+    {
+        exampleLegenda.transform.SetParent(null);
+
+        otherController.gameObject.SetActive(true);
+        if (otherController.exampleRay == null)
+        {
+            otherController.Start();
+        }
+
+        otherController.ShowExampleMoveMapFirstStepWithControllers();
+    }
+
+    public void ShowExampleScaleGrabbedObjectFirstStepWithControllers()
+    {
+        TurnOffRayAndButtonEffect(true);
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleScaleGrabbedObjectSecondStepWithControllers";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void ShowExampleScaleGrabbedObjectSecondStepWithControllers()
+    {
+        exampleLegenda.transform.SetParent(transform);
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleScaleGrabbedObjectThirdStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleScaleGrabbedObjectThirdStepWithControllers()
+    {
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleScaleGrabbedObjectFourthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleScaleGrabbedObjectFourthStepWithControllers()
+    {
+        exampleLegenda.transform.SetParent(null);
+        otherController.gameObject.SetActive(true);
+        otherController.ShowExampleScaleMapFirstStepWithControllers();
+    }
+
+    public void ShowExampleMoveDropdownFirstStepWithControllers()
+    {
+        if (isControlledByOtherController)
+        {
+            animationAfterButtonPressAnimation = "ShowExampleMoveDropdownSecondStepWithControllers";
+            startAnimationAfterEndDelay = "ShowExampleMoveDropdownFirstStepWithControllers";
+            TurnOffRayAndButtonEffect(true);
+            exampleDropdown.SetActive(true);
+            rayEndPosGameObject = exampleDropdown;
+            BaseStartAnimation();
+        } else
+        {
+            otherController.gameObject.SetActive(true);
+            otherController.ShowExampleMoveDropdownFirstStepWithControllers();
+        }
+    }
+
+    private void ShowExampleMoveDropdownSecondStepWithControllers()
+    {
+        primaryButtonArrow.gameObject.SetActive(false);
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveDropdownThirdStepWithControllers", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleMoveDropdownThirdStepWithControllers()
+    {
+        steerStickArrow.gameObject.SetActive(true);
+        steerStickArrow.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveDropdownFourthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveDropdownFourthStepWithControllers()
+    {
+        steerStickArrowDown.gameObject.SetActive(true);
+        steerStickArrowDown.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrowDown.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveDropdownFifthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveDropdownFifthStepWithControllers()
+    {
+        steerStickArrowDown.gameObject.SetActive(false);
+        steerStickArrowUp.gameObject.SetActive(true);
+        steerStickArrowUp.DisplayTween();
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", steerStickArrowUp.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", "ShowExampleMoveDropdownSixthStepWithControllers", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleMoveDropdownSixthStepWithControllers()
+    {
+        steerStickArrowUp.gameObject.SetActive(false);
+        EndDelayAnimation();
+    }
+
+    private void BaseStartAnimation()
+    {
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "RotateToLookAtObject", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void RotateToLookAtObject()
+    {
+        if (rayEndPosGameObject.activeSelf)
+        {
+            iTween.LookTo(gameObject, iTween.Hash("looktarget", rayEndPosGameObject.transform.position, "time", 0.5f, "easetype", iTween.EaseType.easeInOutSine,
+                "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        } else
+        {
+            EndDelayAnimation();
+        }
+    }
+
+    private void EndDelayAnimation()
+    {
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 1f, "onupdate", "EmptyUpdate",
+            "oncomplete", startAnimationAfterEndDelay, "oncompletetarget", gameObject));
     }
 
     private void EmptyUpdate()
     {
+    }
 
+    private void UpdateRayPos()
+    {
+        Vector3 newStartExamplePos = transform.position - transform.up * 0.08f - transform.forward * 0.05f;
+        Vector3 diffInPos = baseRayPos - newStartExamplePos;
+        exampleRay.SetPositions(new Vector3[] { newStartExamplePos, rayEndPosGameObject.transform.position - diffInPos });
     }
 
     private void TurnOnExampleRay()
     {
-        exampleRay.SetActive(true);
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.75f, "onupdate", "EmptyUpdate",
-            "oncomplete", "TurnOnButtonEffect", "oncompletetarget", gameObject));
+        exampleRay.enabled = true;
+        baseRayPos = transform.position - transform.up * 0.08f - transform.forward * 0.05f;
+        exampleRay.SetPositions(new Vector3[] { baseRayPos, rayEndPosGameObject.transform.position });
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate", 
+            "oncomplete", "ShowPrimaryButtonPressAnimation", "oncompletetarget", gameObject));
     }
 
-    private void TurnOnButtonEffect()
+    private void ShowPrimaryButtonPressAnimation()
     {
-        if (showGripAndPrimary)
+        if (showPrimaryAndGrip)
         {
-            primaryButtonPressEffect.SetActive(true);
-            gripPressEffect.SetActive(true);
-        } else if (showPrimaryOnly) 
+            primaryButtonArrow.gameObject.SetActive(true);
+            primaryButtonArrow.DisplayTween();
+            gripArrow.gameObject.SetActive(true);
+            gripArrow.DisplayTween();
+        } else if (showPrimaryOnly)
         {
-            primaryButtonPressEffect.SetActive(true);
+            primaryButtonArrow.gameObject.SetActive(true);
+            primaryButtonArrow.DisplayTween();
         } else if (showGripOnly)
         {
-            gripPressEffect.SetActive(true);
+            gripArrow.gameObject.SetActive(true);
+            gripArrow.DisplayTween();
         }
 
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate",
-            "oncomplete", neededFunctionAfterTurnOnButtonEffect, "oncompletetarget", gameObject));
+        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", primaryButtonArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
+            "oncomplete", animationAfterButtonPressAnimation, "oncompletetarget", gameObject));
     }
 
     private void TurnOffRayAndButtonEffect(bool resetPos)
     {
         if (resetPos)
         {
-            mapOfNetherlands.transform.SetParent(exampleRayParent);
-            exampleGrabbebleObjectOpened.transform.SetParent(exampleRayParent);
-            exampleGrabbebleObject.transform.SetParent(exampleRayParent);
-            exampleRay.transform.SetParent(exampleRayParent);
-            transform.SetParent(exampleRayParent);
-
-            ownImage.enabled = true;
-
-            exampleGrabbebleObject.transform.position = exampleGrabbebleObjectBasePos;
-            exampleGrabbebleObjectOpened.transform.position = exampleGrabbebleObjectOpenedBasePos;
-            exampleGrabbebleObjectOpened.transform.localScale = exampleGrabbebleObjectOpenedBaseScale;
-
-            mapOfNetherlands.transform.position = exampleMapPos;
-            mapOfNetherlands.transform.eulerAngles = exampleMapRot;
-            mapOfNetherlands.transform.localScale = exampleMapScale;
-
-            exampleRay.transform.position = exampleRayPos;
             transform.position = basePos;
+            transform.eulerAngles = baseRot;
+
+            exampleLegenda.transform.SetParent(null);
+            exampleLegenda.transform.position = exampleLegendaBasePos;
+            exampleLegenda.transform.eulerAngles = exampleLegendaBaseRot;
         }
 
-        for (int i = 0; i < transform.childCount; i++)
+        for (int i = 1; i < transform.childCount; i++)
         {
             transform.GetChild(i).gameObject.SetActive(false);
         }
-        exampleRay.SetActive(false);
-
-        transform.SetAsLastSibling();
-        otherOculusController.transform.SetAsLastSibling();
+        exampleRay.enabled = false;
     }
 
     public void TurnOffAllTweenObjects()
     {
         iTween.Stop(gameObject);
-        iTween.Stop(mapOfNetherlands);
-        iTween.Stop(exampleGrabbebleObject);
-        iTween.Stop(exampleGrabbebleObjectOpened);
 
         for (int i = 0; i < allTweenObjects.Count; i++)
         {
+            iTween.Stop(allTweenObjects[i]);
             allTweenObjects[i].SetActive(false);
+        }
+
+        if (!isControlledByOtherController)
+        {
+            otherController.TurnOffAllTweenObjects();
         }
     }
 }

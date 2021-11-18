@@ -31,7 +31,7 @@ public class MoveMap : MonoBehaviour
 
     public float minimumScale = 0.5f, maximumScale = 5;
 
-    [SerializeField, Tooltip("UnityTileSize * 2 / 10")]
+    [SerializeField, Tooltip("Abstractmap-UnityTileSize * 2 / 10")]
     private float maxTileOffset = 12f;
 
     [SerializeField]
@@ -58,6 +58,8 @@ public class MoveMap : MonoBehaviour
 
     [SerializeField]
     private List<PlayerGrab> hands = new List<PlayerGrab>();
+
+    private MiniMap miniMap = null;
 
     private List<Vector3> prevHandPosses = new List<Vector3>(), prevHandDirections = new List<Vector3>();
     private List<Quaternion> prevHandRotations = new List<Quaternion>();
@@ -88,6 +90,8 @@ public class MoveMap : MonoBehaviour
 
         abstractMap = GetComponent<AbstractMap>();
         abstractMap.SetPlacementType(MapPlacementType.AtTileCenter);
+
+        miniMap = FindObjectOfType<MiniMap>();
 
         GrabControllers();
 
@@ -226,6 +230,7 @@ public class MoveMap : MonoBehaviour
         offset.x = transform.position.x - table.position.x;
         offset.z = transform.position.z - table.position.z;
 
+        miniMap.RotateMiniMap(transform.localEulerAngles);
         poiManager.CheckPOIVisibility();
         StartCoroutine(CheckIfPayerStillRotates());
     }
@@ -252,6 +257,7 @@ public class MoveMap : MonoBehaviour
         }
         offset.x += movement.x;
         offset.z += movement.y;
+        miniMap.MovePlayerIndication(transform, offset);
         poiManager.SetExtraOffset(offset);
 
         if (movePOIs)
@@ -332,6 +338,7 @@ public class MoveMap : MonoBehaviour
         poiManager.SetExtraOffset(offset);
         poiManager.SetPOIsScale(oldScale);
         transform.position = table.position + offset;
+        miniMap.CopyMap(transform, poiManager.allPOIs, table);
         ChangeMapScaleToChosenScale(oldScale);
     }
 

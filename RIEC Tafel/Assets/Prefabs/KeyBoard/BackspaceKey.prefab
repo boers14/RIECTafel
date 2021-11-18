@@ -236,12 +236,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   keySize: 2
   removeText: 1
-  white:
-    serializedVersion: 2
-    rgba: 4294967295
-  gray:
-    serializedVersion: 2
-    rgba: 4286611584
 --- !u!1 &2219171635020232950
 GameObject:
   m_ObjectHideFlags: 0

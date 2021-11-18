@@ -29,7 +29,8 @@ public class POIManager : MonoBehaviour
 
     private Vector3 offset = Vector3.zero, extraOffset = Vector3.zero;
 
-    private List<GameObject> allPOIs = new List<GameObject>();
+    [System.NonSerialized]
+    public List<GameObject> allPOIs = new List<GameObject>();
 
     private List<Vector3> poiOffsets = new List<Vector3>();
 
@@ -51,8 +52,6 @@ public class POIManager : MonoBehaviour
 
     private List<int> poiHits = new List<int>();
 
-    private List<POIArrows> poiArrows = new List<POIArrows>();
-
     [System.NonSerialized]
     public List<bool> poiVisibility = new List<bool>();
 
@@ -67,7 +66,6 @@ public class POIManager : MonoBehaviour
         offset = table.transform.position;
         offset.y += table.transform.localScale.y / 2;
 
-        poiArrows.AddRange(FindObjectsOfType<POIArrows>());
         dataExplanations.AddRange(FindObjectsOfType<DataExplanations>());
     }
 
@@ -162,7 +160,6 @@ public class POIManager : MonoBehaviour
         }
 
         CheckPOIVisibility();
-        SetPOIArrowText();
     }
 
     public void ParentPOIs(Transform parentObject, bool rotateText)
@@ -210,17 +207,7 @@ public class POIManager : MonoBehaviour
             allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
         }
         Destroy(rotationObject);
-
         CheckPOIVisibility();
-        SetPOIArrowText();
-    }
-
-    public void SetPOIArrowText()
-    {
-        for (int i = 0; i < poiArrows.Count; i++)
-        {
-            poiArrows[i].SetArrowText(allPOIs, dutchNamesForRoles, poiVisibility);
-        }
     }
 
     public void SetExtraOffset(Vector3 mapOffset)

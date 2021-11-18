@@ -95,37 +95,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 363023cd92017ab4ba56c115aeca56a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetStartPos: {fileID: 7867283318212411755}
---- !u!1 &3408845080332301048
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7714447392740335576}
-  m_Layer: 0
-  m_Name: TriggerArrowBasePos
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &7714447392740335576
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3408845080332301048}
-  m_LocalRotation: {x: 0.5412187, y: 0.50935584, z: 0.48706874, w: -0.4586972}
-  m_LocalPosition: {x: 0.0025, y: -0.0406, z: 0.0123}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
-  m_Children: []
-  m_Father: {fileID: 914719734005754760}
-  m_RootOrder: 9
-  m_LocalEulerAnglesHint: {x: -83.07, y: -209.786, z: 119.987}
+  arrowMovementSpace: 0.03
+  emptyTransform: {fileID: 6848819880823328190, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
+  continuesTweening: 1
 --- !u!1 &4245457492171364763
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,11 +132,6 @@ Transform:
   - {fileID: 7403929641585850239}
   - {fileID: 3208872764054660171}
   - {fileID: 2121999658390202407}
-  - {fileID: 7867283318212411755}
-  - {fileID: 7303374626734292082}
-  - {fileID: 4066574526866085915}
-  - {fileID: 7714447392740335576}
-  - {fileID: 315188049299940315}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 35.425003, y: 179.98601, z: -0.614}
@@ -185,6 +152,7 @@ MonoBehaviour:
   steerStickArrow: {fileID: 4619362797313905994}
   triggerArrow: {fileID: 5153946033189996601}
   gripArrow: {fileID: 6484155503288185315}
+  handCharacteristic: 0
 --- !u!1 &4599214091029070219
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,7 +248,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 363023cd92017ab4ba56c115aeca56a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetStartPos: {fileID: 7303374626734292082}
+  arrowMovementSpace: 0.03
+  emptyTransform: {fileID: 6848819880823328190, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
+  continuesTweening: 1
 --- !u!1 &5155899361688267304
 GameObject:
   m_ObjectHideFlags: 0
@@ -376,7 +346,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 363023cd92017ab4ba56c115aeca56a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetStartPos: {fileID: 315188049299940315}
+  arrowMovementSpace: 0.03
+  emptyTransform: {fileID: 6848819880823328190, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
+  continuesTweening: 1
 --- !u!1 &5160103973095889836
 GameObject:
   m_ObjectHideFlags: 0
@@ -472,97 +444,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 363023cd92017ab4ba56c115aeca56a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetStartPos: {fileID: 7714447392740335576}
---- !u!1 &5409963699057672942
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4066574526866085915}
-  m_Layer: 0
-  m_Name: SteerstickArrowBasePos
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &4066574526866085915
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5409963699057672942}
-  m_LocalRotation: {x: 0.5412187, y: 0.50935584, z: 0.48706874, w: -0.4586972}
-  m_LocalPosition: {x: 0.01082, y: -0.01369, z: 0.0049}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
-  m_Children: []
-  m_Father: {fileID: 914719734005754760}
-  m_RootOrder: 8
-  m_LocalEulerAnglesHint: {x: -83.07, y: -209.786, z: 119.987}
---- !u!1 &6029424561492204872
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7867283318212411755}
-  m_Layer: 0
-  m_Name: XButtonArrowBasePos
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &7867283318212411755
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6029424561492204872}
-  m_LocalRotation: {x: 0.5412187, y: 0.50935584, z: 0.48706874, w: -0.4586972}
-  m_LocalPosition: {x: -0.0059, y: -0.0055, z: 0.0207}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
-  m_Children: []
-  m_Father: {fileID: 914719734005754760}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: -83.07, y: -209.786, z: 119.987}
---- !u!1 &6530265306161183265
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 315188049299940315}
-  m_Layer: 0
-  m_Name: GripArrowBasePos
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &315188049299940315
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6530265306161183265}
-  m_LocalRotation: {x: 0.5460554, y: 0.1233209, z: 0.015794966, w: -0.82847214}
-  m_LocalPosition: {x: -0.0489, y: -0.0195, z: 0.0797}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
-  m_Children: []
-  m_Father: {fileID: 914719734005754760}
-  m_RootOrder: 10
-  m_LocalEulerAnglesHint: {x: -65.323, y: -386.623, z: 375.064}
+  arrowMovementSpace: 0.03
+  emptyTransform: {fileID: 6848819880823328190, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
+  continuesTweening: 1
 --- !u!1 &6592486005058812330
 GameObject:
   m_ObjectHideFlags: 0
@@ -644,36 +528,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &8346874861364079230
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7303374626734292082}
-  m_Layer: 0
-  m_Name: YButtonArrowBasePos
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &7303374626734292082
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8346874861364079230}
-  m_LocalRotation: {x: 0.5412187, y: 0.50935584, z: 0.48706874, w: -0.4586972}
-  m_LocalPosition: {x: -0.0095, y: -0.0119, z: 0.01}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
-  m_Children: []
-  m_Father: {fileID: 914719734005754760}
-  m_RootOrder: 7
-  m_LocalEulerAnglesHint: {x: -83.07, y: -209.786, z: 119.987}
 --- !u!1 &8660313039147330250
 GameObject:
   m_ObjectHideFlags: 0
@@ -769,4 +623,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 363023cd92017ab4ba56c115aeca56a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetStartPos: {fileID: 4066574526866085915}
+  arrowMovementSpace: 0.03
+  emptyTransform: {fileID: 6848819880823328190, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
+  continuesTweening: 1

@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class TutorialControllerArrows : MonoBehaviour
 {
-    private float arrowMoveTweenTime = 1.75f;
+    [System.NonSerialized]
+    public float arrowMoveTweenTime = 1.75f;
     
     [SerializeField]
     private float arrowMovementSpace = 0.03f;
 
     [SerializeField]
+    private Transform emptyTransform = null;
+
     private Transform targetStartPos = null;
 
     private bool isGoingUpwards = true;
@@ -17,8 +20,40 @@ public class TutorialControllerArrows : MonoBehaviour
     [System.NonSerialized]
     public GrabbebleObjects connectedGameObject = null;
 
+    [SerializeField]
+    private bool continuesTweening = true;
+
     private void Start()
     {
+        CreateTargetStartPos();
+
+        if (continuesTweening)
+        {
+            DisplayTween();
+        }
+        else
+        {
+            isGoingUpwards = false;
+        }
+    }
+
+    private void CreateTargetStartPos()
+    {
+        if (targetStartPos == null)
+        {
+            targetStartPos = Instantiate(emptyTransform, transform.position, transform.rotation);
+            targetStartPos.SetParent(transform.parent);
+        }
+    }
+
+    public void DisplayTween()
+    {
+        if (!continuesTweening)
+        {
+            CreateTargetStartPos();
+            transform.position = targetStartPos.position - transform.right * arrowMovementSpace;
+        }
+
         iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", arrowMoveTweenTime, "easetype", iTween.EaseType.easeInOutSine,
             "onupdate", "UpdatePosition", "oncomplete", "SwitchTweenPosition", "oncompletetarget", gameObject));
     }
@@ -43,9 +78,11 @@ public class TutorialControllerArrows : MonoBehaviour
 
     private void SwitchTweenPosition()
     {
-        isGoingUpwards = !isGoingUpwards;
-        iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", arrowMoveTweenTime, "easetype", iTween.EaseType.easeInOutSine,
-            "onupdate", "UpdatePosition", "oncomplete", "SwitchTweenPosition", "oncompletetarget", gameObject));
+        if (continuesTweening)
+        {
+            isGoingUpwards = !isGoingUpwards;
+            DisplayTween();
+        }
     }
 
     public void SetTweenPosition(Transform newTargetStartPos)
