@@ -16,10 +16,13 @@ public class SetCanvasPosition : MonoBehaviour
     [SerializeField]
     private MoveMap map = null;
 
+    private MiniMap miniMap = null;
+
     private List<DataExplanations> dataExplanations = new List<DataExplanations>();
 
     private void Start()
     {
+        miniMap = FindObjectOfType<MiniMap>();
         dataExplanations.AddRange(FindObjectsOfType<DataExplanations>());
     }
 
@@ -27,10 +30,18 @@ public class SetCanvasPosition : MonoBehaviour
     {
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit wallRay, Mathf.Infinity, layer))
         {
-            canvas.position = wallRay.transform.position + wallRay.transform.up * 0.05f;
+            Vector3 newCanvasPos = wallRay.transform.position + wallRay.transform.up * 0.05f;
+            canvas.position = newCanvasPos;
+
+            Transform building = miniMap.transform.parent;
+            miniMap.transform.SetParent(wallRay.transform);
+            miniMap.PlaceMiniMapOnWall();
+            miniMap.transform.SetParent(building);
+
             Vector3 canvasRotation = Vector3.zero;
             canvasRotation.y = wallRay.transform.eulerAngles.y + 90;
             canvas.eulerAngles = canvasRotation;
+            miniMap.ChangeBaseRot(wallRay.transform.eulerAngles.y);
         }
 
         playerTable.CheckYPosition();

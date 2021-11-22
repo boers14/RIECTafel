@@ -43,14 +43,14 @@ public class POIManager : MonoBehaviour
     [SerializeField]
     private POIEnableDropdown poiEnableDropdown = null;
 
-    [SerializeField]
-    private float poiScale = 0.2f;
+    public float poiScale = 0.2f;
 
     [System.NonSerialized]
     public List<string> conclusions = new List<string>(), indications = new List<string>(), featureAmounts = new List<string>(), 
         extraExplanations = new List<string>(), dutchNamesForRoles = new List<string>();
 
-    private List<int> poiHits = new List<int>();
+    [System.NonSerialized]
+    public List<int> poiHits = new List<int>();
 
     [System.NonSerialized]
     public List<bool> poiVisibility = new List<bool>();

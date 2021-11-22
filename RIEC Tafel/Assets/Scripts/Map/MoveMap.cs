@@ -100,6 +100,8 @@ public class MoveMap : MonoBehaviour
 
     private void FixedUpdate()
     {
+        ComputerControls();
+
         if (inputDevices.Count < 2)
         {
             GrabControllers();
@@ -230,7 +232,7 @@ public class MoveMap : MonoBehaviour
         offset.x = transform.position.x - table.position.x;
         offset.z = transform.position.z - table.position.z;
 
-        miniMap.RotateMiniMap(transform.localEulerAngles);
+        miniMap.RotateMiniMap(transform.localEulerAngles, poiManager.transform.eulerAngles);
         poiManager.CheckPOIVisibility();
         StartCoroutine(CheckIfPayerStillRotates());
     }
@@ -307,6 +309,7 @@ public class MoveMap : MonoBehaviour
         maxTileOffset = originalMaxTileOffset * nextScale.x - table.localScale.z / 2;
         nextScale.y = nextScale.z;
         poiManager.SetPOIsScale(nextScale);
+        miniMap.ScalePlayerIndication(nextScale);
 
         MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x),
             BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z)), limitMovement, true);
@@ -338,7 +341,8 @@ public class MoveMap : MonoBehaviour
         poiManager.SetExtraOffset(offset);
         poiManager.SetPOIsScale(oldScale);
         transform.position = table.position + offset;
-        miniMap.CopyMap(transform, poiManager.allPOIs, table);
+        miniMap.CopyMap(abstractMap, poiManager.allPOIs, table, poiManager.locationCoordinates, poiManager.poiHits, poiManager.poiScale, 
+            poiManager.transform.eulerAngles);
         ChangeMapScaleToChosenScale(oldScale);
     }
 
@@ -421,6 +425,48 @@ public class MoveMap : MonoBehaviour
             {
                 inputDevices.Add(inputDeviceList[0]);
             }
+        }
+    }
+
+    private void ComputerControls()
+    {
+        if (Input.GetKey(KeyCode.Z) && !isTweening)
+        {
+            RotateMap(rotationPower);
+        }
+        else if (Input.GetKey(KeyCode.X) && !isTweening)
+        {
+            RotateMap(-rotationPower);
+        }
+
+        if (Input.GetKey(KeyCode.RightArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(-1, 0), true, false);
+        }
+
+        if (Input.GetKey(KeyCode.LeftArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(1, 0), true, false);
+        }
+
+        if (Input.GetKey(KeyCode.UpArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(0, -1), true, false);
+        }
+
+        if (Input.GetKey(KeyCode.DownArrow) && !isTweening)
+        {
+            MoveTheMap(new Vector2(0, 1), true, false);
+        }
+
+        if (Input.GetKey(KeyCode.C) && !isTweening)
+        {
+            ChangeMapScale(-scalePower);
+        }
+
+        if (Input.GetKey(KeyCode.V) && !isTweening)
+        {
+            ChangeMapScale(scalePower);
         }
     }
 }

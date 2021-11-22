@@ -4701,8 +4701,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scaleOfMiniMap: {x: 0.09, y: 0.09, z: 0.09}
   rotOfMiniMap: {x: 0, y: -90, z: 90}
+  offsetFromMiddleOFWall: {x: -0.04125697, y: 0.7504578, z: -1.352815}
   playerIndicationOfMiniMapPrefab: {fileID: 2112735124966847659, guid: b6e57aec94e14f249b56d2f50e3bb808, type: 3}
   emptyPlane: {fileID: 2112735124966847659, guid: 828a5b32fc7b6514da464638350978d1, type: 3}
+  maxTileOffset: 600
 --- !u!4 &924716043
 Transform:
   m_ObjectHideFlags: 0
@@ -4711,7 +4713,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 924716041}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 50.958084, y: -37.278603, z: 234.37958}
+  m_LocalPosition: {x: 50.958084, y: -46.300007, z: 234.37958}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3169655455936313394}
@@ -7804,7 +7806,7 @@ MonoBehaviour:
   PersistNetworkManagerToOfflineScene: 0
   runInBackground: 1
   autoStartServerBuild: 1
-  serverTickRate: 30
+  serverTickRate: 60
   offlineScene: 
   onlineScene: 
   transport: {fileID: 1799655087}
