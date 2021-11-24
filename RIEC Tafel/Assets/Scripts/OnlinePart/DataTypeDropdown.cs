@@ -43,8 +43,6 @@ public class DataTypeDropdown : DropdownSelection
             options.Add(optionInDutch);
         }
         dropdown.AddOptions(options);
-
-        dataType = options[0];
     }
 
     private void ChangePlayerDataType(int value)
