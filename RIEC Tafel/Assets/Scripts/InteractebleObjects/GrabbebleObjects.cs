@@ -22,11 +22,15 @@ public class GrabbebleObjects : MonoBehaviour
 
     public float scalePower = 0.1f, minimumScale = 1, maximumScale = 5, movementPower = 0.1f;
 
+    [SerializeField, Tooltip("Not required to set with map around")]
+    private InputDeviceCharacteristics rightCharacteristics = 0, leftCharacteristics = 0;
+
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
     [SerializeField]
     private int indexOfUIInHandRays = 2;
 
+    [SerializeField, Tooltip("Not required to set with map around")]
     private List<PlayerGrab> hands = new List<PlayerGrab>();
 
     private List<Vector3> prevHandPosses = new List<Vector3>();
@@ -34,6 +38,8 @@ public class GrabbebleObjects : MonoBehaviour
 
     [System.NonSerialized]
     public bool isGrabbed = false;
+
+    private MiniMap miniMap = null;
 
     public virtual void Start()
     {
@@ -51,12 +57,21 @@ public class GrabbebleObjects : MonoBehaviour
         SelectEnterEventArgs selectEnterEventArgs = new SelectEnterEventArgs();
         grabInteractable.selectEntered.AddListener((selectEnterEventArgs) => OnGrabEnter(selectEnterEventArgs, true));
         grabInteractable.selectExited.AddListener(OnSelectExit);
+
+        if (!FindObjectOfType<MoveMap>())
+        {
+            GrabControllers();
+        }
     }
 
     public virtual void Update()
     {
         if (inputDevices.Count < 2)
         {
+            if (!FindObjectOfType<MoveMap>())
+            {
+                GrabControllers();
+            }
             return;
         }
 
@@ -219,22 +234,52 @@ public class GrabbebleObjects : MonoBehaviour
             iTween.Stop(gameObject);
             TurnGravityBackOn();
         }
+
+        miniMap.gameObject.SetActive(false);
         collider.enabled = false;
         isGrabbed = true;
     }
 
     public virtual void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
+        miniMap.gameObject.SetActive(true);
         isGrabbed = false;
         transform.localScale = originalScale;
         rigidbody.useGravity = true;
         ReturnToPos();
     }
 
-    public void SetInputDevices(List<InputDevice> inputDevices, List<PlayerGrab> hands, List<PlayerHandRays> handRays)
+    public void SetInputDevices(List<InputDevice> inputDevices, List<PlayerGrab> hands, List<PlayerHandRays> handRays, MiniMap miniMap)
     {
+        this.miniMap = miniMap;
         this.inputDevices = inputDevices;
         this.hands = hands;
         this.handRays = handRays;
+    }
+
+    private void GrabControllers()
+    {
+        inputDevices.Clear();
+        handRays.Clear();
+        AddControllersToList(rightCharacteristics);
+        AddControllersToList(leftCharacteristics);
+
+        for (int i = 0; i < hands.Count; i++)
+        {
+            handRays.Add(hands[i].GetComponent<PlayerHandRays>());
+        }
+    }
+
+    private void AddControllersToList(InputDeviceCharacteristics characteristics)
+    {
+        List<InputDevice> inputDeviceList = new List<InputDevice>();
+        InputDevices.GetDevicesWithCharacteristics(characteristics, inputDeviceList);
+        if (inputDeviceList.Count > 0)
+        {
+            if (inputDeviceList[0].isValid)
+            {
+                inputDevices.Add(inputDeviceList[0]);
+            }
+        }
     }
 }

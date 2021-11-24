@@ -7,7 +7,7 @@ using TMPro;
 public class PlayerConnection : NetworkBehaviour
 {
     [SyncVar]
-    private string playerName = "";
+    private string playerName = "", avatarData = "";
 
     [SerializeField]
     private TMP_Text nameText = null;
@@ -21,6 +21,9 @@ public class PlayerConnection : NetworkBehaviour
 
     [SyncVar, System.NonSerialized]
     public int playerNumber = -1;
+
+    [SerializeField]
+    private MeshFilter head = null, body = null; 
 
     private void Start()
     {
@@ -75,8 +78,7 @@ public class PlayerConnection : NetworkBehaviour
         {
             if (currentConnections[i] == this) { continue; }
 
-            MeshRenderer[] bodyParts = currentConnections[i].GetComponentsInChildren<MeshRenderer>();
-            ChangeBodyColorOfPlayer(currentConnections[i].dataType, bodyParts);
+            currentConnections[i].ChangeBodyColorOfPlayer();
         }
 
         string nameString = "";
@@ -99,7 +101,7 @@ public class PlayerConnection : NetworkBehaviour
                 break;
         }
         nameString += ":\n" + LogInManager.username;
-        CmdSetPlayerName(nameString, poiManager.dataType.ToString());
+        CmdSetPlayerName(nameString, LogInManager.avatarData, poiManager.dataType.ToString());
     }
 
     [Command]
@@ -120,47 +122,83 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
-    public void CmdSetPlayerName(string name, string dataType)
+    public void CmdSetPlayerName(string name, string avatarData, string dataType)
     {
         playerName = name;
-        RpcSetPlayerName(name, dataType, playerNumber);
+        this.avatarData = avatarData;
+
+        RpcSetPlayerName(name, avatarData, dataType, playerNumber);
     }
 
     [ClientRpc]
-    private void RpcSetPlayerName(string name, string dataType, int playerNumber)
+    private void RpcSetPlayerName(string name, string avatarData, string dataType, int playerNumber)
     {
         FetchVRPlayer();
         playerName = name;
         nameText.text = playerName;
+        this.avatarData = avatarData;
+        this.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
 
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
         PlayerConnection player = playerConnections.Find(i => i.playerNumber == playerNumber);
-        MeshRenderer[] bodyParts = player.GetComponentsInChildren<MeshRenderer>();
-        player.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
-        ChangeBodyColorOfPlayer(player.dataType, bodyParts);
+        player.ChangeBodyColorOfPlayer();
     }
 
-    private void ChangeBodyColorOfPlayer(GameManager.DataType dataType, MeshRenderer[] bodyParts)
+    private void ChangeBodyColorOfPlayer()
     {
+        string[] differentBodyParts = avatarData.Split(new string[] { "/*nextbodypart*/" }, System.StringSplitOptions.None);
+        List<Mesh> allModels = new List<Mesh>();
+        allModels.AddRange(Resources.FindObjectsOfTypeAll<Mesh>());
+
+        for (int i = 0; i < differentBodyParts.Length; i++)
+        {
+            string[] bodyPartData = differentBodyParts[i].Split('\n');
+            AvatarCreationManager.TargetedBodyType bodyType = (AvatarCreationManager.TargetedBodyType)System.Enum.Parse(
+                typeof(AvatarCreationManager.TargetedBodyType), bodyPartData[0]);
+
+
+            switch (bodyType)
+            {
+                case AvatarCreationManager.TargetedBodyType.Body:
+                    SetCorrectModelAndScaleForMesh(body, allModels, bodyPartData);
+                    break;
+                case AvatarCreationManager.TargetedBodyType.Head:
+                    SetCorrectModelAndScaleForMesh(head, allModels, bodyPartData);
+                    break;
+            }
+        }
+
+        MeshRenderer[] bodyPartsRenderers = GetComponentsInChildren<MeshRenderer>();
         switch (dataType)
         {
             case GameManager.DataType.Regular:
-                ChangeBodyColor(bodyParts, poiManager.regularPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.regularPOIColor);
                 break;
             case GameManager.DataType.Police:
-                ChangeBodyColor(bodyParts, poiManager.policePOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.policePOIColor);
                 break;
             case GameManager.DataType.Tax:
-                ChangeBodyColor(bodyParts, poiManager.taxPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.taxPOIColor);
                 break;
             case GameManager.DataType.PPO:
-                ChangeBodyColor(bodyParts, poiManager.ppoPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.ppoPOIColor);
                 break;
             case GameManager.DataType.Bank:
-                ChangeBodyColor(bodyParts, poiManager.bankPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.bankPOIColor);
                 break;
         }
+    }
+
+    private void SetCorrectModelAndScaleForMesh(MeshFilter bodyPart, List<Mesh> allModels, string[] bodyPartData)
+    {
+        body.mesh = allModels.Find(model => model.name == bodyPartData[1]);
+        string[] bodyScale = bodyPartData[2].Split('.');
+        Vector3 newScale = Vector3.one;
+        newScale.x = float.Parse(bodyScale[0]);
+        newScale.y = float.Parse(bodyScale[1]);
+        newScale.z = float.Parse(bodyScale[2]);
+        body.transform.localScale = newScale;
     }
 
     private void ChangeBodyColor(MeshRenderer[] bodyParts, Color32 bodyColor)

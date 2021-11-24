@@ -25,7 +25,16 @@ public class RegisterButton : SwitchSceneButton
     [SerializeField]
     private TMP_Text disclaimerText = null;
 
+    [SerializeField]
+    private List<AvatarChangebleBodypart> bodyparts = new List<AvatarChangebleBodypart>();
+
     private bool canRegister = false;
+
+    public override void Start()
+    {
+        base.Start();
+        bodyparts.AddRange(FindObjectsOfType<AvatarChangebleBodypart>());
+    }
 
     public void CheckIfCanRegister()
     {
@@ -122,6 +131,19 @@ public class RegisterButton : SwitchSceneButton
         }
         form.AddField("datatype", dataTypeDropdown.dataType);
         form.AddField("icovWorkerToggle", icovWorkerToggle.isOn.ToString());
+
+        string avatarStats = "";
+        for (int i = 0; i < bodyparts.Count; i++)
+        {
+            Vector3 scale = bodyparts[i].transform.localScale;
+            string modelName = bodyparts[i].GetComponent<MeshFilter>().mesh.name.Split(' ')[0];
+            avatarStats += bodyparts[i].bodyType.ToString() + "\n" + modelName + "\n" + scale.x + "." + scale.y + "." + scale.z;
+            if (i < bodyparts.Count - 1)
+            {
+                avatarStats += "/*nextbodypart*/";
+            }
+        }
+        form.AddField("avatarStats", avatarStats);
 
         WWW www = new WWW("http://localhost/riectafel/register.php", form);
         yield return www;

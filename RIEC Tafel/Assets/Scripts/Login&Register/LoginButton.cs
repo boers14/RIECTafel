@@ -25,14 +25,6 @@ public class LoginButton : SwitchSceneButton
         }
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            SaveSytem.DeleteGame();
-        }
-    }
-
     public override void SwitchScene()
     {
         StartCoroutine(Login());
@@ -57,6 +49,7 @@ public class LoginButton : SwitchSceneButton
             LogInManager.datatype = webTexts[3];
             LogInManager.iCOVWorker = bool.Parse(webTexts[4]);
             LogInManager.pincode = webTexts[5];
+            LogInManager.avatarData = webTexts[6];
             SceneManager.LoadScene(sceneToSwitchTo);
         }
         else

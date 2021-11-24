@@ -396,7 +396,10 @@ MonoBehaviour:
   minimumScale: 1
   maximumScale: 3
   movementPower: 1
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 2
+  hands: []
   legendaImage: {fileID: 1637433840}
 --- !u!21 &89149350
 Material:
@@ -1673,7 +1676,10 @@ MonoBehaviour:
   minimumScale: 6
   maximumScale: 16
   movementPower: 3
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 3
+  hands: []
   dataExplanationSet: {fileID: 247065378}
   explantionText: {fileID: 305302788}
   title: {fileID: 349088418}
@@ -2787,7 +2793,10 @@ MonoBehaviour:
   minimumScale: 6
   maximumScale: 16
   movementPower: 3
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 3
+  hands: []
   dataExplanationSet: {fileID: 247065378}
   explantionText: {fileID: 305302788}
   title: {fileID: 349088418}
@@ -3193,10 +3202,14 @@ MonoBehaviour:
   minimumScale: 7
   maximumScale: 20
   movementPower: 3
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 4
+  hands: []
   keyBoard: {fileID: 1321054235}
   notesSet: {fileID: 1027683964}
   notesEditText: {fileID: 1532409091}
+  notesText: {fileID: 0}
 --- !u!114 &614271964
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -18,7 +18,14 @@ public class MeetingButton : MonoBehaviour
 
     private void ActivateMeetingSet()
     {
-        objectToAcivate.SetActive(!objectToAcivate.activeSelf);
-        objectToDeactivate.SetActive(false);
+        if (objectToAcivate != null)
+        {
+            objectToAcivate.SetActive(!objectToAcivate.activeSelf);
+        }
+
+        if (objectToDeactivate != null)
+        {
+            objectToDeactivate.SetActive(false);
+        }
     }
 }

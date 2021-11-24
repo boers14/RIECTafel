@@ -410,7 +410,7 @@ public class MoveMap : MonoBehaviour
         {
             for (int i = 0; i < grabbebleObjects.Count; i++)
             {
-                grabbebleObjects[i].SetInputDevices(inputDevices, hands, handRays);
+                grabbebleObjects[i].SetInputDevices(inputDevices, hands, handRays, miniMap);
             }
         }
     }
