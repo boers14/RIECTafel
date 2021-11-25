@@ -30,12 +30,6 @@ public class RegisterButton : SwitchSceneButton
 
     private bool canRegister = false;
 
-    public override void Start()
-    {
-        base.Start();
-        bodyparts.AddRange(FindObjectsOfType<AvatarChangebleBodypart>());
-    }
-
     public void CheckIfCanRegister()
     {
         bool canRegister = true;
@@ -137,7 +131,8 @@ public class RegisterButton : SwitchSceneButton
         {
             Vector3 scale = bodyparts[i].transform.localScale;
             string modelName = bodyparts[i].GetComponent<MeshFilter>().mesh.name.Split(' ')[0];
-            avatarStats += bodyparts[i].bodyType.ToString() + "\n" + modelName + "\n" + scale.x + "." + scale.y + "." + scale.z;
+            avatarStats += bodyparts[i].bodyType.ToString() + "\n" + modelName + "\n" + scale.x + "." + scale.y + "." + scale.z + "\n" + 
+                bodyparts[i].standardScale.x + "." + bodyparts[i].standardScale.y;
             if (i < bodyparts.Count - 1)
             {
                 avatarStats += "/*nextbodypart*/";

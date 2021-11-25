@@ -235,14 +235,20 @@ public class GrabbebleObjects : MonoBehaviour
             TurnGravityBackOn();
         }
 
-        miniMap.gameObject.SetActive(false);
+        if (miniMap)
+        {
+            miniMap.gameObject.SetActive(false);
+        }
         collider.enabled = false;
         isGrabbed = true;
     }
 
     public virtual void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
-        miniMap.gameObject.SetActive(true);
+        if (miniMap)
+        {
+            miniMap.gameObject.SetActive(true);
+        }
         isGrabbed = false;
         transform.localScale = originalScale;
         rigidbody.useGravity = true;

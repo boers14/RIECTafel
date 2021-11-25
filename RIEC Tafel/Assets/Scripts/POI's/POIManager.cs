@@ -57,8 +57,11 @@ public class POIManager : MonoBehaviour
 
     private List<DataExplanations> dataExplanations = new List<DataExplanations>();
 
+    private Transform chooseSeatButtonsParent = null;
+
     private void Start()
     {
+        chooseSeatButtonsParent = FindObjectOfType<ChooseSeatButton>().transform.parent;
         dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), LogInManager.datatype);
 
         moveMap = map.GetComponent<MoveMap>();
@@ -126,6 +129,7 @@ public class POIManager : MonoBehaviour
 
             Vector3 newScale = POI.transform.localScale * (1 / poiScale);
             POI.GetComponent<POIText>().UpdateScaleOfPoi(newScale, amountOfHits, moveMap.minimumScale, moveMap.maximumScale, poiScale);
+            POI.SetActive(false);
         }
 
         startPositionButton.startPosition = locationCoordinates[0];
@@ -210,6 +214,14 @@ public class POIManager : MonoBehaviour
         CheckPOIVisibility();
     }
 
+    public void RotatePOITextToPlayer()
+    {
+        for (int i = 0; i < allPOIs.Count; i++)
+        {
+            allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
+        }
+    }
+
     public void SetExtraOffset(Vector3 mapOffset)
     {
         extraOffset.x = mapOffset.x;
@@ -218,6 +230,8 @@ public class POIManager : MonoBehaviour
 
     public void CheckPOIVisibility()
     {
+        if (chooseSeatButtonsParent.gameObject.activeSelf) { return; }
+
         for (int i = 0; i < allPOIs.Count; i++)
         {
             if (!poiVisibility[i]) { continue; }

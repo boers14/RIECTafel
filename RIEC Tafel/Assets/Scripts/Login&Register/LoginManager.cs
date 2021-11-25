@@ -9,7 +9,7 @@ public static class LogInManager
     public static int userID = 1;
     public static string pincode = null;
     public static bool iCOVWorker = true;
-    public static string avatarData = "Head\nstar1\n43,75.35.43,75/*nextbodypart*/Body\nCapsule\n0,5.0,65.0,5";
+    public static string avatarData = "Head\nstar1\n43,75.35.43,75/*nextbodypart*/Body\nCapsule\n0,5.0,65.0,5\n0,5.0,5";
 
     public static bool loggedIn { get { return username != null; } }
 

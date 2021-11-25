@@ -236,6 +236,12 @@ MonoBehaviour:
   nameText: {fileID: 654382142985156887}
   head: {fileID: 3585174474025751228}
   body: {fileID: 3588376437422194492}
+  allUsableBodyMeshes:
+  - {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 4300002, guid: 2231802ad545a48be932a4e88996508f, type: 3}
 --- !u!1 &4952190158923569800
 GameObject:
   m_ObjectHideFlags: 0

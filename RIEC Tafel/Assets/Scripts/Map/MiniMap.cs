@@ -126,5 +126,6 @@ public class MiniMap : MonoBehaviour
     public void ChangeBaseRot(float newYRot)
     {
         rotOfMiniMap = new Vector3(0, newYRot, rotOfMiniMap.z);
+        transform.eulerAngles = rotOfMiniMap;
     }
 }

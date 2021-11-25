@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 using TMPro;
 
@@ -23,30 +24,34 @@ public class PlayerConnection : NetworkBehaviour
     public int playerNumber = -1;
 
     [SerializeField]
-    private MeshFilter head = null, body = null; 
+    private MeshFilter head = null, body = null;
+
+    [SerializeField]
+    private List<Mesh> allUsableBodyMeshes = new List<Mesh>();
+
+    List<ChooseSeatButton> chooseSeatButtons = new List<ChooseSeatButton>();
 
     private void Start()
     {
         nameText.text = playerName;
-
-        if (!isLocalPlayer) { return; }
-
-        CmdSetPlayerNumber();
-
-        tag = "PlayerConnection";
-        FetchVRPlayer();
-        poiManager.ChangePOIManagerTransform(transform);
-        poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
-
         for (int i = 0; i < transform.childCount; i++)
         {
             transform.GetChild(i).gameObject.SetActive(false);
         }
+
+        chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
+
+        if (!isLocalPlayer) { return; }
+
+        CmdSetPlayerNumber();
+        tag = "PlayerConnection";
+
+        FetchVRPlayer();
         FetchGameManager();
         StartCoroutine(StartRequestLocationData());
 
-        MoveMap[] map = FindObjectsOfType<MoveMap>();
-        map[0].playerConnectionTransform = transform;
+        MoveMap map = FindObjectOfType<MoveMap>();
+        map.playerConnectionTransform = transform;
     }
 
     public IEnumerator StartConnectionWithGamemanager(string cityName)
@@ -78,7 +83,11 @@ public class PlayerConnection : NetworkBehaviour
         {
             if (currentConnections[i] == this) { continue; }
 
-            currentConnections[i].ChangeBodyColorOfPlayer();
+            currentConnections[i].ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
+            for (int j = 0; j < currentConnections[i].transform.childCount; j++)
+            {
+                currentConnections[i].transform.GetChild(j).gameObject.SetActive(true);
+            }
         }
 
         string nameString = "";
@@ -102,6 +111,16 @@ public class PlayerConnection : NetworkBehaviour
         }
         nameString += ":\n" + LogInManager.username;
         CmdSetPlayerName(nameString, LogInManager.avatarData, poiManager.dataType.ToString());
+
+        for (int i = 0; i < chooseSeatButtons.Count; i++)
+        {
+            chooseSeatButtons[i].GetComponent<Image>().enabled = true;
+            for (int j = 0; j < chooseSeatButtons[i].transform.childCount; j++)
+            {
+                chooseSeatButtons[i].transform.GetChild(j).gameObject.SetActive(true);
+            }
+            chooseSeatButtons[i].playerNumber = playerNumber;
+        }
     }
 
     [Command]
@@ -136,20 +155,16 @@ public class PlayerConnection : NetworkBehaviour
         FetchVRPlayer();
         playerName = name;
         nameText.text = playerName;
-        this.avatarData = avatarData;
-        this.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
 
-        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
-        PlayerConnection player = playerConnections.Find(i => i.playerNumber == playerNumber);
-        player.ChangeBodyColorOfPlayer();
+        PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        player.avatarData = avatarData;
+        player.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
+        ChangeBodyColorOfPlayer(avatarData, player.dataType, player);
     }
 
-    private void ChangeBodyColorOfPlayer()
+    private void ChangeBodyColorOfPlayer(string avatarData, GameManager.DataType dataType, PlayerConnection player)
     {
         string[] differentBodyParts = avatarData.Split(new string[] { "/*nextbodypart*/" }, System.StringSplitOptions.None);
-        List<Mesh> allModels = new List<Mesh>();
-        allModels.AddRange(Resources.FindObjectsOfTypeAll<Mesh>());
 
         for (int i = 0; i < differentBodyParts.Length; i++)
         {
@@ -157,19 +172,56 @@ public class PlayerConnection : NetworkBehaviour
             AvatarCreationManager.TargetedBodyType bodyType = (AvatarCreationManager.TargetedBodyType)System.Enum.Parse(
                 typeof(AvatarCreationManager.TargetedBodyType), bodyPartData[0]);
 
-
             switch (bodyType)
             {
                 case AvatarCreationManager.TargetedBodyType.Body:
-                    SetCorrectModelAndScaleForMesh(body, allModels, bodyPartData);
+                    Transform ground = GameObject.FindGameObjectWithTag("Ground").transform;
+
+                    Vector3 currentHeadScale = player.head.transform.localScale;
+                    Vector3 oldBodyScale = player.body.transform.localScale;
+                    player.head.transform.SetParent(player.body.transform);
+
+                    SetCorrectModelAndScaleForMesh(player.body, bodyPartData);
+
+                    Vector3 newBodyPos = player.body.transform.position;
+                    string[] standardScale = bodyPartData[3].Split('.');
+                    if (float.Parse(standardScale[1]) > float.Parse(standardScale[0]))
+                    {
+                        newBodyPos.y = ground.position.y + player.body.transform.localScale.y / 2;
+
+                        Vector3 newHeadPos = player.head.transform.localPosition;
+                        float diffInYPos = oldBodyScale.y / player.body.transform.localScale.y;
+                        if (player.body.transform.localScale.y - float.Parse(standardScale[1]) > 0)
+                        {
+                            diffInYPos *= 1.25f;
+                        }
+                        else
+                        {
+                            diffInYPos *= 0.75f;
+                        }
+                        newHeadPos.y *= diffInYPos;
+                        player.head.transform.localPosition = newHeadPos;
+                    }
+                    else
+                    {
+                        newBodyPos.y = ground.position.y + player.body.transform.localScale.y;
+                    }
+                    player.body.transform.position = newBodyPos;
+
+                    player.head.transform.SetParent(player.body.transform.parent);
+                    player.head.transform.localScale = currentHeadScale;
                     break;
                 case AvatarCreationManager.TargetedBodyType.Head:
-                    SetCorrectModelAndScaleForMesh(head, allModels, bodyPartData);
+                    player.nameText.transform.SetParent(player.transform);
+                    SetCorrectModelAndScaleForMesh(player.head, bodyPartData);
+                    player.nameText.transform.SetParent(player.head.transform);
                     break;
             }
         }
 
-        MeshRenderer[] bodyPartsRenderers = GetComponentsInChildren<MeshRenderer>();
+        List<MeshRenderer> bodyPartsRenderers = new List<MeshRenderer>();
+        bodyPartsRenderers.AddRange(new MeshRenderer[] { player.head.GetComponent<MeshRenderer>(), player.body.GetComponent<MeshRenderer>() });
+        FetchVRPlayer();
         switch (dataType)
         {
             case GameManager.DataType.Regular:
@@ -190,23 +242,65 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    private void SetCorrectModelAndScaleForMesh(MeshFilter bodyPart, List<Mesh> allModels, string[] bodyPartData)
+    private void SetCorrectModelAndScaleForMesh(MeshFilter bodyPart, string[] bodyPartData)
     {
-        body.mesh = allModels.Find(model => model.name == bodyPartData[1]);
+        bodyPart.mesh = allUsableBodyMeshes.Find(model => model.name == bodyPartData[1]);
         string[] bodyScale = bodyPartData[2].Split('.');
         Vector3 newScale = Vector3.one;
         newScale.x = float.Parse(bodyScale[0]);
         newScale.y = float.Parse(bodyScale[1]);
         newScale.z = float.Parse(bodyScale[2]);
-        body.transform.localScale = newScale;
+        bodyPart.transform.localScale = newScale;
     }
 
-    private void ChangeBodyColor(MeshRenderer[] bodyParts, Color32 bodyColor)
+    private void ChangeBodyColor(List<MeshRenderer> bodyParts, Color32 bodyColor)
     {
-        for (int i = 0; i < bodyParts.Length; i++)
+        for (int i = 0; i < bodyParts.Count; i++)
         {
             bodyParts[i].material.color = bodyColor;
         }
+    }
+
+    [Command]
+    public void CmdChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot)
+    {
+        SetPlayerPosition(playerNumber, newPos, newRot);
+        RpcChangePlayerPos(playerNumber, newPos, newRot);
+    }
+
+    [ClientRpc]
+    private void RpcChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot)
+    {
+        SetPlayerPosition(playerNumber, newPos, newRot);
+    }
+
+    private void SetPlayerPosition(int playerNumber, Vector3 newPos, Vector3 newRot)
+    {
+        PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        player.transform.position = newPos;
+        player.transform.eulerAngles = newRot;
+
+        if (playerNumber == this.playerNumber && isLocalPlayer)
+        {
+            FetchVRPlayer();
+            poiManager.ChangePOIManagerTransform(player.transform);
+            poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
+            poiManager.RotatePOITextToPlayer();
+        }
+        else
+        {
+            for (int i = 0; i < player.transform.childCount; i++)
+            {
+                player.transform.GetChild(i).gameObject.SetActive(true);
+            }
+        }
+    }
+
+    private PlayerConnection FetchPlayerConnectionBasedOnNumber(int playerNumber)
+    {
+        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        return playerConnections.Find(i => i.playerNumber == playerNumber);
     }
 
     private void FetchVRPlayer()

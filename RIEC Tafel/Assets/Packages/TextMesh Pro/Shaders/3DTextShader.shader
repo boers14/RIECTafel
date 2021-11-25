@@ -88,7 +88,7 @@ SubShader {
 
 	Tags
 	{
-		"Queue"="Transparent+1"
+		"Queue"="Transparent+2"
 		"IgnoreProjector"="True"
 		"RenderType"="Transparent"
 	}
