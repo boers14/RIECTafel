@@ -232,7 +232,11 @@ public class MoveMap : MonoBehaviour
         offset.x = transform.position.x - table.position.x;
         offset.z = transform.position.z - table.position.z;
 
-        miniMap.RotateMiniMap(transform.localEulerAngles, poiManager.transform.eulerAngles);
+        if (miniMap)
+        {
+            miniMap.RotateMiniMap(transform.localEulerAngles, poiManager.transform.eulerAngles);
+        }
+
         poiManager.CheckPOIVisibility();
         StartCoroutine(CheckIfPayerStillRotates());
     }
@@ -259,7 +263,12 @@ public class MoveMap : MonoBehaviour
         }
         offset.x += movement.x;
         offset.z += movement.y;
-        miniMap.MovePlayerIndication(transform, offset);
+
+        if (miniMap)
+        {
+            miniMap.MovePlayerIndication(transform, offset);
+        }
+
         poiManager.SetExtraOffset(offset);
 
         if (movePOIs)
@@ -309,7 +318,10 @@ public class MoveMap : MonoBehaviour
         maxTileOffset = originalMaxTileOffset * nextScale.x - table.localScale.z / 2;
         nextScale.y = nextScale.z;
         poiManager.SetPOIsScale(nextScale);
-        miniMap.ScalePlayerIndication(nextScale);
+        if (miniMap)
+        {
+            miniMap.ScalePlayerIndication(nextScale);
+        }
 
         MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x),
             BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z)), limitMovement, true);
@@ -341,8 +353,13 @@ public class MoveMap : MonoBehaviour
         poiManager.SetExtraOffset(offset);
         poiManager.SetPOIsScale(oldScale);
         transform.position = table.position + offset;
-        miniMap.CopyMap(abstractMap, poiManager.allPOIs, table, poiManager.locationCoordinates, poiManager.poiHits, poiManager.poiScale, 
-            poiManager.transform.eulerAngles);
+
+        if (miniMap)
+        {
+            miniMap.CopyMap(abstractMap, poiManager.allPOIs, table, poiManager.locationCoordinates, poiManager.poiHits, poiManager.poiScale,
+                poiManager.transform.eulerAngles);
+        }
+
         ChangeMapScaleToChosenScale(oldScale);
     }
 
