@@ -1051,6 +1051,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 1744195984}
   objectToDeactivate: {fileID: 998143210}
   seatPosition: {fileID: 3169655455821710205}
+  seatIndex: 1
 --- !u!1 &191425540
 GameObject:
   m_ObjectHideFlags: 0
@@ -6419,6 +6420,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 1744195984}
   objectToDeactivate: {fileID: 998143210}
   seatPosition: {fileID: 3169655455739026263}
+  seatIndex: 3
 --- !u!1 &1258641654
 GameObject:
   m_ObjectHideFlags: 0
@@ -7637,6 +7639,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 1744195984}
   objectToDeactivate: {fileID: 998143210}
   seatPosition: {fileID: 3169655455559178259}
+  seatIndex: 4
 --- !u!1 &1532409089
 GameObject:
   m_ObjectHideFlags: 0
@@ -8464,6 +8467,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 1744195984}
   objectToDeactivate: {fileID: 998143210}
   seatPosition: {fileID: 3169655454737914270}
+  seatIndex: 6
 --- !u!1 &1614327449
 GameObject:
   m_ObjectHideFlags: 0
@@ -9069,6 +9073,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 1744195984}
   objectToDeactivate: {fileID: 998143210}
   seatPosition: {fileID: 3169655454986751634}
+  seatIndex: 5
 --- !u!1 &1744195984
 GameObject:
   m_ObjectHideFlags: 0
@@ -10444,6 +10449,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 1744195984}
   objectToDeactivate: {fileID: 998143210}
   seatPosition: {fileID: 3169655456032316832}
+  seatIndex: 2
 --- !u!1 &2103206040
 GameObject:
   m_ObjectHideFlags: 0

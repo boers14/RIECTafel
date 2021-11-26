@@ -61,7 +61,11 @@ public class POIManager : MonoBehaviour
 
     private void Start()
     {
-        chooseSeatButtonsParent = FindObjectOfType<ChooseSeatButton>().transform.parent;
+        if (FindObjectOfType<ChooseSeatButton>())
+        {
+            chooseSeatButtonsParent = FindObjectOfType<ChooseSeatButton>().transform.parent;
+        }
+
         dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), LogInManager.datatype);
 
         moveMap = map.GetComponent<MoveMap>();
@@ -230,7 +234,10 @@ public class POIManager : MonoBehaviour
 
     public void CheckPOIVisibility()
     {
-        if (chooseSeatButtonsParent.gameObject.activeSelf) { return; }
+        if (chooseSeatButtonsParent)
+        {
+            if (chooseSeatButtonsParent.gameObject.activeSelf) { return; }
+        }
 
         for (int i = 0; i < allPOIs.Count; i++)
         {

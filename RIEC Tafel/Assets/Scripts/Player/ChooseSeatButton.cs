@@ -7,6 +7,9 @@ public class ChooseSeatButton : MeetingButton
     [SerializeField]
     private Transform seatPosition = null;
 
+    [SerializeField]
+    private int seatIndex = 0;
+
     public int playerNumber { get; set; } = 0;
 
     private MiniMap miniMap = null;
@@ -16,14 +19,6 @@ public class ChooseSeatButton : MeetingButton
     public override void Start()
     {
         base.Start();
-
-        foreach(PlayerConnection player in FindObjectsOfType<PlayerConnection>())
-        {
-            if (player.transform.position == seatPosition.position)
-            {
-                gameObject.SetActive(false);
-            }
-        }
 
         button.onClick.AddListener(SeatPlayer);
         miniMap = FindObjectOfType<MiniMap>();
@@ -45,7 +40,7 @@ public class ChooseSeatButton : MeetingButton
         List<PlayerConnection> playerConnections = new List<PlayerConnection>();
         playerConnections.AddRange(FindObjectsOfType<PlayerConnection>());
         PlayerConnection player = playerConnections.Find(x => x.playerNumber == playerNumber);
-        player.CmdChangePlayerPos(playerNumber, seatPosition.position, seatPosition.eulerAngles);
+        player.CmdChangePlayerPos(playerNumber, seatPosition.position, seatPosition.eulerAngles, seatIndex);
 
         miniMap.gameObject.SetActive(true);
         EnableMapRendererPieces(true);
@@ -61,6 +56,18 @@ public class ChooseSeatButton : MeetingButton
         foreach(MeshRenderer renderer in map.GetComponentsInChildren<MeshRenderer>())
         {
             renderer.enabled = enabled;
+        }
+    }
+
+    public void CheckIfSeatIsOpen()
+    {
+        foreach (PlayerConnection player in FindObjectsOfType<PlayerConnection>())
+        {
+            if (player.chosenSeat == seatIndex)
+            {
+                gameObject.SetActive(false);
+                break;
+            }
         }
     }
 }

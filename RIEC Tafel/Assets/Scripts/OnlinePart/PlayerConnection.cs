@@ -21,7 +21,7 @@ public class PlayerConnection : NetworkBehaviour
     private GameManager.DataType dataType = GameManager.DataType.Regular;
 
     [SyncVar, System.NonSerialized]
-    public int playerNumber = -1;
+    public int playerNumber = -1, chosenSeat = -1;
 
     [SerializeField]
     private MeshFilter head = null, body = null;
@@ -54,6 +54,14 @@ public class PlayerConnection : NetworkBehaviour
         map.playerConnectionTransform = transform;
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            print(chosenSeat);
+        }
+    }
+
     public IEnumerator StartConnectionWithGamemanager(string cityName)
     {
         yield return new WaitForEndOfFrame();
@@ -84,10 +92,11 @@ public class PlayerConnection : NetworkBehaviour
             if (currentConnections[i] == this) { continue; }
 
             currentConnections[i].ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
-            for (int j = 0; j < currentConnections[i].transform.childCount; j++)
-            {
-                currentConnections[i].transform.GetChild(j).gameObject.SetActive(true);
-            }
+        }
+
+        for (int i = 0; i < chooseSeatButtons.Count; i++)
+        {
+            chooseSeatButtons[i].CheckIfSeatIsOpen();
         }
 
         string nameString = "";
@@ -262,23 +271,29 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
-    public void CmdChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot)
+    public void CmdChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
-        SetPlayerPosition(playerNumber, newPos, newRot);
-        RpcChangePlayerPos(playerNumber, newPos, newRot);
+        SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
+        RpcChangePlayerPos(playerNumber, newPos, newRot, seatIndex);
     }
 
     [ClientRpc]
-    private void RpcChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot)
+    private void RpcChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
-        SetPlayerPosition(playerNumber, newPos, newRot);
+        SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
     }
 
-    private void SetPlayerPosition(int playerNumber, Vector3 newPos, Vector3 newRot)
+    private void SetPlayerPosition(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
         PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
         player.transform.position = newPos;
         player.transform.eulerAngles = newRot;
+        player.chosenSeat = seatIndex;
+
+        for (int i = 0; i < chooseSeatButtons.Count; i++)
+        {
+            chooseSeatButtons[i].CheckIfSeatIsOpen();
+        }
 
         if (playerNumber == this.playerNumber && isLocalPlayer)
         {
@@ -286,12 +301,28 @@ public class PlayerConnection : NetworkBehaviour
             poiManager.ChangePOIManagerTransform(player.transform);
             poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
             poiManager.RotatePOITextToPlayer();
+
+            PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+            for (int i = 0; i < currentConnections.Length; i++)
+            {
+                if (currentConnections[i] == this) { continue; }
+
+                for (int j = 0; j < currentConnections[i].transform.childCount; j++)
+                {
+                    currentConnections[i].transform.GetChild(j).gameObject.SetActive(true);
+                }
+            }
+
         }
         else
         {
-            for (int i = 0; i < player.transform.childCount; i++)
+            print(player.chosenSeat);
+            if (chosenSeat != -1)
             {
-                player.transform.GetChild(i).gameObject.SetActive(true);
+                for (int i = 0; i < player.transform.childCount; i++)
+                {
+                    player.transform.GetChild(i).gameObject.SetActive(true);
+                }
             }
         }
     }
