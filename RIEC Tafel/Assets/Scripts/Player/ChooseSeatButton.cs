@@ -53,7 +53,7 @@ public class ChooseSeatButton : MeetingButton
 
     private void EnableMapRendererPieces(bool enabled)
     {
-        foreach(MeshRenderer renderer in map.GetComponentsInChildren<MeshRenderer>())
+        foreach (MeshRenderer renderer in map.GetComponentsInChildren<MeshRenderer>())
         {
             renderer.enabled = enabled;
         }

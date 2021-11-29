@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class OculusAnimations : MonoBehaviour
@@ -42,13 +41,13 @@ public class OculusAnimations : MonoBehaviour
 
     private bool showPrimaryOnly = true, showGripOnly = false, showPrimaryAndGrip = false;
 
-    private float amountOfMovement = 0.55f;
+    private float amountOfMovement = 0.4f;
 
     private void Start()
     {
         basePos = transform.position;
         baseRot = transform.eulerAngles;
-        standardTweenStartPos = basePos + new Vector3(0, 0.3f, 0);
+        standardTweenStartPos = basePos + new Vector3(0, 0.2f, 0);
 
         exampleLegendaBasePos = exampleLegenda.transform.position;
         exampleLegendaBaseRot = exampleLegenda.transform.eulerAngles;
@@ -89,7 +88,7 @@ public class OculusAnimations : MonoBehaviour
             StartCoroutine(SetNeccesaryKeyBoardKeys());
         }
         TurnOffRayAndButtonEffect(false);
-        iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.45f + keyBoard.forward * 0.2f, "time", 2f, 
+        iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.35f + keyBoard.forward * 0.2f, "time", 2f, 
             "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleInputfieldAnimationThirdStep", "oncompletetarget", gameObject));
     }
 
@@ -189,7 +188,7 @@ public class OculusAnimations : MonoBehaviour
             otherController.ShowExampleScaleMapFirstStep();
         }
 
-        amountOfMovement = 0.4f;
+        amountOfMovement = 0.15f;
         rayEndPosGameObject = table;
         showPrimaryAndGrip = false;
         animationAfterButtonPressAnimation = "ShowExampleMoveMapSecondStep";
@@ -286,7 +285,7 @@ public class OculusAnimations : MonoBehaviour
 
     private void ShowExampleMoveGrabbedObjectThirdStep()
     {
-        iTween.MoveTo(gameObject, iTween.Hash("position", basePos + new Vector3(0, 0.6f, 0), "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos + new Vector3(0, 0.4f, 0), "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
             "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveGrabbedObjectFourthStep", "oncompletetarget", gameObject, "delay", 0.5f));
     }
 
@@ -340,7 +339,7 @@ public class OculusAnimations : MonoBehaviour
         animationAfterButtonPressAnimation = "ShowExampleScaleGrabbedObjectThirdStep";
         showPrimaryOnly = true;
         showGripOnly = false;
-        amountOfMovement = 0.4f;
+        amountOfMovement = 0.15f;
         iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
             "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
 
@@ -525,7 +524,7 @@ public class OculusAnimations : MonoBehaviour
 
     private void ShowExampleScaleMapThirdStepWithControllers()
     {
-        startAnimationAfterEndDelay = "ShowExampleScaleMapRotateFourthStepWithControllers";
+        startAnimationAfterEndDelay = "ShowExampleScaleMapFourthStepWithControllers";
         primaryButtonArrow.gameObject.SetActive(false);
         secondaryButtonArrow.gameObject.SetActive(true);
         secondaryButtonArrow.DisplayTween();
@@ -533,7 +532,7 @@ public class OculusAnimations : MonoBehaviour
             "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
     }
 
-    private void ShowExampleScaleMapRotateFourthStepWithControllers()
+    private void ShowExampleScaleMapFourthStepWithControllers()
     {
         if (isControlledByOtherController)
         {
@@ -627,7 +626,6 @@ public class OculusAnimations : MonoBehaviour
             animationAfterButtonPressAnimation = "ShowExampleMoveDropdownSecondStepWithControllers";
             startAnimationAfterEndDelay = "ShowExampleMoveDropdownFirstStepWithControllers";
             TurnOffRayAndButtonEffect(true);
-            exampleDropdown.SetActive(true);
             rayEndPosGameObject = exampleDropdown;
             BaseStartAnimation();
         } else
@@ -756,6 +754,11 @@ public class OculusAnimations : MonoBehaviour
         for (int i = 1; i < transform.childCount; i++)
         {
             transform.GetChild(i).gameObject.SetActive(false);
+        }
+
+        if (!exampleRay)
+        {
+            exampleRay = GetComponent<LineRenderer>();
         }
         exampleRay.enabled = false;
     }

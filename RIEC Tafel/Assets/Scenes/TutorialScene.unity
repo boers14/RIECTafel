@@ -185,7 +185,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 26287079}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.418, y: -3.683, z: -12.594}
+  m_LocalPosition: {x: -7.147, y: -3.683, z: -12.594}
   m_LocalScale: {x: 1.4999999, y: 1.5, z: 1.5}
   m_Children:
   - {fileID: 1057394522}
@@ -329,11 +329,8 @@ MonoBehaviour:
   - n
   - d
   - e
-  - Spatie
-  - s
-  - t
-  - a
-  - p
+  - Shift
+  - 1
   primaryButtonArrow: {fileID: 1618955854}
   secondaryButtonArrow: {fileID: 142332632}
   steerStickArrow: {fileID: 1003563080}
@@ -7117,10 +7114,14 @@ MonoBehaviour:
   minimumScale: 7
   maximumScale: 20
   movementPower: 3
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 4
+  hands: []
   keyBoard: {fileID: 1278641903}
   notesSet: {fileID: 2120915937}
   notesEditText: {fileID: 1317229255}
+  notesText: {fileID: 0}
 --- !u!114 &369383189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9893,7 +9894,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 0}
-  m_CustomCaretColor: 1
+  m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
   m_Text: 
   m_CaretBlinkRate: 0.85
@@ -10675,7 +10676,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Hou de A/ X knop ingedrukt voor een seconde om verder te gaan
+  m_text: Hou de A of X knop ingedrukt voor een seconde om verder te gaan
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10702,8 +10703,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 3
@@ -10966,21 +10967,21 @@ MonoBehaviour:
   - Conclusies/ indicaties
   - Notities
   buttonCommands:
-  - Hou de A/ X knop ingedrukt voor een seconde om verder te gaan
+  - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
   - Druk de "Ga naar de volgende stap" knop in
-  - Type "Volgende stap" in het invulveld
+  - Type "Volgende!" in het invulveld
   - Beweeg de map om verder te gaan
   - Roteer de map om verder te gaan
   - Schaal de map om verder te gaan
-  - Hou de A/ X knop ingedrukt voor een seconde om verder te gaan
+  - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
   - Open de informatie van het intressepunt
   - Trek het intressepunt naar u toe
-  - Hou de A/ X knop ingedrukt voor een seconde om verder te gaan
+  - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
   - Pak de legenda en laat hem weer vallen
   - Scroll door de legenda heen
   - Pas de grootte aan van de legenda
-  - Hou de A/ X knop ingedrukt voor een seconde om verder te gaan
-  - Hou de A/ X knop ingedrukt voor een seconde om de tutorial af te ronden
+  - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
+  - Hou de A of X knop ingedrukt voor een seconde om de tutorial af te ronden
   explanationTexts:
   - "De RIEC tafel is een programma om te helpen met het te bediscussi\xEBren van
     het witwassen van geld tussen de verschillende overheidsinstanties."
@@ -11836,7 +11837,10 @@ MonoBehaviour:
   minimumScale: 6
   maximumScale: 16
   movementPower: 3
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 3
+  hands: []
   dataExplanationSet: {fileID: 481581247}
   explantionText: {fileID: 1923681760}
   title: {fileID: 1624497327}
@@ -34566,7 +34570,10 @@ MonoBehaviour:
   minimumScale: 6
   maximumScale: 16
   movementPower: 3
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 3
+  hands: []
   dataExplanationSet: {fileID: 481581247}
   explantionText: {fileID: 1923681760}
   title: {fileID: 1624497327}
@@ -37886,7 +37893,10 @@ MonoBehaviour:
   minimumScale: 1
   maximumScale: 3
   movementPower: 1
+  rightCharacteristics: 0
+  leftCharacteristics: 0
   indexOfUIInHandRays: 2
+  hands: []
   legendaImage: {fileID: 1623846066}
 --- !u!114 &2061835439
 MonoBehaviour:
@@ -38764,11 +38774,8 @@ MonoBehaviour:
   - n
   - d
   - e
-  - Spatie
-  - s
-  - t
-  - a
-  - p
+  - Shift
+  - 1
   primaryButtonArrow: {fileID: 5712750485233270204}
   secondaryButtonArrow: {fileID: 2085017367}
   steerStickArrow: {fileID: 160828992}
@@ -38805,7 +38812,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2268047890646935295}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.492, y: -3.683, z: -12.594}
+  m_LocalPosition: {x: -6.75, y: -3.683, z: -12.594}
   m_LocalScale: {x: 1.4999999, y: 1.5, z: 1.5}
   m_Children:
   - {fileID: 8686672905144644527}

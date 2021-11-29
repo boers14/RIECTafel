@@ -54,14 +54,6 @@ public class PlayerConnection : NetworkBehaviour
         map.playerConnectionTransform = transform;
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            print(chosenSeat);
-        }
-    }
-
     public IEnumerator StartConnectionWithGamemanager(string cityName)
     {
         yield return new WaitForEndOfFrame();
@@ -121,6 +113,7 @@ public class PlayerConnection : NetworkBehaviour
         nameString += ":\n" + LogInManager.username;
         CmdSetPlayerName(nameString, LogInManager.avatarData, poiManager.dataType.ToString());
 
+        GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>().text = "Kies een plek om te zitten:";
         for (int i = 0; i < chooseSeatButtons.Count; i++)
         {
             chooseSeatButtons[i].GetComponent<Image>().enabled = true;
@@ -295,7 +288,8 @@ public class PlayerConnection : NetworkBehaviour
             chooseSeatButtons[i].CheckIfSeatIsOpen();
         }
 
-        if (playerNumber == this.playerNumber && isLocalPlayer)
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+        if (playerNumber == ownPlayer.playerNumber && isLocalPlayer)
         {
             FetchVRPlayer();
             poiManager.ChangePOIManagerTransform(player.transform);
@@ -305,7 +299,7 @@ public class PlayerConnection : NetworkBehaviour
             PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
             for (int i = 0; i < currentConnections.Length; i++)
             {
-                if (currentConnections[i] == this) { continue; }
+                if (currentConnections[i] == this || currentConnections[i].chosenSeat == -1) { continue; }
 
                 for (int j = 0; j < currentConnections[i].transform.childCount; j++)
                 {
@@ -316,13 +310,14 @@ public class PlayerConnection : NetworkBehaviour
         }
         else
         {
-            print(player.chosenSeat);
-            if (chosenSeat != -1)
+            if (ownPlayer.chosenSeat != -1)
             {
                 for (int i = 0; i < player.transform.childCount; i++)
                 {
                     player.transform.GetChild(i).gameObject.SetActive(true);
                 }
+
+                ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
             }
         }
     }
@@ -332,6 +327,13 @@ public class PlayerConnection : NetworkBehaviour
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
         return playerConnections.Find(i => i.playerNumber == playerNumber);
+    }
+
+    private PlayerConnection FetchOwnPlayer()
+    {
+        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        return playerConnections.Find(i => i.hasAuthority);
     }
 
     private void FetchVRPlayer()

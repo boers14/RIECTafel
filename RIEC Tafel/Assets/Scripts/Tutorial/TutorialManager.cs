@@ -152,7 +152,7 @@ public class TutorialManager : MonoBehaviour
         yield return new WaitForSeconds(timeBeforeTutorialStarts);
         if (!tutorialHasStarted)
         {
-            EnablePrimaryArrows();
+            EnablePrimaryArrows(true);
         }
     }
 
@@ -181,7 +181,7 @@ public class TutorialManager : MonoBehaviour
         learnUIButton.gameObject.SetActive(true);
         oculusAnimations.gameObject.SetActive(true);
         oculusAnimations.ShowExampleButtonAnimationFirstStep();
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(false);
     }
 
     public void FirstStepOfTutorial()
@@ -197,13 +197,13 @@ public class TutorialManager : MonoBehaviour
     {
         learnUIInputField.gameObject.SetActive(true);
         keyBoard.gameObject.SetActive(true);
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(false);
         oculusAnimations.ShowExampleInputfieldAnimationFirstStep();
     }
 
     public void SecondStepOfTutorial()
     {
-        if (learnUIInputField.text == "Volgende stap" || learnUIInputField.text == "volgende stap")
+        if (learnUIInputField.text == "Volgende!" || learnUIInputField.text == "volgende!")
         {
             learnUIInputField.gameObject.SetActive(false);
             keyBoard.gameObject.SetActive(false);
@@ -215,7 +215,7 @@ public class TutorialManager : MonoBehaviour
     {
         oculusAnimations.ShowExampleMoveMapFirstStep();
         BaseThirdStepOfTutorial();
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(false);
     }
 
     public void StartThirdStepOfTutorialWithControllers()
@@ -245,8 +245,8 @@ public class TutorialManager : MonoBehaviour
     {
         oculusAnimations.ShowExampleRotateMapFirstStep();
         neededTutorialTransform = map.transform.eulerAngles;
-        EnablePrimaryArrows();
-        EnableGripArrows();
+        EnablePrimaryArrows(false);
+        EnableGripArrows(false);
     }
 
     public void StartFourthStepOfTutorialWithControllers()
@@ -269,7 +269,7 @@ public class TutorialManager : MonoBehaviour
     {
         oculusAnimations.ShowExampleScaleMapFirstStep();
         neededTutorialTransform = map.transform.lossyScale;
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(true);
     }
 
     public void StartFifthStepOfTutorialWithControllers()
@@ -343,7 +343,7 @@ public class TutorialManager : MonoBehaviour
     {
         oculusAnimations.ShowExamplePullPOI();
         tutorialTitle.fontSize = 22;
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(false);
         checkForPOIPull = true;
     }
 
@@ -372,7 +372,7 @@ public class TutorialManager : MonoBehaviour
         legenda.gameObject.SetActive(true);
         grabbebleObjectArrows[0].SetTweenPosition(legendaArrowBasePos);
         grabbebleObjectArrows[0].connectedGameObject = legenda;
-        EnableGripArrows();
+        EnableGripArrows(false);
         grabbebleObjectArrows[0].gameObject.SetActive(true);
         oculusAnimations.ShowExampleGrabObjectFirstStep();
     }
@@ -394,7 +394,7 @@ public class TutorialManager : MonoBehaviour
     {
         oculusAnimations.ShowExampleMoveGrabbedObjectFirstStep();
         BaseStartEleventhStepOfTutorial();
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(false);
     }
 
     public void StartEleventhStepOfTutorialWithControllers()
@@ -412,7 +412,7 @@ public class TutorialManager : MonoBehaviour
         grabbebleObjectArrows[0].gameObject.SetActive(true);
         grabbebleObjectArrows[0].connectedGameObject = legenda;
         completedCanvasStep = false;
-        EnableGripArrows();
+        EnableGripArrows(false);
     }
 
     public void EleventhStepOfTutorial()
@@ -435,7 +435,7 @@ public class TutorialManager : MonoBehaviour
     {
         oculusAnimations.ShowExampleScaleGrabbedObjectFirstStep();
         BaseStartTwelvethStepOfTutorial();
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(true);
     }
 
     public void StartTwelvethStepOfTutorialWithControllers()
@@ -451,7 +451,7 @@ public class TutorialManager : MonoBehaviour
         neededTutorialTransform = legendaImage.transform.lossyScale;
         grabbebleObjectArrows[0].gameObject.SetActive(true);
         completedCanvasStep = false;
-        EnableGripArrows();
+        EnableGripArrows(false);
     }
 
     public void TwelvethStepOfTutorial()
@@ -493,8 +493,8 @@ public class TutorialManager : MonoBehaviour
     public void StartThirthteenthStepOfTutorialWithControllers()
     {
         oculusAnimations.ShowExampleMoveDropdownFirstStepWithControllers();
-        EnablePrimaryArrows();
-        EnableGripArrows();
+        EnablePrimaryArrows(false);
+        EnableGripArrows(false);
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnableSteerStickArrow(true);
         tutorialDropdown.gameObject.SetActive(true);
     }
@@ -521,7 +521,7 @@ public class TutorialManager : MonoBehaviour
         grabbebleObjectArrows[1].gameObject.SetActive(false);
         notes.gameObject.SetActive(true);
         CheckIfPrimaryButtonIsDown();
-        buttonCommandTextText.fontSize = 14.2f;
+        buttonCommandTextText.fontSize = 13.5f;
     }
 
     public void FourteenthStepOfTutorial()
@@ -546,7 +546,7 @@ public class TutorialManager : MonoBehaviour
     {
         ResetButtonPressTimers();
         oculusAnimations.gameObject.SetActive(false);
-        EnablePrimaryArrows();
+        EnablePrimaryArrows(true);
 
         for (int i = 0; i < inputDevices.Count; i++)
         {
@@ -557,19 +557,33 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    private void EnablePrimaryArrows()
+    private void EnablePrimaryArrows(bool bothHands)
     {
-        for (int i = 0; i < tutorialHands.Count; i++)
+        if (bothHands)
         {
-            tutorialHands[i].EnablePrimaryButtonArrow(true);
+            for (int i = 0; i < tutorialHands.Count; i++)
+            {
+                tutorialHands[i].EnablePrimaryButtonArrow(true);
+            }
+        }
+        else
+        {
+            SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnablePrimaryButtonArrow(true);
         }
     }
 
-    private void EnableGripArrows()
+    private void EnableGripArrows(bool bothHands)
     {
-        for (int i = 0; i < tutorialHands.Count; i++)
+        if (bothHands)
         {
-            tutorialHands[i].EnableGripArrow(true);
+            for (int i = 0; i < tutorialHands.Count; i++)
+            {
+                tutorialHands[i].EnableGripArrow(true);
+            }
+        }
+        else
+        {
+            SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableGripArrow(true);
         }
     }
 
