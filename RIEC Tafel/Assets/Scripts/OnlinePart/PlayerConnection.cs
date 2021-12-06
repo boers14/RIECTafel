@@ -29,7 +29,7 @@ public class PlayerConnection : NetworkBehaviour
     [SerializeField]
     private List<Mesh> allUsableBodyMeshes = new List<Mesh>();
 
-    List<ChooseSeatButton> chooseSeatButtons = new List<ChooseSeatButton>();
+    private List<ChooseSeatButton> chooseSeatButtons = new List<ChooseSeatButton>();
 
     private void Start()
     {
@@ -134,12 +134,12 @@ public class PlayerConnection : NetworkBehaviour
 
     [ClientRpc]
     public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
-        List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber)
+        List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber, string cityName)
     {
         if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
 
         FetchVRPlayer();
-        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications);
+        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications, cityName);
     }
 
     [Command]

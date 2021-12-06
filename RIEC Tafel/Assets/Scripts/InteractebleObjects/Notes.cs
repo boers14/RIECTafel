@@ -48,6 +48,8 @@ public class Notes : GrabbebleObjects
             steerStickInput = Vector2.zero;
         }
 
+        steerStickInput *= SettingsManager.moveGrabbedObjectSpeedFactor;
+
         Vector3 newPos = notesText.rectTransform.localPosition;
         float ySize = (float)notesText.textInfo.lineCount * (notesText.fontSize * 1.15f);
 

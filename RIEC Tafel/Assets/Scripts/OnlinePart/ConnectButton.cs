@@ -7,9 +7,14 @@ public class ConnectButton : SwitchSceneButton
     [SerializeField]
     private ConnectionManager.ConnectFunction buttonFunction = 0;
 
-    public override void SwitchScene()
+    public override void Start()
+    {
+        base.Start();
+        button.onClick.AddListener(SetConnectionFunction);
+    }
+
+    public virtual void SetConnectionFunction()
     {
         ConnectionManager.connectFunction = buttonFunction;
-        base.SwitchScene();
     }
 }

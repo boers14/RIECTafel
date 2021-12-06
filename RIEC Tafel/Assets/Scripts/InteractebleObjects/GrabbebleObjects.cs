@@ -144,8 +144,8 @@ public class GrabbebleObjects : MonoBehaviour
 
         Vector3 oldScale = imageRectTransform.localScale;
         Vector3 nextScale = imageRectTransform.localScale;
-        nextScale.x += scalePower * oldScale.x;
-        nextScale.y += scalePower * oldScale.y;
+        nextScale.x += scalePower * oldScale.x * SettingsManager.scaleGrabbedObjectFactor;
+        nextScale.y += scalePower * oldScale.y * SettingsManager.scaleGrabbedObjectFactor;
 
         if (nextScale.x < minimumScale)
         {
@@ -171,6 +171,8 @@ public class GrabbebleObjects : MonoBehaviour
         {
             steerStickInput = Vector2.zero;
         }
+
+        steerStickInput *= SettingsManager.moveGrabbedObjectSpeedFactor;
 
         RectTransform imageRectTransform = image.GetComponent<RectTransform>();
         Vector3 newPos = imageRectTransform.localPosition;

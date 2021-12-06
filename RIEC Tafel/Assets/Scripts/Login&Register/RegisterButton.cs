@@ -56,7 +56,7 @@ public class RegisterButton : SwitchSceneButton
             emailField.isFilledIn = true;
         }
 
-        bool lowerCase = false, upperCase = false, specialCharacter = false, number = false;
+        bool lowerCase = false, upperCase = false, number = false;
         foreach (char c in passwordField.text)
         {
             if (char.IsUpper(c))
@@ -76,14 +76,9 @@ public class RegisterButton : SwitchSceneButton
                 number = true;
                 continue;
             }
-
-            if (!char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c))
-            {
-                specialCharacter = true;
-            }
         }
 
-        if (!lowerCase || !upperCase || !specialCharacter || !number || passwordField.text.Length < 16)
+        if (!lowerCase || !upperCase || !number || passwordField.text.Length < 8)
         {
             canRegister = false;
             passwordField.isFilledIn = false;

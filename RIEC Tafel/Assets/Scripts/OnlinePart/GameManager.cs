@@ -21,18 +21,22 @@ public class GameManager : NetworkBehaviour
     private List<string> allLocations = new List<string>(), conclusions = new List<string>(), indications = new List<string>(), 
         featureAmounts = new List<string>(), extraExplanations = new List<string>();
 
+    [SyncVar]
+    private string cityName = "Utrecht";
+
     [Command]
     public void CmdStartRetrieveCityData(string cityName)
     {
-        StartCoroutine(RetrieveCityData(cityName));
+        if (cityName != "")
+        {
+            this.cityName = cityName;
+        }
+        StartCoroutine(RetrieveCityData());
     }
 
-    public IEnumerator RetrieveCityData(string cityName)
+    public IEnumerator RetrieveCityData()
     {
         WWWForm form = new WWWForm();
-        cityName = cityName.ToLower();
-        cityName = System.Text.RegularExpressions.Regex.Replace(cityName, @"\s+", "");
-        form.AddField("cityName", cityName);
         WWW www = new WWW("http://localhost/riectafel/retrievecitydata.php", form);
         yield return www;
 
@@ -106,8 +110,8 @@ public class GameManager : NetworkBehaviour
         double xCoordinate = coordinate.x;
         coordinate.x = coordinate.y;
         coordinate.y = xCoordinate;
-        locationData[0] = coordinate.ToString();
-        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications);
+        locationData[0] = ", 1111 AA " + cityName;
+        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, cityName);
     }
 
     [Command (channel = 0, requiresAuthority = false)]
@@ -132,7 +136,8 @@ public class GameManager : NetworkBehaviour
             AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, requiredDatatype);
         }
 
-        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, playerNumber);
+        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, 
+            playerNumber, cityName);
     }
 
     private void AddDataToLists(List<string> locationData, List<string> dataTypes, List<string> neededConclusions, List<string> neededIndications,

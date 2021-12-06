@@ -1276,9 +1276,21 @@ namespace Mapbox.Unity.Map
 			string s = worldCoordinate;
 			float latitude = 0;
 			float longtitude = 0;
-			string[] coordinatesArray = s.Split(',');
+			List<string> coordinatesArray = new List<string>();
+			coordinatesArray.AddRange(s.Split(','));
+			if (coordinatesArray.Count == 3)
+            {
+				if (coordinatesArray[1].Length <= 2)
+                {
+					coordinatesArray.Insert(1, "0");
+                } else
+                {
+					coordinatesArray.Add("0");
+				}
+            }
 
-			switch (coordinatesArray.Length)
+
+			switch (coordinatesArray.Count)
 			{
 				case 2:
 					coordinatesArray[0] = coordinatesArray[0].Replace(".", ",");

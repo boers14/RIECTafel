@@ -19,6 +19,9 @@ public class PlayerGrab : MonoBehaviour
     [SerializeField]
     private LayerMask mask = 0;
 
+    [SerializeField]
+    private bool grabConnectionManagerStats = true;
+
     public float grabTimer { get; set; } = 0;
 
     private float grabTimerCooldown = 0.5f;
@@ -29,6 +32,11 @@ public class PlayerGrab : MonoBehaviour
     {
         inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
         lineRenderer = GetComponent<XRInteractorLineVisual>();
+
+        if (grabConnectionManagerStats)
+        {
+            oneButtonControl = SettingsManager.oneHandControls;
+        }
     }
 
     private void Update()

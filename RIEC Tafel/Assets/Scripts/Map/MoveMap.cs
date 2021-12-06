@@ -41,7 +41,7 @@ public class MoveMap : MonoBehaviour
 
     private Transform originalParent = null, closestPOI = null;
 
-    private float originalMaxTileOffset = 0, rotationPower = 2;
+    private float originalMaxTileOffset = 0, rotationPower = 2, playerWasScalingCooldown = 0.25f, playerWasScalingTimer = 0;
 
     [SerializeField]
     private XRRayInteractor rightRayInteractor = null;
@@ -98,7 +98,7 @@ public class MoveMap : MonoBehaviour
         transform.position = table.position + offset;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         ComputerControls();
 
@@ -134,7 +134,7 @@ public class MoveMap : MonoBehaviour
                 {
                     if (handRays[i].objectsAreHovered[indexOfTableInHandRays])
                     {
-                        if (hoverCount != inputDevices.Count)
+                        if (hoverCount != inputDevices.Count && playerWasScalingTimer < 0)
                         {
                             if (inputDevices[i].TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
                             {
@@ -157,8 +157,9 @@ public class MoveMap : MonoBehaviour
                                 movement.z = 0;
                                 MoveTheMap(movement, true, false);
                             }
-                        } else
+                        } else if (hoverCount == inputDevices.Count)
                         {
+                            playerWasScalingTimer = playerWasScalingCooldown;
                             float oldDist = Vector3.Distance(prevHandPosses[0], prevHandPosses[1]);
                             float newDist = Vector3.Distance(hands[0].transform.position, hands[1].transform.position);
                             ChangeMapScale((newDist - oldDist));
@@ -170,6 +171,8 @@ public class MoveMap : MonoBehaviour
                 prevHandPosses[i] = hands[i].transform.position;
                 prevHandRotations[i] = hands[i].transform.rotation;
             }
+
+            playerWasScalingTimer -= Time.deltaTime;
         }
         else
         {
@@ -202,7 +205,7 @@ public class MoveMap : MonoBehaviour
         if (rotation > 5 || rotation < -5) { return; }
 
         Vector3 nextRotation = transform.eulerAngles;
-        nextRotation.y += rotation;
+        nextRotation.y += rotation * SettingsManager.rotateMapFactor;
         isTweening = true;
 
         if (!closestPOI)
@@ -238,10 +241,10 @@ public class MoveMap : MonoBehaviour
         }
 
         poiManager.CheckPOIVisibility();
-        StartCoroutine(CheckIfPayerStillRotates());
+        StartCoroutine(CheckIfMapStillRotates());
     }
 
-    private IEnumerator CheckIfPayerStillRotates()
+    private IEnumerator CheckIfMapStillRotates()
     {
         rotationCounter++;
         yield return new WaitForSeconds(0.1f);
@@ -256,17 +259,19 @@ public class MoveMap : MonoBehaviour
     {
         if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f && steerStickDirection.y > -0.1f) { return; }
 
-        Vector2 movement = new Vector2(steerStickDirection.x * moveMapPower, steerStickDirection.y * moveMapPower);
+        Vector2 movement = new Vector2(steerStickDirection.x, steerStickDirection.y) * moveMapPower * SettingsManager.moveMapSpeedFactor;
         if (disregardMoveMapPower)
         {
             movement = steerStickDirection;
         }
         offset.x += movement.x;
         offset.z += movement.y;
+
         if (miniMap)
         {
             miniMap.MovePlayerIndication(transform, offset);
         }
+
         poiManager.SetExtraOffset(offset);
 
         if (movePOIs)
@@ -282,13 +287,33 @@ public class MoveMap : MonoBehaviour
         transform.position = newPos;
     }
 
-    private void ChangeMapScale(float changedScale)
+    private void SetMapPos(Vector2 newPos)
+    {
+        offset.x = newPos.x;
+        offset.z = newPos.y;
+
+        if (miniMap)
+        {
+            miniMap.MovePlayerIndication(transform, offset);
+        }
+
+        poiManager.SetExtraOffset(offset);
+        poiManager.MovePOIs(new Vector3(transform.position.x - newPos.x, 0, transform.position.z - newPos.y));
+
+        Vector3 newPosSetter = transform.position;
+        newPosSetter.x = newPos.x;
+        newPosSetter.z = newPos.y;
+        transform.position = newPosSetter;
+        CheckIfMapIsStillOnTable();
+    }
+
+    public virtual void ChangeMapScale(float changedScale)
     {
         if (changedScale < 0 && transform.localScale.x == minimumScale || changedScale > 0 && transform.localScale.x == maximumScale) { return; }
 
         Vector3 nextScale = transform.localScale;
-        nextScale.x += changedScale * oldScale.x;
-        nextScale.z += changedScale * oldScale.x;
+        nextScale.x += changedScale * SettingsManager.scaleMapFactor * oldScale.x;
+        nextScale.z += changedScale * SettingsManager.scaleMapFactor * oldScale.x;
 
         if (nextScale.x < minimumScale)
         {
@@ -321,8 +346,12 @@ public class MoveMap : MonoBehaviour
             miniMap.ScalePlayerIndication(nextScale);
         }
 
-        MoveTheMap(new Vector2(BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.x),
-            BaseCalculations.CalculatePosDiff(oldMaxTileOffset, maxTileOffset, offset.z)), limitMovement, true);
+        Vector2 newPos = Vector2.zero;
+        float percentageOnMap = offset.x / oldMaxTileOffset;
+        newPos.x = percentageOnMap * maxTileOffset;
+        percentageOnMap = offset.z / oldMaxTileOffset;
+        newPos.y = percentageOnMap * maxTileOffset;
+        SetMapPos(newPos);
     }
 
     private void CheckIfMapIsStillOnTable()

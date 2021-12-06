@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mapbox.Unity.Map;
 using Mapbox.Utils;
-using UnityEngine.UI;
-using TMPro;
+using Mapbox.Geocoding;
+using Mapbox.Unity;
+using Mapbox.Unity.Utilities;
+using Mapbox.Json;
+using Mapbox.Utils.JsonConverters;
 
 public class DataGenerator : MonoBehaviour
 {
@@ -20,38 +23,82 @@ public class DataGenerator : MonoBehaviour
 
     public int maxAmountOfHits = 10;
 
+    private ReverseGeocodeResource resource = null;
+
+    private Geocoder geocoder = null;
+
+    private Vector2d coordinate = Vector2d.zero;
+
+    private ReverseGeocodeResponse response = null;
+
+    private event System.EventHandler<System.EventArgs> onGeocoderResponse = null;
+
+    private string location = "";
+
     private void Start()
     {
         string[] words = new string[]{"lorem", "ipsum", "dolor", "sit", "amet", "consectetuer",
         "adipiscing", "elit", "sed", "diam", "nonummy", "nibh", "euismod",
         "tincidunt", "ut", "laoreet", "dolore", "magna", "aliquam", "erat"};
         loremIpsumWords.AddRange(words);
+
+        resource = new ReverseGeocodeResource(coordinate);
+        geocoder = MapboxAccess.Instance.Geocoder;
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q) && !isProcessingAddingData)
         {
+            StartCreatingData();
+        }
+    }
+
+    private void StartCreatingData()
+    {
+        isProcessingAddingData = true;
+        StartCoroutine(SelectRandomCityLocation());
+    }
+
+    private IEnumerator SelectRandomCityLocation()
+    {
+        Vector2d locationPoint = map.CenterLatitudeLongitude;
+        locationPoint.x += Random.Range(-1f, 1f);
+        locationPoint.y += Random.Range(-1.5f, 1.5f);
+
+        double xLocationValue = locationPoint.x;
+        locationPoint.x = locationPoint.y;
+        locationPoint.y = xLocationValue;
+
+        coordinate = Conversions.StringToLatLon(locationPoint.ToString());
+        resource.Query = coordinate;
+        geocoder.Geocode(resource, HandleGeocoderResponse);
+        location = JsonConvert.SerializeObject(response, Formatting.Indented, JsonConverters.Converters);
+
+        if (location != "null")
+        {
+            string[] placenames = location.Split(new string[] { "place_name" }, System.StringSplitOptions.None);
+            if (placenames.Length > 2)
+            {
+                location = placenames[1];
+                location = location.Split(new string[] { "relevance" }, System.StringSplitOptions.None)[0];
+                location = location.Split('"')[2];
+            }
+        }
+        yield return new WaitForSeconds(0.15f);
+
+        if (!location.EndsWith("Belgium") && !location.EndsWith("Germany") && !location.StartsWith("{") && location != "null" && location != ""
+            && location.Split(',').Length > 2)
+        {
             StartCoroutine(AddDataToDatabase());
+        } else
+        {
+            StartCoroutine(SelectRandomCityLocation());
         }
     }
 
     private IEnumerator AddDataToDatabase()
     {
-        isProcessingAddingData = true;
-
-        string cityName = ConnectionManager.cityName;
-        cityName = cityName.ToLower();
-        cityName = System.Text.RegularExpressions.Regex.Replace(cityName, @"\s+", "");
-
-        Vector2d locationPoint = map.CenterLatitudeLongitude;
-        locationPoint.x += Random.Range(-0.03f, 0.03f);
-        locationPoint.y += Random.Range(-0.03f, 0.03f);
-        double xLocationValue = locationPoint.x;
-        locationPoint.x = locationPoint.y;
-        locationPoint.y = xLocationValue;
-        string location = locationPoint.ToString();
-
         int hits = Random.Range(3, maxAmountOfHits + 1);
         string featureAmount = "Hoeveelheid hits: " + hits.ToString();
         string extraDataExplanation = "";
@@ -78,9 +125,7 @@ public class DataGenerator : MonoBehaviour
 
         string completeDataset = location + "/*datatype*/" + LogInManager.datatype + "/*featureAmount*/" + featureAmount + "/*extraDataExplanation*/" +
              extraDataExplanation + "/*conclusion*/" + conclusion + "/*indication*/" + indication + "/*endOfRow*/";
-
         WWWForm form = new WWWForm();
-        form.AddField("cityName", cityName);
         form.AddField("completeDataset", completeDataset);
         WWW www = new WWW("http://localhost/riectafel/addcitydata.php", form);
         yield return www;
@@ -89,9 +134,20 @@ public class DataGenerator : MonoBehaviour
         if (www.text[0] == '0')
         {
             print("Data generated!");
-        } else
+        }
+        else
         {
             Debug.LogError("Error#" + www.text);
+        }
+    }
+
+    private void HandleGeocoderResponse(ReverseGeocodeResponse res)
+    {
+        response = res;
+        if (onGeocoderResponse != null)
+        {
+            print("hi");
+            onGeocoderResponse(this, System.EventArgs.Empty);
         }
     }
 

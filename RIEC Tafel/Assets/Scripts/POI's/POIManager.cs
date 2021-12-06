@@ -4,6 +4,10 @@ using UnityEngine;
 using Mapbox.Unity.Map;
 using Mapbox.Utils;
 using Mapbox.Unity.Utilities;
+using Mapbox.Unity;
+using Mapbox.Geocoding;
+using System.Text.RegularExpressions;
+using UnityEngine.Events;
 
 public class POIManager : MonoBehaviour
 {
@@ -32,8 +36,6 @@ public class POIManager : MonoBehaviour
     [System.NonSerialized]
     public List<GameObject> allPOIs = new List<GameObject>();
 
-    private List<Vector3> poiOffsets = new List<Vector3>();
-
     [SerializeField]
     private BackToStartPositionButton startPositionButton = null;
 
@@ -47,7 +49,7 @@ public class POIManager : MonoBehaviour
 
     [System.NonSerialized]
     public List<string> conclusions = new List<string>(), indications = new List<string>(), featureAmounts = new List<string>(), 
-        extraExplanations = new List<string>(), dutchNamesForRoles = new List<string>();
+        extraExplanations = new List<string>(), locationNames = new List<string>();
 
     [System.NonSerialized]
     public List<int> poiHits = new List<int>();
@@ -58,6 +60,14 @@ public class POIManager : MonoBehaviour
     private List<DataExplanations> dataExplanations = new List<DataExplanations>();
 
     private Transform chooseSeatButtonsParent = null;
+
+    private ForwardGeocodeResource resource = null;
+
+    private Vector2d coordinateGotFromLocationData = Vector2d.zero, lastLocation = Vector2d.zero;
+
+    private event System.Action<ForwardGeocodeResponse> onGeocoderResponse = delegate { };
+
+    private Regex regex = new Regex("[0-9]{4} *[A-Z]{2} *");
 
     private void Start()
     {
@@ -74,13 +84,13 @@ public class POIManager : MonoBehaviour
         offset.y += table.transform.localScale.y / 2;
 
         dataExplanations.AddRange(FindObjectsOfType<DataExplanations>());
+        resource = new ForwardGeocodeResource("");
     }
 
     public void SetLocationData(List<string> locationData, List<string> dataTypes, List<string> neededAmounts, List<string> neededExtraInfo, 
-        List<string> conclusions, List<string> indications)
+        List<string> conclusions, List<string> indications, string cityName)
     {
         poiHits.Clear();
-        dutchNamesForRoles.Clear();
         locationCoordinates.Clear();
         for (int i = 0; i < allPOIs.Count; i++)
         {
@@ -93,37 +103,104 @@ public class POIManager : MonoBehaviour
         this.conclusions = conclusions;
         this.indications = indications;
 
+        StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
+    }
+
+    private IEnumerator GetLocationData(List<string> locationData, int currentLocation, bool addLocationData,
+        UnityAction functionAfterLocationGettingAllLocationData, int totalCounter)
+    {
+        yield return new WaitForSeconds(0.15f);
+
+        string locationCityName = "";
+        if (totalCounter <= locationData.Count * 4f)
+        {
+            locationCityName = locationData[currentLocation].Split(',')[1];
+            locationCityName = regex.Replace(locationCityName, "");
+            if (locationCityName.StartsWith(" "))
+            {
+                locationCityName = locationCityName.Remove(0, 1);
+            }
+        } else
+        {
+            locationCityName = "Utrecht";
+        }
+
+        totalCounter++;
+        resource.Query = locationCityName;
+        MapboxAccess.Instance.Geocoder.Geocode(resource, HandleGeocoderResponse);
+
+        if (coordinateGotFromLocationData.x > lastLocation.x - 0.0001 && coordinateGotFromLocationData.x < lastLocation.x + 0.0001 &&
+            coordinateGotFromLocationData.y > lastLocation.y - 0.0001 && coordinateGotFromLocationData.y < lastLocation.y + 0.0001 ||
+            coordinateGotFromLocationData.x <= 0.0001 && coordinateGotFromLocationData.y <= 0.0001)
+        {
+            StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData, 
+                totalCounter));
+        }
+        else
+        {
+            if (addLocationData)
+            {
+                locationNames.Add(locationCityName);
+                locationCoordinates.Add(coordinateGotFromLocationData);
+            }
+
+            lastLocation = coordinateGotFromLocationData;
+            currentLocation++;
+            if (currentLocation >= locationData.Count)
+            {
+                functionAfterLocationGettingAllLocationData.Invoke();
+            }
+            else
+            {
+                StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData, 
+                    totalCounter));
+            }
+        }
+    }
+
+    private void HandleGeocoderResponse(ForwardGeocodeResponse res)
+    {
+        if (res == null)
+        {
+            print("no geocode response");
+        }
+        else if (null != res.Features && res.Features.Count > 0)
+        {
+            coordinateGotFromLocationData = res.Features[0].Center;
+        }
+        onGeocoderResponse(res);
+    }
+
+    private void CreateAllPOIsConnectedToLocationData(List<string> dataTypes, string cityName)
+    {
         for (int i = 0; i < dataTypes.Count; i++)
         {
             GameManager.DataType dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataTypes[i]);
-            Vector2d coordinate = map.ReturnCoordinateFromString(locationData[i]);
             GameObject POI = null;
 
             switch (dataType)
             {
                 case GameManager.DataType.Regular:
-                    POI = CreatePOI(POI, regularPOIColor, "Algemeen", i);
+                    POI = CreatePOI(POI, regularPOIColor, i);
                     break;
                 case GameManager.DataType.Tax:
-                    POI = CreatePOI(POI, taxPOIColor, "Belasting", i);
+                    POI = CreatePOI(POI, taxPOIColor, i);
                     break;
                 case GameManager.DataType.Police:
-                    POI = CreatePOI(POI, policePOIColor, "Politie", i);
+                    POI = CreatePOI(POI, policePOIColor, i);
                     break;
                 case GameManager.DataType.PPO:
-                    POI = CreatePOI(POI, ppoPOIColor, "OM", i);
+                    POI = CreatePOI(POI, ppoPOIColor, i);
                     break;
                 case GameManager.DataType.Bank:
-                    POI = CreatePOI(POI, bankPOIColor, "Bank", i);
+                    POI = CreatePOI(POI, bankPOIColor, i);
                     break;
             }
             allPOIs.Add(POI);
-            locationCoordinates.Add(coordinate);
-            poiOffsets.Add(new Vector3(Random.Range(-poiScale / 2, poiScale / 2), 0, Random.Range(-poiScale / 2, poiScale / 2)));
             poiVisibility.Add(true);
 
             int amountOfHits = 3;
-            string[] amountOfHitsString = neededAmounts[i].Split(new string[] { "Hoeveelheid hits:" }, System.StringSplitOptions.None);
+            string[] amountOfHitsString = featureAmounts[i].Split(new string[] { "Hoeveelheid hits:" }, System.StringSplitOptions.None);
             if (amountOfHitsString.Length > 1)
             {
                 amountOfHits = int.Parse(amountOfHitsString[1]);
@@ -136,28 +213,38 @@ public class POIManager : MonoBehaviour
             POI.SetActive(false);
         }
 
-        startPositionButton.startPosition = locationCoordinates[0];
-        poiSelectionDropdown.FillAllCoordinatesList(locationCoordinates, dutchNamesForRoles, featureAmounts);
-        poiEnableDropdown.FillDropDownList(allPOIs, dutchNamesForRoles, this);
+        lastLocation = Vector2d.zero;
+        cityName = ",1111 AA " + cityName; 
+        List<string> locationData = new List<string>();
+        locationData.Add(cityName);
+
+        StartCoroutine(GetLocationData(locationData, 0, false, () => FinishMapInitialisation(), 0));
+    }
+
+    private GameObject CreatePOI(GameObject POI, Color32 color, int index)
+    {
+        POI = Instantiate(poiPrefab, Vector3.zero, Quaternion.identity);
+        Color32 selectedColor = color;
+        selectedColor.a = 150;
+        POI.GetComponent<MeshRenderer>().material.color = selectedColor;
+        POI.GetComponent<POIText>().SetText(locationNames[index] + ": " + featureAmounts[index], extraExplanations[index], transform, moveMap, 
+            moveMap.inputDevices);
+
+        return POI;
+    }
+
+    private void FinishMapInitialisation()
+    {
+        startPositionButton.startPosition = coordinateGotFromLocationData;
+        poiSelectionDropdown.FillAllCoordinatesList(locationCoordinates, featureAmounts, locationNames);
+        poiEnableDropdown.FillDropDownList(allPOIs, extraExplanations, this);
 
         for (int i = 0; i < dataExplanations.Count; i++)
         {
             dataExplanations[i].FillOptionsList();
         }
 
-        moveMap.SetNewMapCenter(locationCoordinates[0]);
-    }
-
-    private GameObject CreatePOI(GameObject POI, Color32 color, string roleText, int index)
-    {
-        dutchNamesForRoles.Add(roleText);
-        POI = Instantiate(poiPrefab, Vector3.zero, Quaternion.identity);
-        Color32 selectedColor = color;
-        selectedColor.a = 150;
-        POI.GetComponent<MeshRenderer>().material.color = selectedColor;
-        POI.GetComponent<POIText>().SetText(roleText + ": " + featureAmounts[index], extraExplanations[index], transform, moveMap, moveMap.inputDevices);
-
-        return POI;
+        moveMap.SetNewMapCenter(coordinateGotFromLocationData);
     }
 
     public void MovePOIs(Vector3 movement)
@@ -200,7 +287,7 @@ public class POIManager : MonoBehaviour
             allPOIs[i].transform.SetParent(null);
             Vector3 pos = Conversions.GeoToWorldPosition(locationCoordinates[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
             // * the scale of the building
-            pos = offset + (pos * 0.02f * map.transform.localScale.x) + extraOffset + (poiOffsets[i] * map.transform.localScale.x);
+            pos = offset + (pos * 0.02f * map.transform.localScale.x) + extraOffset;
             allPOIs[i].transform.position = pos;
 
             allPOIs[i].transform.SetParent(rotationObject.transform);
@@ -241,7 +328,11 @@ public class POIManager : MonoBehaviour
 
         for (int i = 0; i < allPOIs.Count; i++)
         {
-            if (!poiVisibility[i]) { continue; }
+            if (!poiVisibility[i])
+            {
+                allPOIs[i].SetActive(false);
+                continue;
+            }
 
             if (allPOIs[i].transform.position.x < table.position.x - table.localScale.x / 2 ||
                 allPOIs[i].transform.position.x > table.position.x + table.localScale.x / 2 ||
@@ -249,7 +340,8 @@ public class POIManager : MonoBehaviour
                 allPOIs[i].transform.position.z > table.position.z + table.localScale.z / 2)
             {
                 allPOIs[i].SetActive(false);
-            } else
+            }
+            else
             {
                 allPOIs[i].SetActive(true);
             }

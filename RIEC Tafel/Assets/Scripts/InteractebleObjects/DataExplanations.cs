@@ -57,7 +57,6 @@ public class DataExplanations : GrabbebleObjects
     {
         if (title.text != titleText || !dataSetIsOn || poiConclusionSelectionDropdown.transform.childCount == 4 || poiSelectionDropdownIsHovered) 
         { return; }
-
         changeFontSizeTimer -= Time.deltaTime;
         base.Update();
     }
@@ -171,9 +170,9 @@ public class DataExplanations : GrabbebleObjects
     {
         poiConclusionSelectionDropdown.ClearOptions();
         List<string> options = new List<string>();
-        for (int i = 0; i < poiManager.locationCoordinates.Count; i++)
+        for (int i = 0; i < poiManager.locationNames.Count; i++)
         {
-            options.Add(poiManager.dutchNamesForRoles[i] + ": " + poiManager.featureAmounts[i] + ": " + poiManager.locationCoordinates[i].ToString());
+            options.Add(poiManager.locationNames[i] + ": " + poiManager.featureAmounts[i]);
         }
         poiConclusionSelectionDropdown.AddOptions(options);
     }

@@ -58,6 +58,16 @@ public class OculusAnimations : MonoBehaviour
         allTweenObjects.AddRange(new GameObject[] { primaryButtonArrow.gameObject, secondaryButtonArrow.gameObject, steerStickArrow.gameObject, 
             triggerArrow.gameObject, gripArrow.gameObject, otherController.gameObject, exampleLegenda, steerStickArrowDown.gameObject,
             steerStickArrowLeft.gameObject, steerStickArrowRight.gameObject, steerStickArrowUp.gameObject });
+
+        foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>())
+        {
+            allTweenObjects.Add(text.gameObject);
+        }
+
+        if (isControlledByOtherController)
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     public void ShowExampleButtonAnimationFirstStep()
@@ -280,7 +290,7 @@ public class OculusAnimations : MonoBehaviour
         showPrimaryOnly = true;
         showGripOnly = false;
         iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-            "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
+             "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
     }
 
     private void ShowExampleMoveGrabbedObjectThirdStep()
@@ -411,7 +421,10 @@ public class OculusAnimations : MonoBehaviour
     public void ShowExampleMoveMapFirstStepWithControllers()
     {
         startAnimationAfterEndDelay = "ShowExampleMoveMapFirstStepWithControllers";
-        TurnOffRayAndButtonEffect(true);
+        if (!isControlledByOtherController)
+        {
+            TurnOffRayAndButtonEffect(true);
+        }
         iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
             "oncomplete", "ShowExampleMoveMapSecondStepWithControllers", "oncompletetarget", gameObject, "delay", 1f));
     }
@@ -465,7 +478,6 @@ public class OculusAnimations : MonoBehaviour
         {
             otherController.startAnimationAfterEndDelay = "ShowExampleMoveGrabbedObjectFirstStepWithControllers";
             otherController.PrepareFinalStepMoveGrabbedObject();
-            TurnOffRayAndButtonEffect(true);
             gameObject.SetActive(false);
         }
         else
@@ -493,7 +505,7 @@ public class OculusAnimations : MonoBehaviour
     private void ShowExampleRotateMapThirdStepWithControllers()
     {
         startAnimationAfterEndDelay = "ShowExampleMoveMapRotateFourthStepWithControllers";
-        triggerArrow.gameObject.SetActive(false);
+        TurnOffRayAndButtonEffect(false);
         gripArrow.gameObject.SetActive(true);
         gripArrow.DisplayTween();
         iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", gripArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
@@ -502,14 +514,17 @@ public class OculusAnimations : MonoBehaviour
 
     private void ShowExampleMoveMapRotateFourthStepWithControllers()
     {
-        gripArrow.gameObject.SetActive(false);
+        TurnOffRayAndButtonEffect(false);
         startAnimationAfterEndDelay = "ShowExampleRotateMapFirstStepWithControllers";
         EndDelayAnimation();
     }
 
     public void ShowExampleScaleMapFirstStepWithControllers()
     {
-        TurnOffRayAndButtonEffect(true);
+        if (!isControlledByOtherController)
+        {
+            TurnOffRayAndButtonEffect(true);
+        }
         iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
             "oncomplete", "ShowExampleScaleMapSecondStepWithControllers", "oncompletetarget", gameObject, "delay", 1f));
     }
@@ -525,7 +540,7 @@ public class OculusAnimations : MonoBehaviour
     private void ShowExampleScaleMapThirdStepWithControllers()
     {
         startAnimationAfterEndDelay = "ShowExampleScaleMapFourthStepWithControllers";
-        primaryButtonArrow.gameObject.SetActive(false);
+        TurnOffRayAndButtonEffect(false);
         secondaryButtonArrow.gameObject.SetActive(true);
         secondaryButtonArrow.DisplayTween();
         iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", secondaryButtonArrow.arrowMoveTweenTime, "onupdate", "EmptyUpdate",
@@ -538,12 +553,11 @@ public class OculusAnimations : MonoBehaviour
         {
             otherController.startAnimationAfterEndDelay = "ShowExampleScaleGrabbedObjectFirstStepWithControllers";
             otherController.PrepareFinalStepMoveGrabbedObject();
-            TurnOffRayAndButtonEffect(true);
             gameObject.SetActive(false);
         }
         else
         {
-            secondaryButtonArrow.gameObject.SetActive(false);
+            TurnOffRayAndButtonEffect(false);
             startAnimationAfterEndDelay = "ShowExampleScaleMapFirstStepWithControllers";
             EndDelayAnimation();
         }
@@ -554,6 +568,7 @@ public class OculusAnimations : MonoBehaviour
         showPrimaryOnly = false;
         showGripOnly = true;
         TurnOffRayAndButtonEffect(true);
+        otherController.TurnOffRayAndButtonEffect(true);
         animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
         animationAfterObjectGrab = "ShowExampleMoveGrabbedObjectSecondStepWithControllers";
         exampleLegenda.SetActive(true);
@@ -584,13 +599,13 @@ public class OculusAnimations : MonoBehaviour
         {
             otherController.Start();
         }
-
         otherController.ShowExampleMoveMapFirstStepWithControllers();
     }
 
     public void ShowExampleScaleGrabbedObjectFirstStepWithControllers()
     {
         TurnOffRayAndButtonEffect(true);
+        otherController.TurnOffRayAndButtonEffect(true);
         animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
         animationAfterObjectGrab = "ShowExampleScaleGrabbedObjectSecondStepWithControllers";
         exampleLegenda.SetActive(true);
@@ -630,6 +645,7 @@ public class OculusAnimations : MonoBehaviour
             BaseStartAnimation();
         } else
         {
+            TurnOffRayAndButtonEffect(true);
             otherController.gameObject.SetActive(true);
             otherController.ShowExampleMoveDropdownFirstStepWithControllers();
         }
@@ -638,7 +654,11 @@ public class OculusAnimations : MonoBehaviour
     private void ShowExampleMoveDropdownSecondStepWithControllers()
     {
         primaryButtonArrow.gameObject.SetActive(false);
-        iTween.MoveTo(gameObject, iTween.Hash("position", basePos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+        foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>())
+        {
+            text.gameObject.SetActive(false);
+        }
+        iTween.MoveTo(gameObject, iTween.Hash("position", basePos - new Vector3(0, 0.1f, 0), "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
             "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleMoveDropdownThirdStepWithControllers", "oncompletetarget", gameObject, "delay", 0.5f));
     }
 
@@ -756,10 +776,6 @@ public class OculusAnimations : MonoBehaviour
             transform.GetChild(i).gameObject.SetActive(false);
         }
 
-        if (!exampleRay)
-        {
-            exampleRay = GetComponent<LineRenderer>();
-        }
         exampleRay.enabled = false;
     }
 

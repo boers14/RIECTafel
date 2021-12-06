@@ -33,10 +33,13 @@ public class KeyBoard : MonoBehaviour
 
     private InputDevice inputDevice;
 
-    private Vector3 pushKeyboardPos = new Vector3(0, 0.8f, 0.1f);
+    private Vector3 pushKeyboardPos = new Vector3(0, 0.8f, 0.1f), originalPosition = Vector3.zero, originalScale = Vector3.zero;
 
     private void Start()
     {
+        originalPosition = transform.localPosition;
+        originalScale = transform.localScale;
+
         float xScale = key.transform.localScale.x * 10;
         float zScale = key.transform.localScale.z * 10;
 

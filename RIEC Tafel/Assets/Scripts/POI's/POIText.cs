@@ -10,7 +10,10 @@ public class POIText : MonoBehaviour
 {
     private TMP_Text poiText = null;
 
-    private string normalText = "", textExtend = "";
+    private string normalText = "";
+
+    [System.NonSerialized]
+    public string textExtend = "";
 
     private Vector3 originalPos = Vector3.zero;
 

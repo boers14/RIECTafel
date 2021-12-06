@@ -25,6 +25,8 @@ public class MiniMap : MonoBehaviour
 
     private float scaleChange = 1;
 
+    private List<GameObject> allClonedPOIs = new List<GameObject>();
+
     public void CopyMap(AbstractMap map, List<GameObject> allPOIs, Transform table, List<Vector2d> coordinatesOfPOIs, List<int> poiAmountOfHits,
         float poiScale, Vector3 playerRot)
     {
@@ -70,15 +72,9 @@ public class MiniMap : MonoBehaviour
             Vector3 copyOfPOIPos = Conversions.GeoToWorldPosition(coordinatesOfPOIs[i], map.CenterMercator, map.WorldRelativeScale).ToVector3xz();
             copyOfPOI.transform.localPosition += new Vector3(copyOfPOIPos.x, 0, copyOfPOIPos.z);
 
-            if (copyOfPOI.transform.localPosition.x < -maxTileOffset || copyOfPOI.transform.localPosition.x > maxTileOffset ||
-                copyOfPOI.transform.localPosition.z < -maxTileOffset || copyOfPOI.transform.localPosition.z > maxTileOffset)
-            {
-                copyOfPOI.SetActive(false);
-            }
-            else
-            {
-                copyOfPOI.SetActive(true);
-            }
+            SetActiveStateOfPOI(copyOfPOI);
+
+            allClonedPOIs.Add(copyOfPOI);
         }
 
         currentPlayerIndicationOfMiniMap = Instantiate(playerIndicationOfMiniMapPrefab);
@@ -89,6 +85,31 @@ public class MiniMap : MonoBehaviour
 
         transform.localScale = scaleOfMiniMap;
         RotateMiniMap(map.transform.localEulerAngles, playerRot);
+    }
+
+    private void SetActiveStateOfPOI(GameObject copyOfPOI)
+    {
+        if (copyOfPOI.transform.localPosition.x < -maxTileOffset || copyOfPOI.transform.localPosition.x > maxTileOffset ||
+                copyOfPOI.transform.localPosition.z < -maxTileOffset || copyOfPOI.transform.localPosition.z > maxTileOffset)
+        {
+            copyOfPOI.SetActive(false);
+        }
+        else
+        {
+            copyOfPOI.SetActive(true);
+        }
+    }
+
+    public void SetActiveStateOfPOIs(List<bool> poiActiveStates)
+    {
+        for (int i = 0; i < allClonedPOIs.Count; i++)
+        {
+            allClonedPOIs[i].SetActive(poiActiveStates[i]);
+            if (poiActiveStates[i])
+            {
+                SetActiveStateOfPOI(allClonedPOIs[i]);
+            }
+        }
     }
 
     public void MovePlayerIndication(Transform map, Vector3 offset)

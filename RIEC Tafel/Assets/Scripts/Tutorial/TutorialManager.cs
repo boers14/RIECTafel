@@ -17,7 +17,7 @@ public class TutorialManager : MonoBehaviour
     public int stepInTutorial { get; set; } = 0;
 
     [System.NonSerialized]
-    public bool tutorialHasStarted = false, currentStepIsDone = false, checkForPOIOpen = false, checkForPOIPull = false;
+    public bool tutorialHasStarted = false, currentStepIsDone = false, checkForPOIOpen = false, checkForPOIPull = false, cantZoomMap = false;
 
     private ButtonCommandText buttonCommandText = null;
 
@@ -111,7 +111,7 @@ public class TutorialManager : MonoBehaviour
         StartCoroutine(StartTutorial());
         InitializeControllers();
         StartCoroutine(TurnOffMapAndTable());
-        StartCoroutine(gameManager.RetrieveCityData("Hilversum"));
+        StartCoroutine(gameManager.RetrieveCityData());
     }
 
     private IEnumerator TurnOffMapAndTable()
@@ -290,7 +290,6 @@ public class TutorialManager : MonoBehaviour
 
     public void StartSixthStepOfTutorial()
     {
-        explanationText.fontSize = 14.75f;
         gameManager.CreateTutorialLocationData("Regular", poiManager, abstractMap);
 
         CheckIfPrimaryButtonIsDown();
@@ -324,7 +323,6 @@ public class TutorialManager : MonoBehaviour
 
     public void StartSeventhStepOfTutorial()
     {
-        explanationText.fontSize = 17;
         tutorialTitle.fontSize = 27;
         poi = FindObjectOfType<TutorialPOIText>();
         oculusAnimations.ShowExampleOpenPOIInformation();
@@ -356,6 +354,17 @@ public class TutorialManager : MonoBehaviour
     }
 
     public void StartNinthStepOfTutorial()
+    {
+        BaseNinthStepOfTutorial();
+    }
+
+    public void StartNinthStepOfTutorialWithControllers()
+    {
+        BaseNinthStepOfTutorial();
+        cantZoomMap = true;
+    }
+
+    private void BaseNinthStepOfTutorial()
     {
         tutorialTitle.fontSize = 30;
         playerTable.gameObject.SetActive(true);
@@ -399,6 +408,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartEleventhStepOfTutorialWithControllers()
     {
+        cantZoomMap = false;
         oculusAnimations.ShowExampleMoveGrabbedObjectFirstStepWithControllers();
         BaseStartEleventhStepOfTutorial();
         legenda.gameObject.SetActive(true);

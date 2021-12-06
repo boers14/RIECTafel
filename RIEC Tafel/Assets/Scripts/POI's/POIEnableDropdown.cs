@@ -5,21 +5,26 @@ using TMPro;
 
 public class POIEnableDropdown : DropdownSelection
 {
-    private Dictionary<string, List<GameObject>> poisByName = new Dictionary<string, List<GameObject>>();
+    private Dictionary<string, List<POIText>> poisByFeatureType = new Dictionary<string, List<POIText>>();
 
     private List<GameObject> allPOIs = new List<GameObject>();
 
+    private List<bool> poiActiveStates = new List<bool>();
+
     private POIManager poiManager = null;
+
+    private MiniMap miniMap = null;
 
     public override void Start()
     {
         base.Start();
+        miniMap = FindObjectOfType<MiniMap>();
         dropdown.ClearOptions();
     }
 
-    public void FillDropDownList(List<GameObject> allPOIs, List<string> dutchNames, POIManager poiManager)
+    public void FillDropDownList(List<GameObject> allPOIs, List<string> featureTypes, POIManager poiManager)
     {
-        poisByName.Clear();
+        poisByFeatureType.Clear();
         this.poiManager = poiManager;
         this.allPOIs = allPOIs;
 
@@ -27,61 +32,67 @@ public class POIEnableDropdown : DropdownSelection
         List<string> allOptions = new List<string>();
         allOptions.Add("Alle POI's");
 
+        for (int i = 0; i < featureTypes.Count; i++)
+        {
+            string[] allFeaturesInPOI = featureTypes[i].Split(',');
+            for (int j = 0; j < allFeaturesInPOI.Length; j++)
+            {
+                if (char.IsWhiteSpace(allFeaturesInPOI[j][0]))
+                {
+                    allFeaturesInPOI[j] = allFeaturesInPOI[j].Remove(0, 1);
+                }
+
+                if (!poisByFeatureType.ContainsKey(allFeaturesInPOI[j]))
+                {
+                    allOptions.Add(allFeaturesInPOI[j]);
+                    poisByFeatureType.Add(allFeaturesInPOI[j], new List<POIText>());
+                }
+            }
+        }
+
         for (int i = 0; i < allPOIs.Count; i++)
         {
-            if (poisByName.ContainsKey(dutchNames[i]))
+            poiActiveStates.Add(true);
+            POIText poiText = allPOIs[i].GetComponent<POIText>();
+            for (int j = 1; j < allOptions.Count; j++)
             {
-                poisByName[dutchNames[i]].Add(allPOIs[i]);
-            } else
-            {
-                allOptions.Add(dutchNames[i]);
-
-                List<GameObject> uniquePOIsList = new List<GameObject>();
-                uniquePOIsList.Add(allPOIs[i]);
-                poisByName.Add(dutchNames[i], uniquePOIsList);
+                if (poiText.textExtend.Contains(allOptions[j]))
+                {
+                    poisByFeatureType[allOptions[j]].Add(poiText);
+                }
             }
         }
 
         dropdown.AddOptions(allOptions);
-        dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te (de)activeren";
+        dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te zien";
     }
 
     public void EnablePOIs(int value)
     {
-        bool enabled = true;
-        if (poisByName.TryGetValue(dropdown.options[value].text, out List<GameObject> selectedPOIs))
+        if (value != 0)
         {
-            enabled = !poiManager.poiVisibility[allPOIs.IndexOf(selectedPOIs[0])];
-            SetActivePOIs(selectedPOIs, enabled);
+            for (int i = 0; i < poiActiveStates.Count; i++)
+            {
+                poiActiveStates[i] = false;
+            }
+
+            string selectedValue = dropdown.options[value].text;
+            for (int i = 0; i < poisByFeatureType[selectedValue].Count; i++)
+            {
+                poiActiveStates[allPOIs.IndexOf(poisByFeatureType[selectedValue][i].gameObject)] = true;
+            }
         } else
         {
-            int activeCounter = 0;
-            for (int i = 0; i < allPOIs.Count; i++)
+            for (int i = 0; i < poiActiveStates.Count; i++)
             {
-                if (poiManager.poiVisibility[i])
-                {
-                    activeCounter++;
-                }
+                poiActiveStates[i] = true;
             }
-
-            if (activeCounter == allPOIs.Count)
-            {
-                enabled = false;
-            }
-
-            SetActivePOIs(allPOIs, enabled);
         }
 
-        dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te (de)activeren";
+        dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te zien";
+
+        miniMap.SetActiveStateOfPOIs(poiActiveStates);
+        poiManager.poiVisibility = poiActiveStates;
         poiManager.CheckPOIVisibility();
-    }
-
-    private void SetActivePOIs(List<GameObject> pois, bool enabled)
-    {
-        for (int i = 0; i < pois.Count; i++)
-        {
-            pois[i].SetActive(enabled);
-            poiManager.poiVisibility[allPOIs.IndexOf(pois[i])] = enabled;
-        }
     }
 }

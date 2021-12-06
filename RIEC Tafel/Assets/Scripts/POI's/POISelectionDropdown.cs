@@ -24,7 +24,7 @@ public class POISelectionDropdown : DropdownSelection
         map.SetNewMapCenter(allPOICoordinates[selectedPOI]);
     }
 
-    public void FillAllCoordinatesList(List<Vector2d> allCoordinates, List<string> dutchNamesForRoles, List<string> featureTypes)
+    public void FillAllCoordinatesList(List<Vector2d> allCoordinates, List<string> featureTypes, List<string> locationNames)
     {
         allPOICoordinates = allCoordinates;
         dropdown.ClearOptions();
@@ -32,7 +32,7 @@ public class POISelectionDropdown : DropdownSelection
         List<string> options = new List<string>();
         for (int i = 0; i < allPOICoordinates.Count; i++)
         {
-            options.Add(dutchNamesForRoles[i] + ": " + featureTypes[i] + ": " + allPOICoordinates[i].ToString());
+            options.Add(locationNames[i] + ": " + featureTypes[i]);
         }
 
         dropdown.AddOptions(options);

@@ -4,10 +4,8 @@ using UnityEngine;
 
 public static class LogInManager
 {
-    public static string username = "Sten de Boer";
-    public static string datatype = "Police";
+    public static string username = "Sten de Boer", datatype = "Police", pincode = null;
     public static int userID = 1;
-    public static string pincode = null;
     public static bool iCOVWorker = true;
     public static string avatarData = "Head\nstar1\n43,75.35.43,75/*nextbodypart*/Body\nCapsule\n0,5.0,65.0,5\n0,5.0,5";
 
