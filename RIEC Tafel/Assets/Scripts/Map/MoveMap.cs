@@ -27,7 +27,7 @@ public class MoveMap : MonoBehaviour
     private POIManager poiManager = null;
 
     [SerializeField]
-    private float moveMapPower = 1, scalePower = 0.1f;
+    private float moveMapPower = 1, scalePower = 0.1f, scaleMapCorrecter = 2;
 
     public float minimumScale = 0.5f, maximumScale = 5;
 
@@ -287,33 +287,14 @@ public class MoveMap : MonoBehaviour
         transform.position = newPos;
     }
 
-    private void SetMapPos(Vector2 newPos)
-    {
-        offset.x = newPos.x;
-        offset.z = newPos.y;
-
-        if (miniMap)
-        {
-            miniMap.MovePlayerIndication(transform, offset);
-        }
-
-        poiManager.SetExtraOffset(offset);
-        poiManager.MovePOIs(new Vector3(transform.position.x - newPos.x, 0, transform.position.z - newPos.y));
-
-        Vector3 newPosSetter = transform.position;
-        newPosSetter.x = newPos.x;
-        newPosSetter.z = newPos.y;
-        transform.position = newPosSetter;
-        CheckIfMapIsStillOnTable();
-    }
-
     public virtual void ChangeMapScale(float changedScale)
     {
         if (changedScale < 0 && transform.localScale.x == minimumScale || changedScale > 0 && transform.localScale.x == maximumScale) { return; }
 
+        float amountOfChangedScale = changedScale * SettingsManager.scaleMapFactor * oldScale.x;
         Vector3 nextScale = transform.localScale;
-        nextScale.x += changedScale * SettingsManager.scaleMapFactor * oldScale.x;
-        nextScale.z += changedScale * SettingsManager.scaleMapFactor * oldScale.x;
+        nextScale.x += amountOfChangedScale;
+        nextScale.z += amountOfChangedScale;
 
         if (nextScale.x < minimumScale)
         {
@@ -325,19 +306,18 @@ public class MoveMap : MonoBehaviour
             nextScale.z = maximumScale;
         }
 
-        SetScaleOfMap(nextScale, true);
+        SetScaleOfMap(nextScale, true, amountOfChangedScale);
     }
 
     public void ChangeMapScaleToChosenScale(Vector3 chosenScale)
     {
-        SetScaleOfMap(chosenScale, false);
+        SetScaleOfMap(chosenScale, false, 0);
     }
 
-    private void SetScaleOfMap(Vector3 nextScale, bool limitMovement)
+    private void SetScaleOfMap(Vector3 nextScale, bool limitMovement, float changedScale)
     {
         transform.localScale = nextScale;
         oldScale = nextScale;
-        float oldMaxTileOffset = maxTileOffset;
         maxTileOffset = originalMaxTileOffset * nextScale.x - table.localScale.z / 2;
         nextScale.y = nextScale.z;
         poiManager.SetPOIsScale(nextScale);
@@ -346,12 +326,13 @@ public class MoveMap : MonoBehaviour
             miniMap.ScalePlayerIndication(nextScale);
         }
 
-        Vector2 newPos = Vector2.zero;
-        float percentageOnMap = offset.x / oldMaxTileOffset;
-        newPos.x = percentageOnMap * maxTileOffset;
-        percentageOnMap = offset.z / oldMaxTileOffset;
-        newPos.y = percentageOnMap * maxTileOffset;
-        SetMapPos(newPos);
+        Vector2 partOfMap = miniMap.CalculateCurrentPlayerPartOfMap();
+        Vector2 movement = partOfMap;
+        movement *= scaleMapCorrecter * changedScale;
+        print("------------------------------");
+        print(partOfMap);
+        print(movement);
+        MoveTheMap(movement, limitMovement, true);
     }
 
     private void CheckIfMapIsStillOnTable()

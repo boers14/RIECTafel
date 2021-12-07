@@ -139,6 +139,29 @@ public class MiniMap : MonoBehaviour
         currentPlayerIndicationOfMiniMap.transform.localScale = basePlayerIndicationScale * scaleChange;
     }
 
+    public Vector2 CalculateCurrentPlayerPartOfMap()
+    {
+        Vector2 playerMapPart = Vector2.zero;
+        if (currentPlayerIndicationOfMiniMap.transform.localPosition.x < -10)
+        {
+            playerMapPart.x = -1;
+        } else if (currentPlayerIndicationOfMiniMap.transform.localPosition.x > 10)
+        {
+            playerMapPart.x = 1;
+        }
+
+        if (currentPlayerIndicationOfMiniMap.transform.localPosition.z < -10)
+        {
+            playerMapPart.y = -1;
+        }
+        else if (currentPlayerIndicationOfMiniMap.transform.localPosition.z > 10)
+        {
+            playerMapPart.y = 1;
+        }
+
+        return playerMapPart;
+    }
+
     public void PlaceMiniMapOnWall()
     {
         transform.localPosition = offsetFromMiddleOFWall;

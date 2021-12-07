@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class GameSceneSettingsButton : MeetingButton
 {
+    [SerializeField]
     private MiniMap miniMap = null;
 
     public override void Start()
     {
         base.Start();
-        miniMap = FindObjectOfType<MiniMap>();
         button.onClick.AddListener(EnabledMiniMap);
     }
     
