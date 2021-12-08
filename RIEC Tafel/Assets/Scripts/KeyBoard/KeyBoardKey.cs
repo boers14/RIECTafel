@@ -44,7 +44,7 @@ public class KeyBoardKey : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag != "Hand" || hands.Contains(other) || keyBoard.keyBoardIsHovered || !keyBoard.pushKeyBoard) { return; }
+        if (other.tag != "Hand" || hands.Contains(other) || keyBoard.keyBoardIsHovered || SettingsManager.rayKeyBoard) { return; }
 
         keyBoard.keyBoardIsHovered = true;
         hands.Add(other);
@@ -54,7 +54,7 @@ public class KeyBoardKey : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (!hands.Contains(other) || !keyBoard.pushKeyBoard) { return; }
+        if (!hands.Contains(other) || SettingsManager.rayKeyBoard) { return; }
 
         hands.Remove(other);
         if (hands.Count <= 0)
@@ -66,7 +66,7 @@ public class KeyBoardKey : MonoBehaviour
 
     private void OnHoverEnter(HoverEnterEventArgs args)
     {
-        if (keyBoard.pushKeyBoard) { return; }
+        if (!SettingsManager.rayKeyBoard) { return; }
 
         targetedNodes.Add(args.interactor.GetComponent<XRController>().controllerNode);
         renderer.material.color = gray;
@@ -75,7 +75,7 @@ public class KeyBoardKey : MonoBehaviour
 
     private void OnHoverLeave(HoverExitEventArgs args)
     {
-        if (keyBoard.pushKeyBoard) { return; }
+        if (!SettingsManager.rayKeyBoard) { return; }
 
         targetedNodes.Remove(args.interactor.GetComponent<XRController>().controllerNode);
         if (targetedNodes.Count == 0)

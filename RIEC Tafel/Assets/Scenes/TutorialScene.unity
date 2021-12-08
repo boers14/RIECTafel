@@ -11031,7 +11031,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textAlphaTweenTime: 1.75
-  stepCelebrationTime: 2
+  stepCelebrationTime: 0.5
   normalStartTweenColor:
     serializedVersion: 2
     rgba: 4278512639
@@ -23604,10 +23604,11 @@ MonoBehaviour:
   rightCharacteristics: 576
   leftCharacteristics: 320
   poiManager: {fileID: 903432743}
-  moveMapPower: 0.05
+  moveMapPower: 0.025
   scalePower: 0.01
+  scaleMapCorrecter: -3
   minimumScale: 0.3
-  maximumScale: 5
+  maximumScale: 2.5
   maxTileOffset: 12
   emptyTransform: {fileID: 2112735124966847659, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
   rightRayInteractor: {fileID: 1423072838}

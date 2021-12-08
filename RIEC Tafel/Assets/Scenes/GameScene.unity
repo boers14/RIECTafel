@@ -973,6 +973,10 @@ PrefabInstance:
       propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6671499302916686540, guid: bfd5ddee861a390409386a92bd599388, type: 3}
+      propertyPath: keyBoard
+      value: 
+      objectReference: {fileID: 1321054235}
     - target: {fileID: 6671499302961167154, guid: bfd5ddee861a390409386a92bd599388, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -1041,6 +1045,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6671499303609094077, guid: bfd5ddee861a390409386a92bd599388, type: 3}
+      propertyPath: keyBoard
+      value: 
+      objectReference: {fileID: 1321054235}
     - target: {fileID: 8619945370513912672, guid: bfd5ddee861a390409386a92bd599388, type: 3}
       propertyPath: m_Name
       value: SettingsButton
@@ -1180,6 +1188,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 0}
   objectToDeactivate: {fileID: 179688091}
   miniMap: {fileID: 924716042}
+  checkMiniMapEnabledStateOnEnable: 0
 --- !u!114 &179688094
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1195,6 +1204,7 @@ MonoBehaviour:
   objectToAcivate: {fileID: 179688091}
   objectToDeactivate: {fileID: 0}
   miniMap: {fileID: 924716042}
+  checkMiniMapEnabledStateOnEnable: 1
 --- !u!1 &187203615
 GameObject:
   m_ObjectHideFlags: 0
@@ -9418,11 +9428,11 @@ MonoBehaviour:
   rightCharacteristics: 576
   leftCharacteristics: 320
   poiManager: {fileID: 699483035}
-  moveMapPower: 0.05
+  moveMapPower: 0.025
   scalePower: 0.01
-  scaleMapCorrecter: -20
+  scaleMapCorrecter: -3
   minimumScale: 0.3
-  maximumScale: 5
+  maximumScale: 2.5
   maxTileOffset: 12
   emptyTransform: {fileID: 2112735124966847659, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
   rightRayInteractor: {fileID: 191425544}

@@ -22,6 +22,10 @@ public class LoginButton : SwitchSceneButton
         {
             TutorialSceneManager.sceneToSwitchTo = SceneManager.GetActiveScene().name;
             SceneManager.LoadScene(tutorialScene);
+        } else
+        {
+            PlayerData data = SaveSytem.LoadGame();
+            SettingsManager.LoadData(data, FindObjectOfType<KeyBoard>());
         }
     }
 

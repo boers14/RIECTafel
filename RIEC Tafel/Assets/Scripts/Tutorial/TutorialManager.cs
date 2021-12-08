@@ -290,6 +290,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartSixthStepOfTutorial()
     {
+        gameManager.gameObject.SetActive(true);
         gameManager.CreateTutorialLocationData("Regular", poiManager, abstractMap);
 
         CheckIfPrimaryButtonIsDown();

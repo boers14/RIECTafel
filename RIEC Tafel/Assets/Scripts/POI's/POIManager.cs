@@ -103,38 +103,33 @@ public class POIManager : MonoBehaviour
         this.conclusions = conclusions;
         this.indications = indications;
 
-        StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
+        //StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
     }
 
     private IEnumerator GetLocationData(List<string> locationData, int currentLocation, bool addLocationData,
-        UnityAction functionAfterLocationGettingAllLocationData, int totalCounter)
+        UnityAction functionAfterLocationGettingAllLocationData, int amountOfTriesForCurrentLocation)
     {
         yield return new WaitForSeconds(0.15f);
 
         string locationCityName = "";
-        if (totalCounter <= locationData.Count * 4f)
+        locationCityName = locationData[currentLocation].Split(',')[1];
+        locationCityName = regex.Replace(locationCityName, "");
+        if (locationCityName.StartsWith(" "))
         {
-            locationCityName = locationData[currentLocation].Split(',')[1];
-            locationCityName = regex.Replace(locationCityName, "");
-            if (locationCityName.StartsWith(" "))
-            {
-                locationCityName = locationCityName.Remove(0, 1);
-            }
-        } else
-        {
-            locationCityName = "Utrecht";
+            locationCityName = locationCityName.Remove(0, 1);
         }
 
-        totalCounter++;
         resource.Query = locationCityName;
         MapboxAccess.Instance.Geocoder.Geocode(resource, HandleGeocoderResponse);
+        amountOfTriesForCurrentLocation++;
 
         if (coordinateGotFromLocationData.x > lastLocation.x - 0.0001 && coordinateGotFromLocationData.x < lastLocation.x + 0.0001 &&
-            coordinateGotFromLocationData.y > lastLocation.y - 0.0001 && coordinateGotFromLocationData.y < lastLocation.y + 0.0001 ||
-            coordinateGotFromLocationData.x <= 0.0001 && coordinateGotFromLocationData.y <= 0.0001)
+            coordinateGotFromLocationData.y > lastLocation.y - 0.0001 && coordinateGotFromLocationData.y < lastLocation.y + 0.0001 && 
+            amountOfTriesForCurrentLocation <= 3 ||coordinateGotFromLocationData.x <= 0.0001 && coordinateGotFromLocationData.y <= 0.0001 &&
+            amountOfTriesForCurrentLocation <= 3)
         {
-            StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData, 
-                totalCounter));
+            StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData,
+                amountOfTriesForCurrentLocation));
         }
         else
         {
@@ -143,7 +138,7 @@ public class POIManager : MonoBehaviour
                 locationNames.Add(locationCityName);
                 locationCoordinates.Add(coordinateGotFromLocationData);
             }
-
+            amountOfTriesForCurrentLocation = 0;
             lastLocation = coordinateGotFromLocationData;
             currentLocation++;
             if (currentLocation >= locationData.Count)
@@ -152,8 +147,8 @@ public class POIManager : MonoBehaviour
             }
             else
             {
-                StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData, 
-                    totalCounter));
+                StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData,
+                    amountOfTriesForCurrentLocation));
             }
         }
     }
@@ -216,7 +211,7 @@ public class POIManager : MonoBehaviour
         lastLocation = Vector2d.zero;
         cityName = ",1111 AA " + cityName; 
         List<string> locationData = new List<string>();
-        locationData.Add(cityName);
+        locationData.AddRange(new string[] { cityName, cityName });
 
         StartCoroutine(GetLocationData(locationData, 0, false, () => FinishMapInitialisation(), 0));
     }

@@ -16,7 +16,7 @@ public class MeetingButton : MonoBehaviour
         button.onClick.AddListener(ActivateMeetingSet);
     }
 
-    private void ActivateMeetingSet()
+    public virtual void ActivateMeetingSet()
     {
         if (objectToAcivate != null)
         {

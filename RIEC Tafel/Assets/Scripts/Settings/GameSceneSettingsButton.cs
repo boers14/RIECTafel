@@ -7,14 +7,32 @@ public class GameSceneSettingsButton : MeetingButton
     [SerializeField]
     private MiniMap miniMap = null;
 
-    public override void Start()
+    [SerializeField]
+    private bool checkMiniMapEnabledStateOnEnable = false;
+
+    public override void ActivateMeetingSet()
     {
-        base.Start();
-        button.onClick.AddListener(EnabledMiniMap);
+        base.ActivateMeetingSet();
+        CheckMiniMapActiveState();
     }
-    
-    private void EnabledMiniMap()
+
+    private void OnEnable()
     {
-        miniMap.gameObject.SetActive(!miniMap.gameObject.activeSelf);
+        if (checkMiniMapEnabledStateOnEnable && button)
+        {
+            CheckMiniMapActiveState();
+        }
+    }
+
+    private void CheckMiniMapActiveState()
+    {
+        if (objectToAcivate)
+        {
+            miniMap.gameObject.SetActive(!objectToAcivate.activeSelf);
+        }
+        else
+        {
+            miniMap.gameObject.SetActive(!objectToDeactivate.activeSelf);
+        }
     }
 }

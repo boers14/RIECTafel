@@ -152,8 +152,8 @@ public class MoveMap : MonoBehaviour
                             else
                             {
                                 Vector3 movement = hands[i].transform.position - prevHandPosses[i];
-                                movement.y = movement.z * 150;
-                                movement.x *= 100;
+                                movement.y = movement.z * 200;
+                                movement.x *= 150;
                                 movement.z = 0;
                                 MoveTheMap(movement, true, false);
                             }
@@ -255,15 +255,17 @@ public class MoveMap : MonoBehaviour
         }
     }
 
-    public void MoveTheMap(Vector2 steerStickDirection, bool movePOIs, bool disregardMoveMapPower)
+    public void MoveTheMap(Vector2 steerStickDirection, bool movePOIs, bool disregardMoveMapPower, bool skipSteerStickDirectionCheck = false)
     {
-        if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f && steerStickDirection.y > -0.1f) { return; }
+        if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f && steerStickDirection.y > -0.1f &&
+            !skipSteerStickDirectionCheck) { return; }
 
         Vector2 movement = new Vector2(steerStickDirection.x, steerStickDirection.y) * moveMapPower * SettingsManager.moveMapSpeedFactor;
         if (disregardMoveMapPower)
         {
             movement = steerStickDirection;
         }
+
         offset.x += movement.x;
         offset.z += movement.y;
 
@@ -326,13 +328,34 @@ public class MoveMap : MonoBehaviour
             miniMap.ScalePlayerIndication(nextScale);
         }
 
-        Vector2 partOfMap = miniMap.CalculateCurrentPlayerPartOfMap();
-        Vector2 movement = partOfMap;
-        movement *= scaleMapCorrecter * changedScale;
-        print("------------------------------");
-        print(partOfMap);
-        print(movement);
-        MoveTheMap(movement, limitMovement, true);
+        Vector3 mapPosDiff = table.position - transform.position;
+        Vector2 playerMapPart = Vector2.zero;
+        if (mapPosDiff.x < -0.1f)
+        {
+            playerMapPart.x = -1;
+        }
+        else if (mapPosDiff.x > 0.1f)
+        {
+            playerMapPart.x = 1;
+        }
+
+        if (mapPosDiff.z < -0.1f)
+        {
+            playerMapPart.y = -1;
+        }
+        else if (mapPosDiff.z > 0.1f)
+        {
+            playerMapPart.y = 1;
+        }
+
+        Vector2 movement = playerMapPart;
+        float mapScaler = scaleMapCorrecter;
+        if (changedScale < 0)
+        {
+            mapScaler *= 1.5f;
+        }
+        movement *= mapScaler * Mathf.Clamp(changedScale, -0.02f, 0.03f);
+        MoveTheMap(movement, limitMovement, true, true);
     }
 
     private void CheckIfMapIsStillOnTable()

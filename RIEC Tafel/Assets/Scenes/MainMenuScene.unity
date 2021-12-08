@@ -1703,6 +1703,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
+--- !u!114 &659520334 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2370482548155795127, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
+  m_PrefabInstance: {fileID: 659520333}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5eb2afc3a7af6f4183a9ae85294cbdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &690581324
 GameObject:
   m_ObjectHideFlags: 0
@@ -1847,6 +1858,7 @@ GameObject:
   m_Component:
   - component: {fileID: 699483032}
   - component: {fileID: 699483033}
+  - component: {fileID: 699483034}
   m_Layer: 0
   m_Name: VRPlayer
   m_TagString: Player
@@ -1889,6 +1901,18 @@ MonoBehaviour:
   m_CameraYOffset: 1.36144
   m_TrackingSpace: 3
   m_TrackingOriginMode: -2147483648
+--- !u!114 &699483034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699483031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d96ce39c93d48141b2f51a9678aec80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &921837983
 GameObject:
   m_ObjectHideFlags: 0
@@ -80820,6 +80844,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 224315790067546991}
     m_Modifications:
+    - target: {fileID: 6671499302916686540, guid: bfd5ddee861a390409386a92bd599388, type: 3}
+      propertyPath: keyBoard
+      value: 
+      objectReference: {fileID: 659520334}
+    - target: {fileID: 6671499303609094077, guid: bfd5ddee861a390409386a92bd599388, type: 3}
+      propertyPath: keyBoard
+      value: 
+      objectReference: {fileID: 659520334}
     - target: {fileID: 8619945370513912672, guid: bfd5ddee861a390409386a92bd599388, type: 3}
       propertyPath: m_Name
       value: SettingsButton

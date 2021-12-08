@@ -5,13 +5,22 @@ using UnityEngine.UI;
 
 public class SettingsToggle : MonoBehaviour
 {
+    [SerializeField]
+    private KeyBoard keyBoard = null;
+
     private PlayerGrab[] hands = null;
+
+    private PlayerHandRays[] handRays = null;
 
     [SerializeField]
     private SettingsManager.AffectedSetting affectedSetting = 0;
 
     private void Start()
     {
+        hands = FindObjectsOfType<PlayerGrab>();
+        handRays = FindObjectsOfType<PlayerHandRays>();
+        GetComponent<Toggle>().onValueChanged.AddListener(SwitchSettings);
+
         bool isOn = false;
         switch(affectedSetting)
         {
@@ -24,8 +33,6 @@ public class SettingsToggle : MonoBehaviour
         }
 
         GetComponent<Toggle>().isOn = isOn;
-        GetComponent<Toggle>().onValueChanged.AddListener(SwitchSettings);
-        hands = FindObjectsOfType<PlayerGrab>();
     }
 
     private void SwitchSettings(bool isOn)
@@ -33,10 +40,10 @@ public class SettingsToggle : MonoBehaviour
         switch (affectedSetting)
         {
             case SettingsManager.AffectedSetting.HandControls:
-                SettingsManager.ChangeHandControls(isOn, hands);
+                SettingsManager.ChangeHandControls(isOn, hands, handRays);
                 break;
             case SettingsManager.AffectedSetting.RayKeyBoard:
-                SettingsManager.ChangeHandControls(isOn, hands);
+                SettingsManager.ChangeKeyBoardState(isOn, keyBoard);
                 break;
         }
     }

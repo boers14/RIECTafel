@@ -84,6 +84,12 @@ public class OculusAnimations : MonoBehaviour
     {
         TurnOffRayAndButtonEffect(true);
         exampleInputField.SetActive(true);
+
+        if (keyBoardKeysToBeSelectedInExample.Count == 0)
+        {
+            StartCoroutine(SetNeccesaryKeyBoardKeys());
+        }
+
         keyBoardKeysCounter = 0;
         animationAfterButtonPressAnimation = "ShowExampleInputfieldAnimationSecondStep";
         startAnimationAfterEndDelay = "ShowExampleInputfieldAnimationFirstStep";
@@ -93,10 +99,6 @@ public class OculusAnimations : MonoBehaviour
 
     private void ShowExampleInputfieldAnimationSecondStep()
     {
-        if (keyBoardKeysToBeSelectedInExample.Count == 0)
-        {
-            StartCoroutine(SetNeccesaryKeyBoardKeys());
-        }
         TurnOffRayAndButtonEffect(false);
         iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.35f + keyBoard.forward * 0.2f, "time", 2f, 
             "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleInputfieldAnimationThirdStep", "oncompletetarget", gameObject));
@@ -104,7 +106,7 @@ public class OculusAnimations : MonoBehaviour
 
     private IEnumerator SetNeccesaryKeyBoardKeys()
     {
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(0.02f);
         KeyBoardKey[] keyBoardKeysArray = FindObjectsOfType<KeyBoardKey>();
         List<KeyBoardKey> keyBoardKeys = new List<KeyBoardKey>();
         keyBoardKeys.AddRange(keyBoardKeysArray);

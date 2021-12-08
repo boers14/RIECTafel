@@ -41,6 +41,8 @@ public class GrabbebleObjects : MonoBehaviour
 
     private MiniMap miniMap = null;
 
+    private GameSceneSettingsButton settingsButton = null;
+
     public virtual void Start()
     {
         for (int i = 0; i < 2; i++)
@@ -57,6 +59,8 @@ public class GrabbebleObjects : MonoBehaviour
         SelectEnterEventArgs selectEnterEventArgs = new SelectEnterEventArgs();
         grabInteractable.selectEntered.AddListener((selectEnterEventArgs) => OnGrabEnter(selectEnterEventArgs, true));
         grabInteractable.selectExited.AddListener(OnSelectExit);
+
+        settingsButton = FindObjectOfType<GameSceneSettingsButton>();
 
         if (!FindObjectOfType<MoveMap>())
         {
@@ -241,6 +245,12 @@ public class GrabbebleObjects : MonoBehaviour
         {
             miniMap.gameObject.SetActive(false);
         }
+
+        if (settingsButton)
+        {
+            settingsButton.gameObject.SetActive(false);
+        }
+
         collider.enabled = false;
         isGrabbed = true;
     }
@@ -251,6 +261,12 @@ public class GrabbebleObjects : MonoBehaviour
         {
             miniMap.gameObject.SetActive(true);
         }
+
+        if (settingsButton)
+        {
+            settingsButton.gameObject.SetActive(true);
+        }
+
         isGrabbed = false;
         transform.localScale = originalScale;
         rigidbody.useGravity = true;

@@ -22,8 +22,6 @@ public class KeyBoard : MonoBehaviour
     [System.NonSerialized]
     public bool shiftState = true, keyBoardIsHovered = false;
 
-    public bool pushKeyBoard = false;
-
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
     private List<bool> usedInputDevices = new List<bool>();
@@ -53,17 +51,12 @@ public class KeyBoard : MonoBehaviour
             usedInputDevices.Add(false);
         }
 
-        if (pushKeyBoard)
-        {
-            transform.localScale *= 0.5f;
-            pushKeyboardPos.x = transform.localPosition.x / 2;
-            transform.localPosition = pushKeyboardPos;
-        }
+        SetSelectedKeyBoardPos();
     }
 
     private void FixedUpdate()
     {
-        if (pushKeyBoard) { return; }
+        if (!SettingsManager.rayKeyBoard) { return; }
 
         if (inputDevices.Count < 2)
         {
@@ -208,7 +201,7 @@ public class KeyBoard : MonoBehaviour
             EnableKeyBoardState(normalKeyBoardKeys, shiftKeyBoardKeys);
         }
 
-        if (pushKeyBoard)
+        if (!SettingsManager.rayKeyBoard)
         {
             StartCoroutine(SwapHoverState());
         }
@@ -232,5 +225,25 @@ public class KeyBoard : MonoBehaviour
     public void EnableKeyBoard(bool enabled)
     {
         gameObject.SetActive(enabled);
+    }
+
+    public void SetSelectedKeyBoardPos()
+    {
+        if (originalScale == Vector3.zero)
+        {
+            return;
+        }
+
+        if (!SettingsManager.rayKeyBoard)
+        {
+            keyBoardIsHovered = false;
+            transform.localScale *= 0.5f;
+            pushKeyboardPos.x = transform.localPosition.x / 2;
+            transform.localPosition = pushKeyboardPos;
+        } else
+        {
+            transform.localPosition = originalPosition;
+            transform.localScale = originalScale;
+        }
     }
 }

@@ -88,7 +88,7 @@ public class PlayerHandRays : MonoBehaviour
         }
     }
 
-    private void ChangeInvalidColorGradientOfLineRenderer(float alpha)
+    public void ChangeInvalidColorGradientOfLineRenderer(float alpha)
     {
         Gradient gradient = new Gradient();
         gradient.SetKeys(
@@ -96,5 +96,20 @@ public class PlayerHandRays : MonoBehaviour
             new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
         );
         lineRenderer.invalidColorGradient = gradient;
+    }
+
+    public void ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject()
+    {
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, Mathf.Infinity, mask))
+        {
+            if (objectsToHit.Contains(hit.transform.gameObject))
+            {
+                int index = objectsToHit.IndexOf(hit.transform.gameObject);
+                if (drawRayLine[index])
+                {
+                    ChangeInvalidColorGradientOfLineRenderer(1);
+                }
+            }
+        }
     }
 }
