@@ -8,6 +8,7 @@ using Mapbox.Unity;
 using Mapbox.Unity.Utilities;
 using Mapbox.Json;
 using Mapbox.Utils.JsonConverters;
+using UnityEngine.Networking;
 
 public class DataGenerator : MonoBehaviour
 {
@@ -127,17 +128,17 @@ public class DataGenerator : MonoBehaviour
              extraDataExplanation + "/*conclusion*/" + conclusion + "/*indication*/" + indication + "/*endOfRow*/";
         WWWForm form = new WWWForm();
         form.AddField("completeDataset", completeDataset);
-        WWW www = new WWW("http://localhost/riectafel/addcitydata.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/addcitydata.php", form);
+        yield return www.SendWebRequest();
 
         isProcessingAddingData = false;
-        if (www.text[0] == '0')
+        if (www.downloadHandler.text[0] == '0')
         {
             print("Data generated!");
         }
         else
         {
-            Debug.LogError("Error#" + www.text);
+            Debug.LogError("Error#" + www.downloadHandler.text);
         }
     }
 

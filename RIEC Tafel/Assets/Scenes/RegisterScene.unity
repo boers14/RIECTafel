@@ -2434,15 +2434,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 178bed710b361de41b4f77dac8268e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectsToHit:
-  - {fileID: 1560772665}
-  objectHoverEnterEvents:
-  - m_PersistentCalls:
-      m_Calls: []
-  objectHoverExitEvents:
-  - m_PersistentCalls:
-      m_Calls: []
-  drawRayLine: 01
   mask:
     serializedVersion: 2
     m_Bits: 123
@@ -2463,6 +2454,7 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 64
+  grabConnectionManagerStats: 1
 --- !u!1 &209552977
 GameObject:
   m_ObjectHideFlags: 0
@@ -7882,7 +7874,7 @@ MonoBehaviour:
   movementPower: 3
   rightCharacteristics: 576
   leftCharacteristics: 320
-  indexOfUIInHandRays: 0
+  connectedCanvasObject: {fileID: 1560772668}
   hands:
   - {fileID: 191425547}
   - {fileID: 1960750910}
@@ -8587,6 +8579,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1560772666}
   - component: {fileID: 1560772667}
+  - component: {fileID: 1560772668}
   m_Layer: 5
   m_Name: PrivacyStatementSet
   m_TagString: Untagged
@@ -8628,6 +8621,25 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 398.8596, y: 200.49893, z: 0}
   m_Center: {x: -28.980146, y: -2.0807347, z: 0}
+--- !u!114 &1560772668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560772665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 104f5775439f35b49b19d5a74afd4798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectHoverEnteredEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  objectHoverExitedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  drawLineOnOneHandControls: 1
 --- !u!1 &1575316250
 GameObject:
   m_ObjectHideFlags: 0
@@ -11314,15 +11326,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 178bed710b361de41b4f77dac8268e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectsToHit:
-  - {fileID: 1560772665}
-  objectHoverEnterEvents:
-  - m_PersistentCalls:
-      m_Calls: []
-  objectHoverExitEvents:
-  - m_PersistentCalls:
-      m_Calls: []
-  drawRayLine: 01
   mask:
     serializedVersion: 2
     m_Bits: 123
@@ -11343,6 +11346,7 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 64
+  grabConnectionManagerStats: 1
 --- !u!1 &1966400618
 GameObject:
   m_ObjectHideFlags: 0

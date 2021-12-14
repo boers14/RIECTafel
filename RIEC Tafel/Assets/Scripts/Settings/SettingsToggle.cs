@@ -21,8 +21,13 @@ public class SettingsToggle : MonoBehaviour
         handRays = FindObjectsOfType<PlayerHandRays>();
         GetComponent<Toggle>().onValueChanged.AddListener(SwitchSettings);
 
+        SwitchToggleSetting();
+    }
+
+    public void SwitchToggleSetting()
+    {
         bool isOn = false;
-        switch(affectedSetting)
+        switch (affectedSetting)
         {
             case SettingsManager.AffectedSetting.HandControls:
                 isOn = SettingsManager.oneHandControls;

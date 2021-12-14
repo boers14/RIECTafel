@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
 
 public class EmailCheckButton : SwitchSceneButton
 {
@@ -35,16 +36,16 @@ public class EmailCheckButton : SwitchSceneButton
         WWWForm form = new WWWForm();
         form.AddField("UserID", LogInManager.userID);
 
-        WWW www = new WWW("http://localhost/riectafel/resetlockouttries.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/resetlockouttries.php", form);
+        yield return www.SendWebRequest();
 
         isCheckingPincode = false;
-        if (www.text[0] == '0')
+        if (www.downloadHandler.text[0] == '0')
         {
             base.SwitchScene();
         } else
         {
-            Debug.LogError("Sent user to main menu failed. Error#" + www.text);
+            Debug.LogError("Sent user to main menu failed. Error#" + www.downloadHandler.text);
         }
     }
 
@@ -53,13 +54,13 @@ public class EmailCheckButton : SwitchSceneButton
         WWWForm form = new WWWForm();
         form.AddField("UserID", LogInManager.userID);
 
-        WWW www = new WWW("http://localhost/riectafel/countdownamountoflockouttries.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/countdownamountoflockouttries.php", form);
+        yield return www.SendWebRequest();
 
         isCheckingPincode = false;
-        if (www.text[0] == '0')
+        if (www.downloadHandler.text[0] == '0')
         {
-            string[] webTexts = www.text.Split('\t');
+            string[] webTexts = www.downloadHandler.text.Split('\t');
             int amountOfTries = int.Parse(webTexts[1]);
             disclaimerText.enabled = true;
             disclaimerText.text = "Verkeerde pincode, u heeft nog " + amountOfTries + " pogingen. Na deze pogingen kunt u 1 dag niet meer inloggen " +
@@ -72,7 +73,7 @@ public class EmailCheckButton : SwitchSceneButton
         {
             SceneManager.LoadScene(failedPincodeScene);
             LogInManager.LogOut(this);
-            Debug.LogError("Update lock count down failed. Error#" + www.text);
+            Debug.LogError("Update lock count down failed. Error#" + www.downloadHandler.text);
         }
     }
 
@@ -82,12 +83,12 @@ public class EmailCheckButton : SwitchSceneButton
         form.AddField("UserID", LogInManager.userID);
         form.AddField("LockOutDate", System.DateTime.Now.AddHours(24).ToString());
 
-        WWW www = new WWW("http://localhost/riectafel/lockoutuser.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/lockoutuser.php", form);
+        yield return www.SendWebRequest();
 
-        if (www.text[0] != '0')
+        if (www.downloadHandler.text[0] != '0')
         {
-            Debug.LogError("Update lock out time failed. Error#" + www.text);
+            Debug.LogError("Update lock out time failed. Error#" + www.downloadHandler.text);
         }
 
         SceneManager.LoadScene(failedPincodeScene);

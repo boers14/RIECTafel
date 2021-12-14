@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using Mapbox.Unity.Map;
 using Mapbox.Utils;
+using UnityEngine.Networking;
 
 public class GameManager : NetworkBehaviour
 {
@@ -37,10 +38,10 @@ public class GameManager : NetworkBehaviour
     public IEnumerator RetrieveCityData()
     {
         WWWForm form = new WWWForm();
-        WWW www = new WWW("http://localhost/riectafel/retrievecitydata.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/retrievecitydata.php", form);
+        yield return www.SendWebRequest();
 
-        if (www.text[0] == '0')
+        if (www.downloadHandler.text[0] == '0')
         {
             dataTypes.Clear();
             allLocations.Clear();
@@ -49,7 +50,7 @@ public class GameManager : NetworkBehaviour
             featureAmounts.Clear();
             extraExplanations.Clear();
 
-            string allData = www.text;
+            string allData = www.downloadHandler.text;
             allData = allData.Remove(0, 1);
 
             string[] allLocationData = allData.Split(new string[] { "/*endOfRow*/" }, System.StringSplitOptions.None);
@@ -75,7 +76,7 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            Debug.LogError("Error#" + www.text);
+            Debug.LogError("Error#" + www.downloadHandler.text);
         }
     }
 

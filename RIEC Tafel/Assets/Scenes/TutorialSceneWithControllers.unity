@@ -524,83 +524,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 178bed710b361de41b4f77dac8268e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectsToHit:
-  - {fileID: 391527441}
-  - {fileID: 1444983605}
-  - {fileID: 1623846063}
-  - {fileID: 871676143}
-  - {fileID: 2120915937}
-  objectHoverEnterEvents:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1536061433}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1029616354}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  objectHoverExitEvents:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1536061433}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1029616354}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToIsNotHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  drawRayLine: 0001010101
   mask:
     serializedVersion: 2
     m_Bits: 123
@@ -6516,7 +6439,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 903432745}
+    m_TransformParent: {fileID: 224315790067546991}
     m_Modifications:
     - target: {fileID: 2370482548155795126, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_Name
@@ -6528,19 +6451,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_RootOrder
-      value: 7
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 66.66667
+      objectReference: {fileID: 0}
+    - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 66.666664
+      objectReference: {fileID: 0}
+    - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 66.666664
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 8.610789
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: -65.97513
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.5
+      value: -344.26672
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6552,11 +6487,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2370482548155795128, guid: 684a31767f2fa704bbf0a5474362e926, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -7034,7 +6969,7 @@ MonoBehaviour:
   movementPower: 3
   rightCharacteristics: 0
   leftCharacteristics: 0
-  indexOfUIInHandRays: 4
+  connectedCanvasObject: {fileID: 2120915940}
   hands: []
   keyBoard: {fileID: 1278641903}
   notesSet: {fileID: 2120915937}
@@ -7328,6 +7263,7 @@ GameObject:
   - component: {fileID: 391527445}
   - component: {fileID: 391527444}
   - component: {fileID: 391527443}
+  - component: {fileID: 391527448}
   m_Layer: 5
   m_Name: Data explanation dropdown
   m_TagString: Untagged
@@ -7481,6 +7417,73 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 391527441}
   m_CullTransparentMesh: 1
+--- !u!114 &391527448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 391527441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 104f5775439f35b49b19d5a74afd4798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectHoverEnteredEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1029616354}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1536061433}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  objectHoverExitedEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1029616354}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToIsNotHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1536061433}
+        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
+        m_MethodName: SetPOISelectionDropDownToIsNotHovered
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  drawLineOnOneHandControls: 0
 --- !u!1 &435429454
 GameObject:
   m_ObjectHideFlags: 0
@@ -9657,7 +9660,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 725360199}
   m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -0.057253838, y: 0.038434982, z: -0.37544107}
+  m_LocalPosition: {x: -0.057253838, y: 0.1300001, z: -0.37544107}
   m_LocalScale: {x: 0.034999996, y: 0.035, z: 0.035}
   m_Children: []
   m_Father: {fileID: 1519975968}
@@ -10200,7 +10203,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 823256417}
   m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -0.057253838, y: 0.038434982, z: -0.050441265}
+  m_LocalPosition: {x: -0.057253838, y: 0.1300001, z: -0.050441265}
   m_LocalScale: {x: 0.035, y: 0.035, z: 0.035}
   m_Children: []
   m_Father: {fileID: 1519975968}
@@ -10540,6 +10543,7 @@ GameObject:
   - component: {fileID: 871676147}
   - component: {fileID: 871676146}
   - component: {fileID: 871676145}
+  - component: {fileID: 871676149}
   m_Layer: 5
   m_Name: ExplanationSet
   m_TagString: Untagged
@@ -10631,6 +10635,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 1
+--- !u!114 &871676149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 871676143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 104f5775439f35b49b19d5a74afd4798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectHoverEnteredEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  objectHoverExitedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  drawLineOnOneHandControls: 1
 --- !u!1 &892970411
 GameObject:
   m_ObjectHideFlags: 0
@@ -10913,7 +10936,6 @@ Transform:
   m_Children:
   - {fileID: 344814388}
   - {fileID: 445926548}
-  - {fileID: 239889117}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -11533,7 +11555,7 @@ MonoBehaviour:
   movementPower: 3
   rightCharacteristics: 0
   leftCharacteristics: 0
-  indexOfUIInHandRays: 3
+  connectedCanvasObject: {fileID: 871676149}
   hands: []
   dataExplanationSet: {fileID: 481581247}
   explantionText: {fileID: 1923681760}
@@ -23348,7 +23370,6 @@ MonoBehaviour:
   maxTileOffset: 12
   emptyTransform: {fileID: 2112735124966847659, guid: bff08067a7b81dd43908f40bd1f83039, type: 3}
   rightRayInteractor: {fileID: 1423072838}
-  indexOfTableInHandRays: 1
   hands:
   - {fileID: 1423072834}
   - {fileID: 89092187}
@@ -23393,7 +23414,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1349940767}
   m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.26774645, y: 0.038434982, z: -0.37544107}
+  m_LocalPosition: {x: 0.26774645, y: 0.1300001, z: -0.37544107}
   m_LocalScale: {x: 0.034999996, y: 0.035, z: 0.035}
   m_Children: []
   m_Father: {fileID: 1519975968}
@@ -33997,83 +34018,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 178bed710b361de41b4f77dac8268e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectsToHit:
-  - {fileID: 391527441}
-  - {fileID: 1444983605}
-  - {fileID: 1623846063}
-  - {fileID: 871676143}
-  - {fileID: 2120915937}
-  objectHoverEnterEvents:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1536061433}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1029616354}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  objectHoverExitEvents:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1536061433}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1029616354}
-        m_TargetAssemblyTypeName: DataExplanations, Assembly-CSharp
-        m_MethodName: SetPOISelectionDropDownToIsNotHovered
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  - m_PersistentCalls:
-      m_Calls: []
-  drawRayLine: 0001010101
   mask:
     serializedVersion: 2
     m_Bits: 123
@@ -34778,7 +34722,7 @@ MonoBehaviour:
   movementPower: 3
   rightCharacteristics: 0
   leftCharacteristics: 0
-  indexOfUIInHandRays: 3
+  connectedCanvasObject: {fileID: 871676149}
   hands: []
   dataExplanationSet: {fileID: 481581247}
   explantionText: {fileID: 1923681760}
@@ -35457,6 +35401,7 @@ GameObject:
   - component: {fileID: 1623846067}
   - component: {fileID: 1623846066}
   - component: {fileID: 1623846065}
+  - component: {fileID: 1623846068}
   m_Layer: 5
   m_Name: LegendaImage
   m_TagString: Untagged
@@ -35534,6 +35479,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1623846063}
   m_CullTransparentMesh: 1
+--- !u!114 &1623846068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623846063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 104f5775439f35b49b19d5a74afd4798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectHoverEnteredEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  objectHoverExitedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  drawLineOnOneHandControls: 1
 --- !u!1 &1624497325
 GameObject:
   m_ObjectHideFlags: 0
@@ -37602,7 +37566,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2044784025}
   m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.26774645, y: 0.038434982, z: -0.050441265}
+  m_LocalPosition: {x: 0.26774645, y: 0.1300001, z: -0.050441265}
   m_LocalScale: {x: 0.034999996, y: 0.035, z: 0.035}
   m_Children: []
   m_Father: {fileID: 1519975968}
@@ -37845,7 +37809,7 @@ MonoBehaviour:
   movementPower: 1
   rightCharacteristics: 0
   leftCharacteristics: 0
-  indexOfUIInHandRays: 2
+  connectedCanvasObject: {fileID: 1623846068}
   hands: []
   legendaImage: {fileID: 1623846066}
 --- !u!114 &2061835439
@@ -38274,6 +38238,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2120915939}
   - component: {fileID: 2120915938}
+  - component: {fileID: 2120915940}
   m_Layer: 5
   m_Name: NotesSet
   m_TagString: Untagged
@@ -38315,6 +38280,25 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2120915940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2120915937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 104f5775439f35b49b19d5a74afd4798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectHoverEnteredEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  objectHoverExitedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  drawLineOnOneHandControls: 1
 --- !u!1 &2139400920
 GameObject:
   m_ObjectHideFlags: 0
@@ -38563,6 +38547,7 @@ RectTransform:
   - {fileID: 1623846064}
   - {fileID: 481581248}
   - {fileID: 2120915939}
+  - {fileID: 239889117}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

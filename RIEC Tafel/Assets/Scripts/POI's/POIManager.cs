@@ -69,6 +69,9 @@ public class POIManager : MonoBehaviour
 
     private Regex regex = new Regex("[0-9]{4} *[A-Z]{2} *");
 
+    [System.NonSerialized]
+    public bool allLocationDataIsInitialized = false;
+
     private void Start()
     {
         if (FindObjectOfType<ChooseSeatButton>())
@@ -103,6 +106,8 @@ public class POIManager : MonoBehaviour
         this.conclusions = conclusions;
         this.indications = indications;
 
+        allLocationDataIsInitialized = true;
+        FindObjectOfType<PlayerConnection>().FetchOwnPlayer().EnableChooseSeatButtons();
         //StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
     }
 
@@ -240,6 +245,8 @@ public class POIManager : MonoBehaviour
         }
 
         moveMap.SetNewMapCenter(coordinateGotFromLocationData);
+        allLocationDataIsInitialized = true;
+        FindObjectOfType<PlayerConnection>().FetchOwnPlayer().EnableChooseSeatButtons();
     }
 
     public void MovePOIs(Vector3 movement)

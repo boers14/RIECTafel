@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public static class LogInManager
 {
@@ -29,12 +30,12 @@ public static class LogInManager
     {
         WWWForm form = new WWWForm();
         form.AddField("UserID", userID);
-        WWW www = new WWW("http://localhost/riectafel/logout.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/logout.php", form);
+        yield return www.SendWebRequest();
 
-        if (www.text[0] != '0')
+        if (www.downloadHandler.text[0] != '0')
         {
-            Debug.LogError("Log out failed. Error#" + www.text);
+            Debug.LogError("Log out failed. Error#" + www.downloadHandler.text);
         }
     }
 }

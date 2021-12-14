@@ -20,6 +20,18 @@ public static class SettingsManager
     public static float moveMapSpeedFactor = 1f, scaleMapFactor = 1f, rotateMapFactor = 1f, moveGrabbedObjectSpeedFactor = 1f, 
         scaleGrabbedObjectFactor = 1f;
 
+    public static void ResetStats()
+    {
+        moveMapSpeedFactor = 1f;
+        scaleMapFactor = 1f;
+        rotateMapFactor = 1f;
+        moveGrabbedObjectSpeedFactor = 1f;
+        scaleGrabbedObjectFactor = 1f;
+
+        oneHandControls = true;
+        rayKeyBoard = true;
+    }
+
     public static void LoadData(PlayerData data, KeyBoard keyBoard)
     {
         moveMapSpeedFactor = data.moveMapSpeedFactor;
@@ -41,17 +53,17 @@ public static class SettingsManager
             hands[i].oneButtonControl = oneHandControls;
         }
 
-        if (!oneHandControls)
+        if (oneHandControls)
         {
             for (int i = 0; i < handRays.Length; i++)
             {
-                handRays[i].ChangeInvalidColorGradientOfLineRenderer(0);
+                handRays[i].ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject(1);
             }
         } else
         {
             for (int i = 0; i < handRays.Length; i++)
             {
-                handRays[i].ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject();
+                handRays[i].ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject(0);
             }
         }
     }

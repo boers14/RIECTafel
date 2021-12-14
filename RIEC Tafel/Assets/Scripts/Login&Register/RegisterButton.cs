@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Networking;
 
 public class RegisterButton : SwitchSceneButton
 {
@@ -135,16 +136,16 @@ public class RegisterButton : SwitchSceneButton
         }
         form.AddField("avatarStats", avatarStats);
 
-        WWW www = new WWW("http://localhost/riectafel/register.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/register.php", form);
+        yield return www.SendWebRequest();
 
-        if (www.text == "0")
+        if (www.downloadHandler.text == "0")
         {
             SceneManager.LoadScene(sceneToSwitchTo);
         }
         else
         {
-            Debug.LogError("Registration failed. Error# " + www.text);
+            Debug.LogError("Registration failed. Error# " + www.downloadHandler.text);
             disclaimerText.enabled = true;
         }
     }

@@ -4,11 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerConnection : NetworkBehaviour
 {
     [SyncVar]
-    private string playerName = "", avatarData = "";
+    private string avatarData = "";
+
+    [System.NonSerialized, SyncVar]
+    public string playerName = "";
 
     [SerializeField]
     private TMP_Text nameText = null;
@@ -31,15 +35,25 @@ public class PlayerConnection : NetworkBehaviour
 
     private List<ChooseSeatButton> chooseSeatButtons = new List<ChooseSeatButton>();
 
+    [SerializeField]
+    private string mainMenuScene = "";
+
+    private List<PlayerConnection> serverConnectedPlayersList = new List<PlayerConnection>();
+
+    private NetworkManagerRIECTafel networkManager = null;
+
+    private bool playerIsAcceptedToDiscussion = false;
+
+    private BoxCollider hitbox = null;
+
     private void Start()
     {
         nameText.text = playerName;
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            transform.GetChild(i).gameObject.SetActive(false);
-        }
+        EnableChildsOfObject(transform, false);
 
         chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
+        networkManager = FindObjectOfType<NetworkManagerRIECTafel>();
+        hitbox = GetComponent<BoxCollider>();
 
         if (!isLocalPlayer) { return; }
 
@@ -52,6 +66,48 @@ public class PlayerConnection : NetworkBehaviour
 
         MoveMap map = FindObjectOfType<MoveMap>();
         map.playerConnectionTransform = transform;
+
+        if (isServer)
+        {
+            playerIsAcceptedToDiscussion = true;
+        }
+    }
+
+    [Command]
+    public void CmdAcceptPlayerToDiscussion(int playerNumber)
+    {
+        RpcAcceptPlayerToDiscussion(playerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcAcceptPlayerToDiscussion(int playerNumber)
+    {
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+        if (playerNumber != ownPlayer.playerNumber) { return; }
+
+        ownPlayer.playerIsAcceptedToDiscussion = true;
+        ownPlayer.EnableChooseSeatButtons();
+    }
+
+    public void StartDisconnectPlayerFromDiscussion(PlayerConnection connection)
+    {
+        serverConnectedPlayersList.Remove(connection);
+        CmdDisconnectPlayerFromDiscussion(connection.playerNumber);
+    }
+
+    [Command]
+    private void CmdDisconnectPlayerFromDiscussion(int playerNumber)
+    {
+        RpcDisconnectPlayerFromDiscussion(playerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcDisconnectPlayerFromDiscussion(int playerNumber)
+    {
+        if (playerNumber != FetchOwnPlayer().playerNumber) { return; }
+
+        NetworkManager.singleton.StopClient();
+        SceneManager.LoadScene(mainMenuScene);
     }
 
     public IEnumerator StartConnectionWithGamemanager(string cityName)
@@ -78,19 +134,6 @@ public class PlayerConnection : NetworkBehaviour
         yield return new WaitForSeconds(3f);
         CmdRequestLocationData(poiManager.dataType.ToString());
 
-        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        for (int i = 0; i < currentConnections.Length; i++)
-        {
-            if (currentConnections[i] == this) { continue; }
-
-            currentConnections[i].ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
-        }
-
-        for (int i = 0; i < chooseSeatButtons.Count; i++)
-        {
-            chooseSeatButtons[i].CheckIfSeatIsOpen();
-        }
-
         string nameString = "";
         switch (poiManager.dataType)
         {
@@ -112,16 +155,32 @@ public class PlayerConnection : NetworkBehaviour
         }
         nameString += ":\n" + LogInManager.username;
         CmdSetPlayerName(nameString, LogInManager.avatarData, poiManager.dataType.ToString());
+    }
 
-        GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>().text = "Kies een plek om te zitten:";
-        for (int i = 0; i < chooseSeatButtons.Count; i++)
+    private void EnableChildsOfObject(Transform parent, bool enabled)
+    {
+        for (int i = 0; i < parent.childCount; i++)
         {
-            chooseSeatButtons[i].GetComponent<Image>().enabled = true;
-            for (int j = 0; j < chooseSeatButtons[i].transform.childCount; j++)
+            parent.GetChild(i).gameObject.SetActive(enabled);
+        }
+    }
+
+    public void EnableChooseSeatButtons()
+    {
+        if (playerIsAcceptedToDiscussion && poiManager.allLocationDataIsInitialized)
+        {
+            GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>().text = "Kies een plek om te zitten:";
+            for (int i = 0; i < chooseSeatButtons.Count; i++)
             {
-                chooseSeatButtons[i].transform.GetChild(j).gameObject.SetActive(true);
+                chooseSeatButtons[i].GetComponent<Image>().enabled = true;
+                EnableChildsOfObject(chooseSeatButtons[i].transform, true);
+                chooseSeatButtons[i].playerNumber = playerNumber;
+                chooseSeatButtons[i].CheckIfSeatIsOpen();
             }
-            chooseSeatButtons[i].playerNumber = playerNumber;
+        } else if (!playerIsAcceptedToDiscussion && poiManager.allLocationDataIsInitialized)
+        {
+            GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>().text = 
+                "Wacht tot u wordt toegelaten tot de discussie...";
         }
     }
 
@@ -161,7 +220,31 @@ public class PlayerConnection : NetworkBehaviour
         PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
         player.avatarData = avatarData;
         player.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
-        ChangeBodyColorOfPlayer(avatarData, player.dataType, player);
+
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+        if (isServer && playerNumber != ownPlayer.playerNumber)
+        {
+            TurnOnAcceptPlayerToDiscussionMenu(name, false);
+            ownPlayer.serverConnectedPlayersList.Add(player);
+            networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<RejectPlayerFromDicussionButton>().connections.Add(player);
+        }
+    }
+
+    public void TurnOnAcceptPlayerToDiscussionMenu(string name, bool alwaysChangeText)
+    {
+        TMP_Text text = networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<TMP_Text>();
+        string question = "Wilt u " + name.Split('\n')[1] + " toelaten aan deze discussie?";
+
+        if (alwaysChangeText)
+        {
+            text.text = question;
+        }
+        else if (!networkManager.acceptPlayerToDiscussionUI.activeSelf)
+        {
+            text.text = question;
+        }
+        
+        networkManager.acceptPlayerToDiscussionUI.SetActive(true);
     }
 
     private void ChangeBodyColorOfPlayer(string avatarData, GameManager.DataType dataType, PlayerConnection player)
@@ -242,6 +325,36 @@ public class PlayerConnection : NetworkBehaviour
                 ChangeBodyColor(bodyPartsRenderers, poiManager.bankPOIColor);
                 break;
         }
+
+        Vector3 newHitboxSize = Vector3.zero;
+        Vector3 newHitboxCenter = Vector3.zero;
+
+        if (head.sharedMesh.name == "star1")
+        {
+            newHitboxSize.x = head.transform.localScale.x / 35;
+            newHitboxSize.y = body.transform.localScale.y + (head.transform.localScale.y / 35);
+            newHitboxSize.z = head.transform.localScale.z / 35;
+
+            newHitboxCenter.y = (body.transform.localScale.y + (head.transform.localScale.y / 35)) / 1.5f;
+        }
+        else
+        {
+            newHitboxSize.x = head.transform.localScale.x;
+            newHitboxSize.y = body.transform.localScale.y + head.transform.localScale.y;
+            newHitboxSize.z = head.transform.localScale.z;
+
+            newHitboxCenter.y = (body.transform.localScale.y + head.transform.localScale.y) / 1.5f;
+        }
+
+        hitbox.size = newHitboxSize;
+        hitbox.center = newHitboxCenter;
+
+        player.nameText.transform.LookAt(FindObjectOfType<POIManager>().transform);
+        Vector3 lookRotation = player.nameText.transform.eulerAngles;
+        lookRotation.x = 0;
+        lookRotation.z = 0;
+        lookRotation.y += 180;
+        player.nameText.transform.eulerAngles = lookRotation;
     }
 
     private void SetCorrectModelAndScaleForMesh(MeshFilter bodyPart, string[] bodyPartData)
@@ -283,6 +396,11 @@ public class PlayerConnection : NetworkBehaviour
         player.transform.eulerAngles = newRot;
         player.chosenSeat = seatIndex;
 
+        if (chooseSeatButtons.Count == 0)
+        {
+            chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
+        }
+        
         for (int i = 0; i < chooseSeatButtons.Count; i++)
         {
             chooseSeatButtons[i].CheckIfSeatIsOpen();
@@ -301,10 +419,8 @@ public class PlayerConnection : NetworkBehaviour
             {
                 if (currentConnections[i] == this || currentConnections[i].chosenSeat == -1) { continue; }
 
-                for (int j = 0; j < currentConnections[i].transform.childCount; j++)
-                {
-                    currentConnections[i].transform.GetChild(j).gameObject.SetActive(true);
-                }
+                EnableChildsOfObject(currentConnections[i].transform, true);
+                ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
             }
 
         }
@@ -312,12 +428,43 @@ public class PlayerConnection : NetworkBehaviour
         {
             if (ownPlayer.chosenSeat != -1)
             {
-                for (int i = 0; i < player.transform.childCount; i++)
-                {
-                    player.transform.GetChild(i).gameObject.SetActive(true);
-                }
-
+                EnableChildsOfObject(player.transform, true);
                 ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
+            }
+        }
+    }
+
+    [Command]
+    public void CmdCheckIfSeatsOpenedUp(int playerNumber)
+    {
+        RpcCheckIfSeatsOpenedUp(playerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcCheckIfSeatsOpenedUp(int playerNumber)
+    {
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+        PlayerConnection leavingPlayer = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        if (leavingPlayer != null)
+        {
+            if (leavingPlayer.playerNumber != ownPlayer.playerNumber)
+            {
+                leavingPlayer.gameObject.SetActive(false);
+            }
+        }
+
+        if (ownPlayer.chosenSeat == -1)
+        {
+            if (chooseSeatButtons.Count != 6)
+            {
+                chooseSeatButtons.Clear();
+                chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
+            }
+
+            for (int i = 0; i < chooseSeatButtons.Count; i++)
+            {
+                chooseSeatButtons[i].ActivateSeat();
+                chooseSeatButtons[i].CheckIfSeatIsOpen();
             }
         }
     }
@@ -329,7 +476,7 @@ public class PlayerConnection : NetworkBehaviour
         return playerConnections.Find(i => i.playerNumber == playerNumber);
     }
 
-    private PlayerConnection FetchOwnPlayer()
+    public PlayerConnection FetchOwnPlayer()
     {
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);

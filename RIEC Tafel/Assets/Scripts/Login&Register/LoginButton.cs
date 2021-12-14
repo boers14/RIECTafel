@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
 
 public class LoginButton : SwitchSceneButton
 {
@@ -42,12 +43,12 @@ public class LoginButton : SwitchSceneButton
             form.AddField(inputFields[i].name, inputFields[i].text);
         }
 
-        WWW www = new WWW("http://localhost/riectafel/login.php", form);
-        yield return www;
+        UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/login.php", form);
+        yield return www.SendWebRequest();
 
-        if (www.text[0] == '0')
+        if (www.downloadHandler.text[0] == '0')
         {
-            string[] webTexts = www.text.Split('\t');
+            string[] webTexts = www.downloadHandler.text.Split('\t');
             LogInManager.userID = int.Parse(webTexts[1]);
             LogInManager.username = webTexts[2];
             LogInManager.datatype = webTexts[3];
@@ -59,7 +60,7 @@ public class LoginButton : SwitchSceneButton
         else
         {
             disclaimerText.enabled = enabled;
-            Debug.LogError("Log in failed. Error#" + www.text);
+            Debug.LogError("Log in failed. Error#" + www.downloadHandler.text);
         }
     }
 }

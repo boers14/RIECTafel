@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ChooseSeatButton : MeetingButton
 {
@@ -9,7 +10,7 @@ public class ChooseSeatButton : MeetingButton
 
     [SerializeField]
     private int seatIndex = 0;
-
+    
     public int playerNumber { get; set; } = 0;
 
     private MiniMap miniMap = null;
@@ -59,15 +60,29 @@ public class ChooseSeatButton : MeetingButton
         }
     }
 
+    public void ActivateSeat()
+    {
+        EnableButton(true);
+    }
+
     public void CheckIfSeatIsOpen()
     {
         foreach (PlayerConnection player in FindObjectsOfType<PlayerConnection>())
         {
             if (player.chosenSeat == seatIndex)
             {
-                gameObject.SetActive(false);
+                EnableButton(false);
                 break;
             }
+        }
+    }
+
+    private void EnableButton(bool enabled)
+    {
+        GetComponent<Image>().enabled = enabled;
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            transform.GetChild(i).gameObject.SetActive(enabled);
         }
     }
 }

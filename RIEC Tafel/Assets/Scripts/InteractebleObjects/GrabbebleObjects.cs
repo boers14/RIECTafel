@@ -28,7 +28,7 @@ public class GrabbebleObjects : MonoBehaviour
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
     [SerializeField]
-    private int indexOfUIInHandRays = 2;
+    private PlayerHandsRayInteractor connectedCanvasObject = null;
 
     [SerializeField, Tooltip("Not required to set with map around")]
     private List<PlayerGrab> hands = new List<PlayerGrab>();
@@ -87,7 +87,7 @@ public class GrabbebleObjects : MonoBehaviour
             {
                 if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
                 {
-                    if (handRays[i].objectsAreHovered[indexOfUIInHandRays])
+                    if (handRays[i].hoveredObjects.Contains(connectedCanvasObject))
                     {
                         hoverCount++;
                     }
@@ -98,7 +98,7 @@ public class GrabbebleObjects : MonoBehaviour
             {
                 if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
                 {
-                    if (handRays[i].objectsAreHovered[indexOfUIInHandRays])
+                    if (handRays[i].hoveredObjects.Contains(connectedCanvasObject))
                     {
                         if (hoverCount != inputDevices.Count)
                         {

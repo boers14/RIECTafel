@@ -6,17 +6,9 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerHandRays : MonoBehaviour
 {
-    [SerializeField]
-    private List<GameObject> objectsToHit = new List<GameObject>();
-
-    [SerializeField]
-    private List<UnityEvent> objectHoverEnterEvents = new List<UnityEvent>(), objectHoverExitEvents = new List<UnityEvent>();
-
-    [SerializeField]
-    private List<bool> drawRayLine = new List<bool>();
-
     [System.NonSerialized]
-    public List<bool> objectsAreHovered = new List<bool>();
+    public List<PlayerHandsRayInteractor> hoveredObjects = new List<PlayerHandsRayInteractor>();
+
     private List<int> frameCounters = new List<int>();
 
     [SerializeField]
@@ -24,66 +16,47 @@ public class PlayerHandRays : MonoBehaviour
 
     private XRInteractorLineVisual lineRenderer = null;
 
-    private PlayerGrab playerGrab = null;
+    public enum Hand
+    {
+        Left,
+        Right
+    }
+
+    public Hand hand = 0;
 
     private void Start()
     {
-        for (int i = 0; i < objectsToHit.Count; i++)
-        {
-            objectsAreHovered.Add(false);
-            frameCounters.Add(0);
-        }
-
         lineRenderer = GetComponent<XRInteractorLineVisual>();
-        playerGrab = GetComponent<PlayerGrab>();
     } 
 
     private void FixedUpdate()
     {
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, Mathf.Infinity, mask))
         {
-            if (objectsToHit.Contains(hit.transform.gameObject))
+            PlayerHandsRayInteractor interactor = hit.transform.GetComponent<PlayerHandsRayInteractor>();
+            if (interactor)
             {
-                int index = objectsToHit.IndexOf(hit.transform.gameObject);
-                if (!objectsAreHovered[index])
+                if (!hoveredObjects.Contains(interactor))
                 {
-                    if (drawRayLine[index] && playerGrab.oneButtonControl)
-                    {
-                        ChangeInvalidColorGradientOfLineRenderer(1);
-                    }
-
-                    objectsAreHovered[index] = true;
-                    if (objectHoverEnterEvents[index] != null)
-                    {
-                        objectHoverEnterEvents[index].Invoke();
-                    }
-                    frameCounters[index] = 2;
+                    hoveredObjects.Add(interactor);
+                    frameCounters.Add(2);
+                    interactor.objectHoverEnteredEvent.Invoke();
                 } else
                 {
-                    frameCounters[index] = 2;
+                    frameCounters[hoveredObjects.IndexOf(interactor)] = 2;
                 }
             }
         }
 
-        for (int i = 0; i < objectsToHit.Count; i++)
+        for (int i = hoveredObjects.Count - 1; i >= 0 ; i--)
         {
-            if (objectsAreHovered[i])
+            frameCounters[i]--;
+            if (frameCounters[i] <= 0)
             {
-                frameCounters[i]--;
-                if (frameCounters[i] <= 0)
-                {
-                    objectsAreHovered[i] = false;
-
-                    if (drawRayLine[i] && playerGrab.oneButtonControl)
-                    {
-                        ChangeInvalidColorGradientOfLineRenderer(0);
-                    }
-
-                    if (objectHoverExitEvents[i] != null)
-                    {
-                        objectHoverExitEvents[i].Invoke();
-                    }
-                }
+                PlayerHandsRayInteractor interactor = hoveredObjects[i];
+                frameCounters.RemoveAt(i);
+                hoveredObjects.RemoveAt(i);
+                interactor.objectHoverExitedEvent.Invoke();
             }
         }
     }
@@ -98,16 +71,16 @@ public class PlayerHandRays : MonoBehaviour
         lineRenderer.invalidColorGradient = gradient;
     }
 
-    public void ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject()
+    public void ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject(float alpha)
     {
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, Mathf.Infinity, mask))
         {
-            if (objectsToHit.Contains(hit.transform.gameObject))
+            PlayerHandsRayInteractor interactor = hit.transform.GetComponent<PlayerHandsRayInteractor>();
+            if (hoveredObjects.Contains(interactor))
             {
-                int index = objectsToHit.IndexOf(hit.transform.gameObject);
-                if (drawRayLine[index])
+                if (interactor.drawLineOnOneHandControls)
                 {
-                    ChangeInvalidColorGradientOfLineRenderer(1);
+                    ChangeInvalidColorGradientOfLineRenderer(alpha);
                 }
             }
         }

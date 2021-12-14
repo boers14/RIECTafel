@@ -126,6 +126,8 @@ public class MiniMap : MonoBehaviour
 
     public void RotateMiniMap(Vector3 newRotation, Vector3 playerRot)
     {
+        if (!currentPlayerIndicationOfMiniMap) { return; }
+
         transform.localEulerAngles = new Vector3(-newRotation.y + (playerRot.y - 90), rotOfMiniMap.y, rotOfMiniMap.z);
         if (currentPlayerIndicationOfMiniMap)
         {
@@ -135,6 +137,8 @@ public class MiniMap : MonoBehaviour
 
     public void ScalePlayerIndication(Vector3 newScale)
     {
+        if (!currentPlayerIndicationOfMiniMap) { return; }
+
         scaleChange = 1 / newScale.x;
         currentPlayerIndicationOfMiniMap.transform.localScale = basePlayerIndicationScale * scaleChange;
     }

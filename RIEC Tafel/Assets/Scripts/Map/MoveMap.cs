@@ -51,9 +51,6 @@ public class MoveMap : MonoBehaviour
     [System.NonSerialized]
     public Transform playerConnectionTransform = null;
 
-    [SerializeField]
-    private int indexOfTableInHandRays = 1;
-
     private int rotationCounter = 0;
 
     [SerializeField]
@@ -66,6 +63,8 @@ public class MoveMap : MonoBehaviour
     private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
 
     private List<GrabbebleObjects> grabbebleObjects = new List<GrabbebleObjects>();
+
+    private PlayerHandsRayInteractor oneHandControlsInteractorObject = null;
 
     private void Start()
     {
@@ -92,6 +91,7 @@ public class MoveMap : MonoBehaviour
         abstractMap.SetPlacementType(MapPlacementType.AtTileCenter);
 
         miniMap = FindObjectOfType<MiniMap>();
+        oneHandControlsInteractorObject = table.GetComponent<PlayerHandsRayInteractor>();
 
         GrabControllers();
 
@@ -121,7 +121,7 @@ public class MoveMap : MonoBehaviour
             {
                 if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
                 {
-                    if (handRays[i].objectsAreHovered[indexOfTableInHandRays])
+                    if (handRays[i].hoveredObjects.Contains(oneHandControlsInteractorObject))
                     {
                         hoverCount++;
                     }
@@ -132,7 +132,7 @@ public class MoveMap : MonoBehaviour
             {
                 if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton)
                 {
-                    if (handRays[i].objectsAreHovered[indexOfTableInHandRays])
+                    if (handRays[i].hoveredObjects.Contains(oneHandControlsInteractorObject))
                     {
                         if (hoverCount != inputDevices.Count && playerWasScalingTimer < 0)
                         {

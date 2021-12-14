@@ -25,6 +25,11 @@ public class SettingSlider : MonoBehaviour
         baseValue = slider.maxValue / 2;
         slider.onValueChanged.AddListener(ChangeAffectedSetting);
 
+        ReverseEngineerSetting();
+    }
+
+    public void ReverseEngineerSetting()
+    {
         float currentValue = 0;
         switch (affectedSetting)
         {
@@ -68,7 +73,8 @@ public class SettingSlider : MonoBehaviour
         if (isOverHundredPercent)
         {
             slider.value = baseValue + (currentValue * baseValue);
-        } else
+        }
+        else
         {
             slider.value = currentSettingValue;
         }
