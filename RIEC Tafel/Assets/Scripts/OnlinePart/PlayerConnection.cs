@@ -45,12 +45,10 @@ public class PlayerConnection : NetworkBehaviour
 
     private Transform cameraTransform = null;
 
-    private List<Vector3> lastKnownHandPosses = new List<Vector3>(), lastKnownHandRots = new List<Vector3>();
+    private List<Vector3> lastKnownHandPosses = new List<Vector3>(), lastKnownHandRots = new List<Vector3>(), 
+        handRotationOffsets = new List<Vector3>();
 
     private Vector3 lastKnownCameraRot = Vector3.zero;
-
-    [SerializeField]
-    private Vector3 rotOffsetOfHands = new Vector3(0, 0, 90);
 
     private List<PlayerConnection> serverConnectedPlayersList = new List<PlayerConnection>();
 
@@ -84,6 +82,7 @@ public class PlayerConnection : NetworkBehaviour
         {
             lastKnownHandPosses.Add(hands[i].localPosition);
             lastKnownHandRots.Add(hands[i].localEulerAngles);
+            handRotationOffsets.Add(hands[i].localEulerAngles);
         }
 
         cameraTransform = Camera.main.transform;
@@ -164,7 +163,7 @@ public class PlayerConnection : NetworkBehaviour
         {
             PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
             player.hands[handIndex].localPosition = newPos;
-            player.hands[handIndex].localEulerAngles = newRot + rotOffsetOfHands;
+            player.hands[handIndex].localEulerAngles = newRot + handRotationOffsets[handIndex];
         }
     }
 
