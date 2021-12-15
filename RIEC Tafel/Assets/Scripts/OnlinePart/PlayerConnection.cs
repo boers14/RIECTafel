@@ -45,7 +45,7 @@ public class PlayerConnection : NetworkBehaviour
 
     private Transform cameraTransform = null;
 
-    private List<Vector3> lastKnownHandPosses = new List<Vector3>();
+    private List<Vector3> lastKnownHandPosses = new List<Vector3>(), lastKnownHandRots = new List<Vector3>();
 
     private Vector3 lastKnownCameraRot = Vector3.zero;
 
@@ -80,6 +80,7 @@ public class PlayerConnection : NetworkBehaviour
         for (int i = 0; i < hands.Count; i++)
         {
             lastKnownHandPosses.Add(hands[i].localPosition);
+            lastKnownHandRots.Add(hands[i].localEulerAngles);
         }
 
         cameraTransform = Camera.main.transform;
@@ -102,12 +103,14 @@ public class PlayerConnection : NetworkBehaviour
 
         for (int i = 0; i < hands.Count; i++)
         {
-            hands[i].transform.position = actualHands[i].transform.position;
+            hands[i].position = actualHands[i].position;
+            hands[i].eulerAngles = actualHands[i].eulerAngles;
 
-            if (lastKnownHandPosses[i] != hands[i].localPosition)
+            if (lastKnownHandPosses[i] != hands[i].localPosition || lastKnownHandRots[i] != hands[i].localEulerAngles)
             {
                 lastKnownHandPosses[i] = hands[i].localPosition;
-                CmdSetHandPosition(playerNumber, lastKnownHandPosses[i], i);
+                lastKnownHandRots[i] = hands[i].localEulerAngles;
+                CmdSetHandPosAndRot(playerNumber, lastKnownHandPosses[i], lastKnownHandRots[i], i);
             }
         }
 
@@ -140,23 +143,25 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
-    private void CmdSetHandPosition(int playerNumber, Vector3 newPos, int handIndex)
+    private void CmdSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, int handIndex)
     {
-        SetHandPosition(playerNumber, newPos, handIndex);
-        RpcSetHandPosition(playerNumber, newPos, handIndex);
+        SetHandPosAndRot(playerNumber, newPos, newRot, handIndex);
+        RpcSetHandPosAndRot(playerNumber, newPos, newRot, handIndex);
     }
 
     [ClientRpc]
-    private void RpcSetHandPosition(int playerNumber, Vector3 newPos, int handIndex)
+    private void RpcSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, int handIndex)
     {
-        SetHandPosition(playerNumber, newPos, handIndex);
+        SetHandPosAndRot(playerNumber, newPos, newRot, handIndex);
     }
 
-    private void SetHandPosition(int playerNumber, Vector3 newPos, int handIndex)
+    private void SetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, int handIndex)
     {
         if (playerNumber != FetchOwnPlayer().playerNumber)
         {
-            FetchPlayerConnectionBasedOnNumber(playerNumber).hands[handIndex].localPosition = newPos;
+            PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
+            player.hands[handIndex].localPosition = newPos;
+            player.hands[handIndex].localEulerAngles = newRot;
         }
     }
 
