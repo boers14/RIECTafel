@@ -23,38 +23,46 @@ public class NetworkManagerRIECTafel : NetworkManager
 
     private Dictionary<NetworkConnection, int> playerConnectedToNumber = new Dictionary<NetworkConnection, int>();
 
+    [System.NonSerialized]
+    public bool hasFoundDiscussion = false;
+
     public override void Start()
     {
         base.Start();
         cityName = ConnectionManager.cityName;
-        //switch (ConnectionManager.connectFunction)
-        //{
-        //    case ConnectionManager.ConnectFunction.ServerClient:
-        //        if (Application.platform != RuntimePlatform.WebGLPlayer)
-        //        {
-        //            GetComponent<NetworkDiscovery>().AdvertiseServer();
-        //            StartHost();
-        //        }
-        //        break;
-        //    case ConnectionManager.ConnectFunction.Server:
-        //        if (Application.platform != RuntimePlatform.WebGLPlayer)
-        //        {
-        //            StartServer();
-        //        }
-        //        break;
-        //    case ConnectionManager.ConnectFunction.Client:
-        //        StartClient();
-        //        GetComponent<NetworkDiscovery>().enableActiveDiscovery = true;
-        //        GetComponent<NetworkDiscovery>().OnServerFound.AddListener(DisableNetworkDiscoveryOnServerFound);
-        //        break;
-        //}
+
+        NetworkDiscovery networkDiscovery = GetComponent<NetworkDiscovery>();
+
+        switch (ConnectionManager.connectFunction)
+        {
+            case ConnectionManager.ConnectFunction.ServerClient:
+                if (Application.platform != RuntimePlatform.WebGLPlayer)
+                {
+                    StartHost();
+                    GetComponent<NetworkDiscovery>().AdvertiseServer();
+                    hasFoundDiscussion = true;
+                }
+                break;
+            case ConnectionManager.ConnectFunction.Server:
+                if (Application.platform != RuntimePlatform.WebGLPlayer)
+                {
+                    StartServer();
+                    hasFoundDiscussion = true;
+                }
+                break;
+            case ConnectionManager.ConnectFunction.Client:
+                networkDiscovery.enableActiveDiscovery = true;
+                networkDiscovery.OnServerFound.AddListener(DisableNetworkDiscoveryOnServerFound);
+                networkDiscovery.StartDiscovery();
+                break;
+        }
     }
 
     private void DisableNetworkDiscoveryOnServerFound(ServerResponse response)
     {
-        print("hi");
-        GetComponent<NetworkDiscovery>().enabled = false;
-        networkAddress = response.EndPoint.Address.ToString();
+        GetComponent<NetworkDiscovery>().StopDiscovery();
+        StartClient(response.uri);
+        hasFoundDiscussion = true;
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)

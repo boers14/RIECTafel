@@ -337,7 +337,6 @@ namespace Mirror.Discovery
             }
 
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, serverBroadcastListenPort);
-            print(endPoint);
 
             using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
             {

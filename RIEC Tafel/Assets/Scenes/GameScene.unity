@@ -9809,7 +9809,6 @@ GameObject:
   - component: {fileID: 1799655088}
   - component: {fileID: 1799655087}
   - component: {fileID: 1799655090}
-  - component: {fileID: 1799655091}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: NetworkManager
@@ -9901,37 +9900,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   secretHandshake: 2684389011125281642
   serverBroadcastListenPort: 47777
-  enableActiveDiscovery: 0
+  enableActiveDiscovery: 1
   ActiveDiscoveryInterval: 1
   transport: {fileID: 1799655087}
   OnServerFound:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1799655091}
-        m_TargetAssemblyTypeName: Mirror.Discovery.NetworkDiscoveryHUD, Mirror.Components
-        m_MethodName: OnDiscoveredServer
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1799655091
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1799655086}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88c37d3deca7a834d80cfd8d3cfcc510, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  networkDiscovery: {fileID: 1799655090}
+      m_Calls: []
 --- !u!1 &1804219285
 GameObject:
   m_ObjectHideFlags: 0
@@ -13437,7 +13411,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 325980803}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bc9d6da0867f854cafad4d0d7649874, type: 3}
   m_Name: 

@@ -1,18 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using Mirror;
-using TMPro;
 
 public class StopConnectButton : SwitchSceneButton
 {
     [SerializeField]
-    private NetworkManager networkManager = null;
+    private NetworkManagerRIECTafel networkManager = null;
 
     private void FixedUpdate()
     {
-        if (!NetworkClient.active)
+        if (!NetworkClient.active && networkManager.hasFoundDiscussion)
         {
             SwitchScene();
         }
