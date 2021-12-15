@@ -246,9 +246,10 @@ namespace Mirror.Discovery
         public void StartDiscovery()
         {
             if (!SupportedOnThisPlatform)
+            {
+                StopDiscovery();
                 throw new PlatformNotSupportedException("Network discovery not supported in this platform");
-
-            StopDiscovery();
+            }
 
             try
             {
@@ -269,7 +270,10 @@ namespace Mirror.Discovery
 
             _ = ClientListenAsync();
 
-            if (enableActiveDiscovery) InvokeRepeating(nameof(BroadcastDiscoveryRequest), 0, ActiveDiscoveryInterval);
+            if (enableActiveDiscovery)
+            {
+                InvokeRepeating(nameof(BroadcastDiscoveryRequest), 0, ActiveDiscoveryInterval);
+            }
         }
 
         /// <summary>
@@ -322,7 +326,9 @@ namespace Mirror.Discovery
         public void BroadcastDiscoveryRequest()
         {
             if (clientUdpClient == null)
+            {
                 return;
+            }
 
             if (NetworkClient.isConnected)
             {
@@ -331,6 +337,7 @@ namespace Mirror.Discovery
             }
 
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, serverBroadcastListenPort);
+            print(endPoint);
 
             using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
             {
