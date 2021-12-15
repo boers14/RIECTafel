@@ -112,7 +112,7 @@ public class PlayerConnection : NetworkBehaviour
             {
                 lastKnownHandPosses[i] = hands[i].localPosition;
                 lastKnownHandRots[i] = hands[i].localEulerAngles;
-                CmdSetHandPosAndRot(playerNumber, lastKnownHandPosses[i], lastKnownHandRots[i], i);
+                CmdSetHandPosAndRot(playerNumber, lastKnownHandPosses[i], lastKnownHandRots[i], handRotationOffsets[i], i);
             }
         }
 
@@ -145,25 +145,25 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
-    private void CmdSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, int handIndex)
+    private void CmdSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
     {
-        SetHandPosAndRot(playerNumber, newPos, newRot, handIndex);
-        RpcSetHandPosAndRot(playerNumber, newPos, newRot, handIndex);
+        SetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
+        RpcSetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
     }
 
     [ClientRpc]
-    private void RpcSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, int handIndex)
+    private void RpcSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
     {
-        SetHandPosAndRot(playerNumber, newPos, newRot, handIndex);
+        SetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
     }
 
-    private void SetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, int handIndex)
+    private void SetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
     {
         if (playerNumber != FetchOwnPlayer().playerNumber)
         {
             PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
             player.hands[handIndex].localPosition = newPos;
-            player.hands[handIndex].localEulerAngles = newRot + handRotationOffsets[handIndex];
+            player.hands[handIndex].localEulerAngles = newRot + rotOffset;
         }
     }
 
