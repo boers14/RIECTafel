@@ -49,6 +49,9 @@ public class PlayerConnection : NetworkBehaviour
 
     private Vector3 lastKnownCameraRot = Vector3.zero;
 
+    [SerializeField]
+    private Vector3 rotOffsetOfHands = new Vector3(0, 0, 90);
+
     private List<PlayerConnection> serverConnectedPlayersList = new List<PlayerConnection>();
 
     private NetworkManagerRIECTafel networkManager = null;
@@ -161,7 +164,7 @@ public class PlayerConnection : NetworkBehaviour
         {
             PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
             player.hands[handIndex].localPosition = newPos;
-            player.hands[handIndex].localEulerAngles = newRot;
+            player.hands[handIndex].localEulerAngles = newRot + rotOffsetOfHands;
         }
     }
 
