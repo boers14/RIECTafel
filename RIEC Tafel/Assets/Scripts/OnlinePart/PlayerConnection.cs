@@ -38,6 +38,17 @@ public class PlayerConnection : NetworkBehaviour
     [SerializeField]
     private string mainMenuScene = "";
 
+    [SerializeField]
+    private List<Transform> hands = new List<Transform>();
+
+    private List<Transform> actualHands = new List<Transform>();
+
+    private Transform cameraTransform = null;
+
+    private List<Vector3> lastKnownHandPosses = new List<Vector3>();
+
+    private Vector3 lastKnownCameraRot = Vector3.zero;
+
     private List<PlayerConnection> serverConnectedPlayersList = new List<PlayerConnection>();
 
     private NetworkManagerRIECTafel networkManager = null;
@@ -66,10 +77,86 @@ public class PlayerConnection : NetworkBehaviour
 
         MoveMap map = FindObjectOfType<MoveMap>();
         map.playerConnectionTransform = transform;
+        for (int i = 0; i < hands.Count; i++)
+        {
+            lastKnownHandPosses.Add(hands[i].localPosition);
+        }
+
+        cameraTransform = Camera.main.transform;
+        lastKnownCameraRot = cameraTransform.eulerAngles;
+
+        List<PlayerHandRays> handRays = new List<PlayerHandRays>();
+        handRays.AddRange(FindObjectsOfType<PlayerHandRays>());
+        actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Left).transform);
+        actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Right).transform);
 
         if (isServer)
         {
             playerIsAcceptedToDiscussion = true;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (!hasAuthority || playerNumber == -1 || chosenSeat == -1) { return; }
+
+        for (int i = 0; i < hands.Count; i++)
+        {
+            hands[i].transform.position = actualHands[i].transform.position;
+
+            if (lastKnownHandPosses[i] != hands[i].localPosition)
+            {
+                lastKnownHandPosses[i] = hands[i].localPosition;
+                CmdSetHandPosition(playerNumber, lastKnownHandPosses[i], i);
+            }
+        }
+
+        if (cameraTransform.eulerAngles != lastKnownCameraRot)
+        {
+            lastKnownCameraRot = cameraTransform.eulerAngles;
+            CmdSetHeadRotation(playerNumber, lastKnownCameraRot);
+        }
+    }
+
+    [Command]
+    private void CmdSetHeadRotation(int playerNumber, Vector3 newRot)
+    {
+        SetHeadRotation(playerNumber, newRot);
+        RpcSetHeadRotation(playerNumber, newRot);
+    }
+
+    [ClientRpc]
+    private void RpcSetHeadRotation(int playerNumber, Vector3 newRot)
+    {
+        SetHeadRotation(playerNumber, newRot);
+    }
+
+    private void SetHeadRotation(int playerNumber, Vector3 newRot)
+    {
+        if (playerNumber != FetchOwnPlayer().playerNumber)
+        {
+            FetchPlayerConnectionBasedOnNumber(playerNumber).head.transform.eulerAngles = newRot;
+        }
+    }
+
+    [Command]
+    private void CmdSetHandPosition(int playerNumber, Vector3 newPos, int handIndex)
+    {
+        SetHandPosition(playerNumber, newPos, handIndex);
+        RpcSetHandPosition(playerNumber, newPos, handIndex);
+    }
+
+    [ClientRpc]
+    private void RpcSetHandPosition(int playerNumber, Vector3 newPos, int handIndex)
+    {
+        SetHandPosition(playerNumber, newPos, handIndex);
+    }
+
+    private void SetHandPosition(int playerNumber, Vector3 newPos, int handIndex)
+    {
+        if (playerNumber != FetchOwnPlayer().playerNumber)
+        {
+            FetchPlayerConnectionBasedOnNumber(playerNumber).hands[handIndex].localPosition = newPos;
         }
     }
 
@@ -310,19 +397,19 @@ public class PlayerConnection : NetworkBehaviour
         switch (dataType)
         {
             case GameManager.DataType.Regular:
-                ChangeBodyColor(bodyPartsRenderers, poiManager.regularPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.regularPOIColor, player.hands);
                 break;
             case GameManager.DataType.Police:
-                ChangeBodyColor(bodyPartsRenderers, poiManager.policePOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.policePOIColor, player.hands);
                 break;
             case GameManager.DataType.Tax:
-                ChangeBodyColor(bodyPartsRenderers, poiManager.taxPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.taxPOIColor, player.hands);
                 break;
             case GameManager.DataType.PPO:
-                ChangeBodyColor(bodyPartsRenderers, poiManager.ppoPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.ppoPOIColor, player.hands);
                 break;
             case GameManager.DataType.Bank:
-                ChangeBodyColor(bodyPartsRenderers, poiManager.bankPOIColor);
+                ChangeBodyColor(bodyPartsRenderers, poiManager.bankPOIColor, player.hands);
                 break;
         }
 
@@ -368,11 +455,16 @@ public class PlayerConnection : NetworkBehaviour
         bodyPart.transform.localScale = newScale;
     }
 
-    private void ChangeBodyColor(List<MeshRenderer> bodyParts, Color32 bodyColor)
+    private void ChangeBodyColor(List<MeshRenderer> bodyParts, Color32 bodyColor, List<Transform> hands)
     {
         for (int i = 0; i < bodyParts.Count; i++)
         {
             bodyParts[i].material.color = bodyColor;
+        }
+       
+        for (int i = 0; i < hands.Count; i++)
+        {
+            hands[i].GetComponentInChildren<SkinnedMeshRenderer>().material.color = bodyColor;
         }
     }
 
