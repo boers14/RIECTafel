@@ -9808,6 +9808,7 @@ GameObject:
   - component: {fileID: 1799655089}
   - component: {fileID: 1799655088}
   - component: {fileID: 1799655087}
+  - component: {fileID: 1799655090}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: NetworkManager
@@ -9862,8 +9863,6 @@ MonoBehaviour:
   transport: {fileID: 1799655087}
   networkAddress: localhost
   maxConnections: 6
-  disconnectInactiveConnections: 0
-  disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 3582531981186701470, guid: ce67a5d0cfabb0645a536f9e5b351fcc, type: 3}
   autoCreatePlayer: 1
@@ -9887,6 +9886,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1799655090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799655086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c761308e733c51245b2e8bb4201f46dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  secretHandshake: 2684389011125281642
+  serverBroadcastListenPort: 47777
+  enableActiveDiscovery: 0
+  ActiveDiscoveryInterval: 3
+  transport: {fileID: 1799655087}
+  OnServerFound:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1804219285
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Mirror.Discovery;
 
 public class NetworkManagerRIECTafel : NetworkManager
 {
@@ -31,6 +32,7 @@ public class NetworkManagerRIECTafel : NetworkManager
             case ConnectionManager.ConnectFunction.ServerClient:
                 if (Application.platform != RuntimePlatform.WebGLPlayer)
                 {
+                    GetComponent<NetworkDiscovery>().enabled = false;
                     StartHost();
                 }
                 break;
@@ -42,8 +44,16 @@ public class NetworkManagerRIECTafel : NetworkManager
                 break;
             case ConnectionManager.ConnectFunction.Client:
                 StartClient();
+                GetComponent<NetworkDiscovery>().enableActiveDiscovery = true;
+                GetComponent<NetworkDiscovery>().OnServerFound.AddListener(DisableNetworkDiscoveryOnServerFound);
                 break;
         }
+    }
+
+    private void DisableNetworkDiscoveryOnServerFound(ServerResponse response)
+    {
+        print("hi");
+        GetComponent<NetworkDiscovery>().enabled = false;
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
