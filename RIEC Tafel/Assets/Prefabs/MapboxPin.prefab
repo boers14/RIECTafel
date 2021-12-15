@@ -1369,6 +1369,7 @@ MonoBehaviour:
   hands:
   - {fileID: 9031117897658986648}
   - {fileID: 1774860472619129317}
+  rotOffsetOfHands: {x: 0, y: 0, z: -90}
 --- !u!65 &7290673169331664104
 BoxCollider:
   m_ObjectHideFlags: 0
