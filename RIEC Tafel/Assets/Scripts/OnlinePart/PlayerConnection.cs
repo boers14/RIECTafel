@@ -416,26 +416,27 @@ public class PlayerConnection : NetworkBehaviour
         Vector3 newHitboxSize = Vector3.zero;
         Vector3 newHitboxCenter = Vector3.zero;
 
-        if (head.sharedMesh.name == "star1")
+        if (player.head.sharedMesh.name == "star1")
         {
-            newHitboxSize.x = head.transform.localScale.x / 35;
-            newHitboxSize.y = body.transform.localScale.y + (head.transform.localScale.y / 35);
-            newHitboxSize.z = head.transform.localScale.z / 35;
+            newHitboxSize.x = player.head.transform.localScale.x / 35;
+            newHitboxSize.y = player.body.transform.localScale.y + (player.head.transform.localScale.y / 35);
+            newHitboxSize.z = player.head.transform.localScale.z / 35;
 
-            newHitboxCenter.y = (body.transform.localScale.y + (head.transform.localScale.y / 35)) / 1.5f;
+            newHitboxCenter.y = (player.body.transform.localScale.y + (player.head.transform.localScale.y / 35)) / 1.5f;
         }
         else
         {
-            newHitboxSize.x = head.transform.localScale.x;
-            newHitboxSize.y = body.transform.localScale.y + head.transform.localScale.y;
-            newHitboxSize.z = head.transform.localScale.z;
+            newHitboxSize.x = player.head.transform.localScale.x;
+            newHitboxSize.y = player.body.transform.localScale.y + player.head.transform.localScale.y;
+            newHitboxSize.z = player.head.transform.localScale.z;
 
-            newHitboxCenter.y = (body.transform.localScale.y + head.transform.localScale.y) / 1.5f;
+            newHitboxCenter.y = (player.body.transform.localScale.y + player.head.transform.localScale.y) / 1.5f;
         }
 
-        hitbox.size = newHitboxSize;
-        hitbox.center = newHitboxCenter;
+        player.hitbox.size = newHitboxSize;
+        player.hitbox.center = newHitboxCenter;
 
+        player.nameText.transform.SetParent(player.transform);
         player.nameText.transform.LookAt(FindObjectOfType<POIManager>().transform);
         Vector3 lookRotation = player.nameText.transform.eulerAngles;
         lookRotation.x = 0;
