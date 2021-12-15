@@ -27,27 +27,27 @@ public class NetworkManagerRIECTafel : NetworkManager
     {
         base.Start();
         cityName = ConnectionManager.cityName;
-        switch (ConnectionManager.connectFunction)
-        {
-            case ConnectionManager.ConnectFunction.ServerClient:
-                if (Application.platform != RuntimePlatform.WebGLPlayer)
-                {
-                    GetComponent<NetworkDiscovery>().AdvertiseServer();
-                    StartHost();
-                }
-                break;
-            case ConnectionManager.ConnectFunction.Server:
-                if (Application.platform != RuntimePlatform.WebGLPlayer)
-                {
-                    StartServer();
-                }
-                break;
-            case ConnectionManager.ConnectFunction.Client:
-                StartClient();
-                GetComponent<NetworkDiscovery>().enableActiveDiscovery = true;
-                GetComponent<NetworkDiscovery>().OnServerFound.AddListener(DisableNetworkDiscoveryOnServerFound);
-                break;
-        }
+        //switch (ConnectionManager.connectFunction)
+        //{
+        //    case ConnectionManager.ConnectFunction.ServerClient:
+        //        if (Application.platform != RuntimePlatform.WebGLPlayer)
+        //        {
+        //            GetComponent<NetworkDiscovery>().AdvertiseServer();
+        //            StartHost();
+        //        }
+        //        break;
+        //    case ConnectionManager.ConnectFunction.Server:
+        //        if (Application.platform != RuntimePlatform.WebGLPlayer)
+        //        {
+        //            StartServer();
+        //        }
+        //        break;
+        //    case ConnectionManager.ConnectFunction.Client:
+        //        StartClient();
+        //        GetComponent<NetworkDiscovery>().enableActiveDiscovery = true;
+        //        GetComponent<NetworkDiscovery>().OnServerFound.AddListener(DisableNetworkDiscoveryOnServerFound);
+        //        break;
+        //}
     }
 
     private void DisableNetworkDiscoveryOnServerFound(ServerResponse response)
