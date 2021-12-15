@@ -32,7 +32,7 @@ public class NetworkManagerRIECTafel : NetworkManager
             case ConnectionManager.ConnectFunction.ServerClient:
                 if (Application.platform != RuntimePlatform.WebGLPlayer)
                 {
-                    GetComponent<NetworkDiscovery>().enabled = false;
+                    GetComponent<NetworkDiscovery>().AdvertiseServer();
                     StartHost();
                 }
                 break;
@@ -54,6 +54,7 @@ public class NetworkManagerRIECTafel : NetworkManager
     {
         print("hi");
         GetComponent<NetworkDiscovery>().enabled = false;
+        networkAddress = response.EndPoint.Address.ToString();
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
