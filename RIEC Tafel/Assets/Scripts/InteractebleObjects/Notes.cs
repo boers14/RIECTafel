@@ -12,28 +12,28 @@ public class Notes : GrabbebleObjects
     [SerializeField]
     private GameObject notesSet = null;
 
-    [SerializeField]
-    private EditebleText notesEditText = null;
+    public TMP_Text notesText = null;
 
-    [SerializeField]
-    private TMP_Text notesText = null;
-
-    private Vector3 notesCenterPos = Vector3.zero;
+    [System.NonSerialized]
+    public Vector3 notesCenterPos = Vector3.zero;
 
     private float changeFontSizeTimer = 0;
+
+    [System.NonSerialized]
+    public bool cantMoveText = false;
 
     public override void Start()
     {
         base.Start();
-        if (notesEditText)
+        if (notesText)
         {
-            notesText = notesEditText.GetComponent<TMP_Text>();
+            notesCenterPos = notesText.rectTransform.localPosition;
         }
-        notesCenterPos = notesText.rectTransform.localPosition;
     }
 
     public override void Update()
     {
+        if (!notesText) { return; }
         changeFontSizeTimer -= Time.deltaTime;
         base.Update();
     }
@@ -41,7 +41,7 @@ public class Notes : GrabbebleObjects
     public override void MoveImage(Vector2 steerStickInput, GameObject image, Vector3 originalPosition, float extraYMovement, bool nullifyMovement)
     {
         if (steerStickInput.x < 0.1f && steerStickInput.y < 0.1f && steerStickInput.x > -0.1f && steerStickInput.y > -0.1f || 
-            notesText.textInfo == null) { return; }
+            notesText.textInfo == null || cantMoveText) { return; }
 
         if (nullifyMovement)
         {
@@ -97,7 +97,6 @@ public class Notes : GrabbebleObjects
         base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
         keyBoard.EnableKeyBoard(true);
         notesSet.SetActive(true);
-        notesEditText.SetAsEditeble();
         notesSet.transform.SetAsLastSibling();
     }
 
@@ -106,6 +105,5 @@ public class Notes : GrabbebleObjects
         base.OnSelectExit(selectExitEventArgs);
         keyBoard.EnableKeyBoard(false);
         notesSet.SetActive(false);
-        notesEditText.isCurrentlyEdited = false;
     }
 }

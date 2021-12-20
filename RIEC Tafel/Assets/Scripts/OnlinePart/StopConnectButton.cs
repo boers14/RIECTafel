@@ -40,6 +40,7 @@ public class StopConnectButton : SwitchSceneButton
                 break;
         }
 
+        NotesSaver.instance.SetTextToBeSaved();
         base.SwitchScene();
     }
 }

@@ -49,7 +49,6 @@ public class EditebleText : MonoBehaviour
         }
 
         if (!isCurrentlyEdited || !showEditPlace) { return; }
-
         blinkTimer += Time.fixedDeltaTime;
         if (blinkTimer >= blinkSwitch)
         {

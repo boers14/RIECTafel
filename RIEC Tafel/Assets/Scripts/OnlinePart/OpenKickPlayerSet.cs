@@ -30,7 +30,7 @@ public class OpenKickPlayerSet : MonoBehaviour
 
     private void Start()
     {
-        InitializeControllers();
+        InitializeControllers.InitializeControllersBasedOnHandRays(inputDevices, handRays, rightCharacteristics, leftCharacteristics);
 
         handRays.AddRange(FindObjectsOfType<PlayerHandRays>());
 
@@ -46,7 +46,8 @@ public class OpenKickPlayerSet : MonoBehaviour
     {
         if (inputDevices.Count < 2)
         {
-            InitializeControllers();
+            inputDevices.Clear();
+            InitializeControllers.InitializeControllersBasedOnHandRays(inputDevices, handRays, rightCharacteristics, leftCharacteristics);
             return;
         }
 
@@ -111,36 +112,6 @@ public class OpenKickPlayerSet : MonoBehaviour
                 {
                     handRays[i].ChangeInvalidColorGradientOfLineRenderer(alpha);
                 }
-            }
-        }
-    }
-
-    private void InitializeControllers()
-    {
-        inputDevices.Clear();
-        for (int i = 0; i < handRays.Count; i++)
-        {
-            switch(handRays[i].hand)
-            {
-                case PlayerHandRays.Hand.Right:
-                    FetchController(rightCharacteristics);
-                    break;
-                case PlayerHandRays.Hand.Left:
-                    FetchController(leftCharacteristics);
-                    break;
-            }
-        }
-    }
-
-    private void FetchController(InputDeviceCharacteristics characteristics)
-    {
-        List<InputDevice> inputDevices = new List<InputDevice>();
-        InputDevices.GetDevicesWithCharacteristics(characteristics, inputDevices);
-        if (inputDevices.Count > 0)
-        {
-            if (inputDevices[0].isValid)
-            {
-                this.inputDevices.Add(inputDevices[0]);
             }
         }
     }

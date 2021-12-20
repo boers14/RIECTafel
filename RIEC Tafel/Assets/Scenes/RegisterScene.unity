@@ -2437,6 +2437,7 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 123
+  hand: 0
 --- !u!114 &191425547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7871,7 +7872,7 @@ MonoBehaviour:
   scalePower: 1
   minimumScale: 7
   maximumScale: 20
-  movementPower: 3
+  movementPower: 2
   rightCharacteristics: 576
   leftCharacteristics: 320
   connectedCanvasObject: {fileID: 1560772668}
@@ -11329,6 +11330,7 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 123
+  hand: 0
 --- !u!114 &1960750910
 MonoBehaviour:
   m_ObjectHideFlags: 0
