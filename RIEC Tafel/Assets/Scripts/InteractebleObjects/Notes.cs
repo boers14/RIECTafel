@@ -95,7 +95,7 @@ public class Notes : GrabbebleObjects
     public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
         base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
-        keyBoard.EnableKeyBoard(true);
+        //keyBoard.EnableKeyBoard(true);
         notesSet.SetActive(true);
         notesSet.transform.SetAsLastSibling();
     }

@@ -4,12 +4,11 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.XR;
 using UnityEngine.Events;
+using TextSpeech;
 
 public class NotesText : MonoBehaviour
 {
     private Notes notes = null;
-
-    private EditebleText editebleText = null;
 
     [System.NonSerialized]
     public TMP_Text text = null;
@@ -31,7 +30,7 @@ public class NotesText : MonoBehaviour
     private bool isBeingHovered = false, firstTimeEdit = true;
 
     [SerializeField]
-    private bool cantMoveText = false, printText = false;
+    private bool cantMoveText = false;
 
     [System.NonSerialized]
     public bool isCurrentlyEdited = false;
@@ -42,7 +41,6 @@ public class NotesText : MonoBehaviour
     {
         stickyNote = GetComponentInParent<StickyNote>();
         text = GetComponent<TMP_Text>();
-        editebleText = GetComponent<EditebleText>();
         notes = FindObjectOfType<Notes>();
         keyBoard = FindObjectOfType<KeyBoard>();
         interactor = GetComponentInParent<PlayerHandsRayInteractor>();
@@ -69,10 +67,7 @@ public class NotesText : MonoBehaviour
 
         if (isCurrentlyEdited)
         {
-            if (!keyBoard.keyBoardIsHovered)
-            {
-                BaseUpdate(() => OnDisable(), false);
-            }
+            BaseUpdate(() => OnDisable(), false);
 
             if (notes.notesText != text)
             {
@@ -141,7 +136,7 @@ public class NotesText : MonoBehaviour
             notes.notesText = text;
             notes.cantMoveText = cantMoveText;
             notes.notesCenterPos = originalPos;
-            editebleText.SetAsEditeble();
+            SpeechToText.instance.StartRecording();
             stickyNote.SetAsLastChild();
         }
     }
@@ -154,7 +149,7 @@ public class NotesText : MonoBehaviour
         }
 
         isCurrentlyEdited = false;
-        editebleText.isCurrentlyEdited = false;
+        SpeechToText.instance.StopRecording();
 
         if (text.text.EndsWith("|"))
         {

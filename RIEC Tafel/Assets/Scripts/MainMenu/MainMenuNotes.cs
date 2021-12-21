@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.Android;
 
 public class MainMenuNotes : Notes
 {
@@ -9,6 +10,16 @@ public class MainMenuNotes : Notes
 
     [SerializeField]
     private TMP_Dropdown notesSelectionDropdown = null;
+
+    public override void Start()
+    {
+        base.Start();
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
+        }
+    }
 
     public override void Update()
     {
