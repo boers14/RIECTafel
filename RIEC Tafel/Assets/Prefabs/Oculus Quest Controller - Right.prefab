@@ -710,6 +710,10 @@ MonoBehaviour:
   otherController: {fileID: 0}
   keyBoard: {fileID: 0}
   canvas: {fileID: 0}
+  createNewStickyNoteButton: {fileID: 0}
+  removeStickyNoteButton: {fileID: 0}
+  yesButtonRemoveStickyNoteSet: {fileID: 0}
+  notesMat: {fileID: 2100000, guid: 26875fedbf97a16468fbfd4ec800a1ee, type: 2}
   requiredKeysFromKeyBoard:
   - Shift
   - v
@@ -722,6 +726,18 @@ MonoBehaviour:
   - e
   - Shift
   - 1
+  requiredKeysFromKeyBoardNotesTitle:
+  - h
+  - e
+  - y
+  requiredKeysFromKeyBoardNotesBody:
+  - b
+  - l
+  - a
+  - h
+  - .
+  - .
+  - .
   primaryButtonArrow: {fileID: 2069081015899758054}
   secondaryButtonArrow: {fileID: 6048649259353880397}
   steerStickArrow: {fileID: 6048649259164069402}

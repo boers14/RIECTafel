@@ -17,12 +17,20 @@ public class OculusAnimations : MonoBehaviour
     private OculusAnimations otherController = null;
 
     [SerializeField]
-    private Transform keyBoard = null, canvas = null;
+    private Transform keyBoard = null, canvas = null, createNewStickyNoteButton = null, removeStickyNoteButton = null,
+        yesButtonRemoveStickyNoteSet = null, stopEditStickyNotePos = null;
+
+    private Transform stickyNote = null;
 
     [SerializeField]
-    private List<string> requiredKeysFromKeyBoard = new List<string>();
+    private Material notesMat = null;
 
-    private List<Transform> keyBoardKeysToBeSelectedInExample = new List<Transform>();
+    [SerializeField]
+    private List<string> requiredKeysFromKeyBoard = new List<string>(), requiredKeysFromKeyBoardNotesTitle = new List<string>(),
+        requiredKeysFromKeyBoardNotesBody = new List<string>();
+
+    private List<Transform> keyBoardKeysToBeSelectedInExample = new List<Transform>(), keyBoardKeysToBeSelectedInExampleNotesTitle =
+        new List<Transform>(), keyBoardKeysToBeSelectedInExampleNotesBody = new List<Transform>();
 
     private LineRenderer exampleRay = null;
 
@@ -43,6 +51,8 @@ public class OculusAnimations : MonoBehaviour
 
     private float amountOfMovement = 0.4f;
 
+    private Renderer exampleGrabObjectRenderer = null;
+
     private void Start()
     {
         basePos = transform.position;
@@ -51,6 +61,7 @@ public class OculusAnimations : MonoBehaviour
 
         exampleLegendaBasePos = exampleLegenda.transform.position;
         exampleLegendaBaseRot = exampleLegenda.transform.eulerAngles;
+        exampleGrabObjectRenderer = exampleLegenda.GetComponent<Renderer>();
 
         exampleRay = GetComponent<LineRenderer>();
         exampleRay.enabled = false;
@@ -67,6 +78,9 @@ public class OculusAnimations : MonoBehaviour
         if (isControlledByOtherController)
         {
             gameObject.SetActive(false);
+        } else
+        {
+            ShowExampleRemoveNotesFirstStep();
         }
     }
 
@@ -107,13 +121,25 @@ public class OculusAnimations : MonoBehaviour
     private IEnumerator SetNeccesaryKeyBoardKeys()
     {
         yield return new WaitForSeconds(0.02f);
-        KeyBoardKey[] keyBoardKeysArray = FindObjectsOfType<KeyBoardKey>();
         List<KeyBoardKey> keyBoardKeys = new List<KeyBoardKey>();
-        keyBoardKeys.AddRange(keyBoardKeysArray);
+        keyBoardKeys.AddRange(FindObjectsOfType<KeyBoardKey>());
+
         for (int i = 0; i < requiredKeysFromKeyBoard.Count; i++)
         {
             keyBoardKeysToBeSelectedInExample.Add(keyBoardKeys.Find
                 (key => key.GetComponentInChildren<TMP_Text>().text == requiredKeysFromKeyBoard[i]).transform);
+        }
+
+        for (int i = 0; i < requiredKeysFromKeyBoardNotesTitle.Count; i++)
+        {
+            keyBoardKeysToBeSelectedInExampleNotesTitle.Add(keyBoardKeys.Find
+                (key => key.GetComponentInChildren<TMP_Text>().text == requiredKeysFromKeyBoardNotesTitle[i]).transform);
+        }
+
+        for (int i = 0; i < requiredKeysFromKeyBoardNotesBody.Count; i++)
+        {
+            keyBoardKeysToBeSelectedInExampleNotesBody.Add(keyBoardKeys.Find
+                (key => key.GetComponentInChildren<TMP_Text>().text == requiredKeysFromKeyBoardNotesBody[i]).transform);
         }
     }
 
@@ -420,6 +446,336 @@ public class OculusAnimations : MonoBehaviour
         }
     }
 
+    public void ShowExampleCreateAndMoveNotesFirstStep()
+    {
+        if (exampleGrabObjectRenderer.material != notesMat)
+        {
+            exampleGrabObjectRenderer.material.mainTexture = notesMat.mainTexture;
+        }
+
+        amountOfMovement = 0.4f;
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        TurnOffRayAndButtonEffect(true);
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleCreateAndMoveNotesSecondStep";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void ShowExampleCreateAndMoveNotesSecondStep()
+    {
+        exampleLegenda.transform.SetParent(transform);
+        rayEndPosGameObject = createNewStickyNoteButton.gameObject;
+        animationAfterButtonPressAnimation = "ShowExampleCreateAndMoveNotesThirdStep";
+        showPrimaryOnly = true;
+        showGripOnly = false;
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+             "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleCreateAndMoveNotesThirdStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+        SetStickyNote();
+
+        startAnimationAfterEndDelay = "ShowExampleCreateAndMoveNotesFirstStep";
+
+        if (stickyNote)
+        {
+            rayEndPosGameObject = stickyNote.gameObject;
+            animationAfterButtonPressAnimation = "ShowExampleCreateAndMoveNotesFourthStep";
+            RotateToLookAtObject();
+        } else
+        {
+            PrepareFinalStepCreateAndMoveNotes();
+        }
+    }
+
+    private void ShowExampleCreateAndMoveNotesFourthStep()
+    {
+        Vector3 newPos = transform.position - transform.right * amountOfMovement;
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleCreateAndMoveNotesFifthStep", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleCreateAndMoveNotesFifthStep()
+    {
+        Vector3 newPos = transform.position + transform.right * 2 * amountOfMovement;
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 4f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "ShowExampleCreateAndMoveNotesSixthStep", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void ShowExampleCreateAndMoveNotesSixthStep()
+    {
+        startAnimationAfterEndDelay = "ShowExampleCreateAndMoveNotesFirstStep";
+
+        Vector3 newPos = transform.position - transform.right * amountOfMovement;
+        iTween.MoveTo(gameObject, iTween.Hash("position", newPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "onupdate", "UpdateRayPos", "oncomplete", "PrepareFinalStepCreateAndMoveNotes", "oncompletetarget", gameObject, "delay", 0.5f));
+    }
+
+    private void PrepareFinalStepCreateAndMoveNotes()
+    {
+        exampleLegenda.transform.SetParent(null);
+        animationAfterButtonPressAnimation = "ShowExampleCreateAndMoveNotesSeventhStep";
+        TurnOffRayAndButtonEffect(false);
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        ShowPrimaryButtonPressAnimation();
+    }
+
+    private void ShowExampleCreateAndMoveNotesSeventhStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        iTween.MoveTo(exampleLegenda, iTween.Hash("position", exampleLegendaBasePos, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+        iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
+    }
+
+    public void ShowExampleStartAndStopEditNotesFirstStep()
+    {
+        if (keyBoardKeysToBeSelectedInExampleNotesBody.Count == 0)
+        {
+            StartCoroutine(SetNeccesaryKeyBoardKeys());
+        }
+
+        keyBoardKeysCounter = 0;
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        TurnOffRayAndButtonEffect(true);
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleStartAndStopEditNotesSecondStep";
+        startAnimationAfterEndDelay = "ShowExampleStartAndStopEditNotesFirstStep";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void ShowExampleStartAndStopEditNotesSecondStep()
+    {
+        exampleLegenda.transform.SetParent(transform);
+        SetStickyNote();
+
+        if (stickyNote)
+        {
+            rayEndPosGameObject = stickyNote.transform.GetChild(0).gameObject;
+            animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesThirdStep";
+            showPrimaryOnly = true;
+            showGripOnly = false;
+        }
+
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+             "oncomplete", "ShowExampleStartAndStopEditNotesSecondStepPartTwo", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleStartAndStopEditNotesSecondStepPartTwo()
+    {
+        iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.35f + keyBoard.forward * 0.2f, "time", 2f,
+            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleStartAndStopEditNotesThirdStep", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleStartAndStopEditNotesThirdStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        if (stickyNote)
+        {
+            keyBoardKeysCounter++;
+            if (keyBoardKeysCounter == 1)
+            {
+                animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesThirdStep";
+            }
+            else
+            {
+                keyBoardKeysCounter = 0;
+                animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesFourthStep";
+            }
+
+            TurnOnExampleRay();
+        }
+        else
+        {
+            PrepareFinalStepStartAndStopEditNotes();
+        }
+    }
+
+    private void ShowExampleStartAndStopEditNotesFourthStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        iTween.LookTo(gameObject, iTween.Hash("looktarget", keyBoardKeysToBeSelectedInExampleNotesTitle[keyBoardKeysCounter], "time", 1f,
+            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        rayEndPosGameObject = keyBoardKeysToBeSelectedInExampleNotesTitle[keyBoardKeysCounter].gameObject;
+        keyBoardKeysCounter++;
+        if (keyBoardKeysCounter < keyBoardKeysToBeSelectedInExampleNotesTitle.Count)
+        {
+            animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesFourthStep";
+        }
+        else
+        {
+            if (stickyNote)
+            {
+                keyBoardKeysCounter = 0;
+                animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesFifthStep";
+            } else
+            {
+                PrepareFinalStepStartAndStopEditNotes();
+            }
+        }
+    }
+
+    private void ShowExampleStartAndStopEditNotesFifthStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        if (stickyNote)
+        {
+            keyBoardKeysCounter++;
+            if (keyBoardKeysCounter == 1)
+            {
+                rayEndPosGameObject = stickyNote.gameObject;
+                animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesFifthStep";
+                BaseStartAnimation();
+            }
+            else
+            {
+                keyBoardKeysCounter = 0;
+                animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesFifthStepPartTwo";
+                TurnOnExampleRay();
+            }
+        }
+        else
+        {
+            PrepareFinalStepStartAndStopEditNotes();
+        }
+    }
+
+    private void ShowExampleStartAndStopEditNotesFifthStepPartTwo()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+        iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.35f + keyBoard.forward * 0.2f, "time", 2f,
+            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleStartAndStopEditNotesSixthStep", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleStartAndStopEditNotesSixthStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        iTween.LookTo(gameObject, iTween.Hash("looktarget", keyBoardKeysToBeSelectedInExampleNotesBody[keyBoardKeysCounter], "time", 1f,
+            "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+        rayEndPosGameObject = keyBoardKeysToBeSelectedInExampleNotesBody[keyBoardKeysCounter].gameObject;
+        keyBoardKeysCounter++;
+        if (keyBoardKeysCounter < keyBoardKeysToBeSelectedInExampleNotesBody.Count)
+        {
+            animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesSixthStep";
+        }
+        else
+        {
+            animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesSeventhStep";
+        }
+    }
+
+    private void ShowExampleStartAndStopEditNotesSeventhStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        rayEndPosGameObject = stopEditStickyNotePos.gameObject;
+        animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesEightStep";
+        BaseStartAnimation();
+    }
+
+    private void ShowExampleStartAndStopEditNotesEightStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        animationAfterButtonPressAnimation = "PrepareFinalStepStartAndStopEditNotes";
+        TurnOnExampleRay();
+    }
+
+    private void PrepareFinalStepStartAndStopEditNotes()
+    {
+        exampleLegenda.transform.SetParent(null);
+        animationAfterButtonPressAnimation = "ShowExampleStartAndStopEditNotesNinthStep";
+        TurnOffRayAndButtonEffect(false);
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        ShowPrimaryButtonPressAnimation();
+    }
+
+    private void ShowExampleStartAndStopEditNotesNinthStep()
+    {
+        startAnimationAfterEndDelay = "ShowExampleStartAndStopEditNotesFirstStep";
+        TurnOffRayAndButtonEffect(false);
+        iTween.MoveTo(exampleLegenda, iTween.Hash("position", exampleLegendaBasePos, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+        iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
+    }
+
+    public void ShowExampleRemoveNotesFirstStep()
+    {
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        TurnOffRayAndButtonEffect(true);
+        animationAfterButtonPressAnimation = "ShowExampleGrabObjectThirdStep";
+        animationAfterObjectGrab = "ShowExampleRemoveNotesSecondStep";
+        startAnimationAfterEndDelay = "ShowExampleRemoveNotesFirstStep";
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = exampleLegenda;
+        iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "ShowExampleGrabObjectSecondStep", "oncompletetarget", gameObject, "delay", 1f));
+    }
+
+    private void ShowExampleRemoveNotesSecondStep()
+    {
+        exampleLegenda.transform.SetParent(transform);
+        rayEndPosGameObject = removeStickyNoteButton.gameObject;
+        animationAfterButtonPressAnimation = "ShowExampleRemoveNotesThirdStep";
+        showPrimaryOnly = true;
+        showGripOnly = false;
+        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+             "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
+    }
+
+    private void ShowExampleRemoveNotesThirdStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = yesButtonRemoveStickyNoteSet.gameObject;
+        animationAfterButtonPressAnimation = "PrepareFinalStepRemoveNotes";
+        RotateToLookAtObject();
+    }
+
+    private void PrepareFinalStepRemoveNotes()
+    {
+        exampleLegenda.transform.SetParent(null);
+        animationAfterButtonPressAnimation = "ShowExampleRemoveNotesFourthStep";
+        TurnOffRayAndButtonEffect(false);
+        showPrimaryOnly = false;
+        showGripOnly = true;
+        ShowPrimaryButtonPressAnimation();
+    }
+
+    private void ShowExampleRemoveNotesFourthStep()
+    {
+        startAnimationAfterEndDelay = "ShowExampleRemoveNotesFirstStep";
+        TurnOffRayAndButtonEffect(false);
+        iTween.MoveTo(exampleLegenda, iTween.Hash("position", exampleLegendaBasePos, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
+            "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
+        iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
+    }
+
     public void ShowExampleMoveMapFirstStepWithControllers()
     {
         startAnimationAfterEndDelay = "ShowExampleMoveMapFirstStepWithControllers";
@@ -703,10 +1059,17 @@ public class OculusAnimations : MonoBehaviour
 
     private void RotateToLookAtObject()
     {
-        if (rayEndPosGameObject.activeSelf)
+        if (rayEndPosGameObject)
         {
-            iTween.LookTo(gameObject, iTween.Hash("looktarget", rayEndPosGameObject.transform.position, "time", 0.5f, "easetype", iTween.EaseType.easeInOutSine,
-                "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+            if (rayEndPosGameObject.activeSelf)
+            {
+                iTween.LookTo(gameObject, iTween.Hash("looktarget", rayEndPosGameObject.transform.position, "time", 0.5f, "easetype", iTween.EaseType.easeInOutSine,
+                    "oncomplete", "TurnOnExampleRay", "oncompletetarget", gameObject));
+            }
+            else
+            {
+                EndDelayAnimation();
+            }
         } else
         {
             EndDelayAnimation();
@@ -725,9 +1088,18 @@ public class OculusAnimations : MonoBehaviour
 
     private void UpdateRayPos()
     {
+        if (!rayEndPosGameObject)
+        {
+            iTween.Stop(gameObject);
+            iTween.Stop(exampleLegenda);
+            EndDelayAnimation();
+            return;
+        }
+
         Vector3 newStartExamplePos = transform.position - transform.up * 0.08f - transform.forward * 0.05f;
         Vector3 diffInPos = baseRayPos - newStartExamplePos;
         exampleRay.SetPositions(new Vector3[] { newStartExamplePos, rayEndPosGameObject.transform.position - diffInPos });
+
     }
 
     private void TurnOnExampleRay()
@@ -794,6 +1166,18 @@ public class OculusAnimations : MonoBehaviour
         if (!isControlledByOtherController)
         {
             otherController.TurnOffAllTweenObjects();
+        }
+    }
+
+    private void SetStickyNote()
+    {
+        if (!stickyNote)
+        {
+            StickyNote stickyNote = FindObjectOfType<StickyNote>();
+            if (stickyNote)
+            {
+                this.stickyNote = stickyNote.transform;
+            }
         }
     }
 }

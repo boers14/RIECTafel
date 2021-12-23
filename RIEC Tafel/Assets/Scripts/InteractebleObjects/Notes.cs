@@ -86,7 +86,7 @@ public class Notes : GrabbebleObjects
         }
 
         if (changeFontSizeTimer > 0 || notesText.fontSize == maximumScale && scalePower > 0 ||
-            notesText.fontSize == minimumScale && scalePower < 0) { return; }
+            notesText.fontSize == minimumScale && scalePower < 0 || cantMoveText) { return; }
         changeFontSizeTimer = 0.3f;
         notesText.fontSize += (int)scalePower;
         MoveImage(Vector3.one, notesText.gameObject, notesCenterPos, 0, true);
@@ -95,7 +95,7 @@ public class Notes : GrabbebleObjects
     public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
         base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
-        //keyBoard.EnableKeyBoard(true);
+        keyBoard.EnableKeyBoard(true);
         notesSet.SetActive(true);
         notesSet.transform.SetAsLastSibling();
     }

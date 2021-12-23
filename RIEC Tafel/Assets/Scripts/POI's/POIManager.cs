@@ -106,9 +106,9 @@ public class POIManager : MonoBehaviour
         this.conclusions = conclusions;
         this.indications = indications;
 
-        allLocationDataIsInitialized = true;
-        FindObjectOfType<PlayerConnection>().FetchOwnPlayer().EnableChooseSeatButtons();
-        //StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
+        //allLocationDataIsInitialized = true;
+        //FindObjectOfType<PlayerConnection>().FetchOwnPlayer().EnableChooseSeatButtons();
+        StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
     }
 
     private IEnumerator GetLocationData(List<string> locationData, int currentLocation, bool addLocationData,

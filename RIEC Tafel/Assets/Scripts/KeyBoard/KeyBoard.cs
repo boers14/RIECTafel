@@ -33,6 +33,9 @@ public class KeyBoard : MonoBehaviour
 
     private Vector3 pushKeyboardPos = new Vector3(0, 0.8f, 0.1f), originalPosition = Vector3.zero, originalScale = Vector3.zero;
 
+    [System.NonSerialized]
+    public List<XRNode> targetedControllerNodes = new List<XRNode>();
+
     private void Start()
     {
         originalPosition = transform.localPosition;
@@ -100,11 +103,13 @@ public class KeyBoard : MonoBehaviour
 
     private void CheckIfKeyboardIsHovered(List<KeyBoardKey> keyBoardKeys)
     {
+        targetedControllerNodes.Clear();
         bool isHovered = false;
         for (int i = 0; i < keyBoardKeys.Count; i++)
         {
             if (keyBoardKeys[i].isHovered)
             {
+                targetedControllerNodes.AddRange(keyBoardKeys[i].targetedNodes);
                 isHovered = true;
             }
         }

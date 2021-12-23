@@ -25,6 +25,7 @@ public class RetrieveNotes : MonoBehaviour
     {
         notesOptionDropdown.ClearOptions();
         button = GetComponent<Button>();
+        button.interactable = false;
         StartCoroutine(RetrieveAllNotes());
     }
 
@@ -53,6 +54,7 @@ public class RetrieveNotes : MonoBehaviour
             notesOptionDropdown.AddOptions(allOptions);
             notesOptionDropdown.onValueChanged.AddListener(ShowNotesSet);
             button.onClick.AddListener(OpenSavedNotesSet);
+            button.interactable = true;
             if (this.allNotes.Count > 0)
             {
                 ShowNotesSet(0);

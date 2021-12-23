@@ -89,14 +89,14 @@ public class KeyBoardKey : MonoBehaviour
     {
         if (!currentText)
         {
-            FetchCurrentlyEditedText();
+            currentText = FetchCurrentlyEditedText();
         }
 
         if (currentText)
         {
             if (!currentText.isCurrentlyEdited)
             {
-                FetchCurrentlyEditedText();
+                currentText = FetchCurrentlyEditedText();
             }
 
             if (currentText)
@@ -120,7 +120,7 @@ public class KeyBoardKey : MonoBehaviour
         currentText.EditText(textForKey, removeText, keyBoard);
     }
 
-    private void FetchCurrentlyEditedText()
+    private EditebleText FetchCurrentlyEditedText()
     {
         EditebleText[] editebleTexts = FindObjectsOfType<EditebleText>();
 
@@ -128,8 +128,10 @@ public class KeyBoardKey : MonoBehaviour
         {
             if (editebleTexts[i].isCurrentlyEdited)
             {
-                currentText = editebleTexts[i];
+                return editebleTexts[i];
             }
         }
+
+        return null;
     }
 }

@@ -25,6 +25,8 @@ public class CreateStickyNotesButton : MonoBehaviour
         newStickyNote.transform.SetParent(bgImage);
         newStickyNote.transform.localPosition = Vector3.zero;
         newStickyNote.transform.localScale = stickyNoteScale;
+        newStickyNote.transform.localEulerAngles = Vector3.zero;
+
         NotesSaver.instance.allStickyNotes.Add(newStickyNote);
     }
 }

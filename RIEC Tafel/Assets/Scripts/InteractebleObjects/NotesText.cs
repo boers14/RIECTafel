@@ -4,7 +4,6 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.XR;
 using UnityEngine.Events;
-using TextSpeech;
 
 public class NotesText : MonoBehaviour
 {
@@ -12,6 +11,8 @@ public class NotesText : MonoBehaviour
 
     [System.NonSerialized]
     public TMP_Text text = null;
+
+    private EditebleText editebleText = null;
 
     private StickyNote stickyNote = null;
 
@@ -22,6 +23,8 @@ public class NotesText : MonoBehaviour
     private List<int> buttonPressCount = new List<int>();
 
     private List<float> buttonPressIntervals = new List<float>();
+
+    private List<bool> skippedControllers = new List<bool>();
 
     private PlayerHandsRayInteractor interactor = null;
 
@@ -41,6 +44,7 @@ public class NotesText : MonoBehaviour
     {
         stickyNote = GetComponentInParent<StickyNote>();
         text = GetComponent<TMP_Text>();
+        editebleText = GetComponent<EditebleText>();
         notes = FindObjectOfType<Notes>();
         keyBoard = FindObjectOfType<KeyBoard>();
         interactor = GetComponentInParent<PlayerHandsRayInteractor>();
@@ -53,6 +57,7 @@ public class NotesText : MonoBehaviour
         {
             buttonPressCount.Add(0);
             buttonPressIntervals.Add(0);
+            skippedControllers.Add(false);
         }
     }
 
@@ -67,6 +72,21 @@ public class NotesText : MonoBehaviour
 
         if (isCurrentlyEdited)
         {
+            for (int i = 0; i < skippedControllers.Count; i++)
+            {
+                skippedControllers[i] = false;
+            }
+
+            if (keyBoard.targetedControllerNodes.Contains(XRNode.LeftHand))
+            {
+                skippedControllers[handRays.IndexOf(handRays.Find(ray => ray.hand == PlayerHandRays.Hand.Left))] = true;
+            }
+
+            if (keyBoard.targetedControllerNodes.Contains(XRNode.RightHand))
+            {
+                skippedControllers[handRays.IndexOf(handRays.Find(ray => ray.hand == PlayerHandRays.Hand.Right))] = true;
+            }
+
             BaseUpdate(() => OnDisable(), false);
 
             if (notes.notesText != text)
@@ -90,6 +110,8 @@ public class NotesText : MonoBehaviour
     {
         for (int i = 0; i < inputDevices.Count; i++)
         {
+            if (skippedControllers[i]) { continue; }
+
             if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton &&
                 handRays[i].hoveredObjects.Contains(interactor) == containsInteractor)
             {
@@ -130,13 +152,14 @@ public class NotesText : MonoBehaviour
             for (int i = 0; i < buttonPressCount.Count; i++)
             {
                 buttonPressCount[i] = 0;
+                skippedControllers[i] = false;
             }
 
             isCurrentlyEdited = true;
             notes.notesText = text;
             notes.cantMoveText = cantMoveText;
             notes.notesCenterPos = originalPos;
-            SpeechToText.instance.StartRecording();
+            editebleText.SetAsEditeble();
             stickyNote.SetAsLastChild();
         }
     }
@@ -149,7 +172,7 @@ public class NotesText : MonoBehaviour
         }
 
         isCurrentlyEdited = false;
-        SpeechToText.instance.StopRecording();
+        editebleText.isCurrentlyEdited = false;
 
         if (text.text.EndsWith("|"))
         {

@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RemoveStickyNoteButton : MonoBehaviour
+public class RemoveStickyNoteButton : MeetingButton
 {
-    private void Start()
+    [SerializeField]
+    private Button yesButton = null;
+
+    public override void Start()
     {
-        GetComponent<Button>().onClick.AddListener(RemoveStickyNote);
+        base.Start();
+        yesButton.onClick.AddListener(RemoveStickyNote);
     }
 
     private void RemoveStickyNote()
