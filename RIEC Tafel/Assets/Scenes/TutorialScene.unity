@@ -6732,7 +6732,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &265507475
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11627,7 +11627,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &934424319
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11911,7 +11911,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &957971686
 Transform:
   m_ObjectHideFlags: 0
@@ -11957,9 +11957,6 @@ MonoBehaviour:
   - Opgepakte objecten in/uitzoomen
   - Conclusies/ indicaties
   - Notities
-  - Notities aanmaken/ verplaatsen
-  - (stoppen met) Notities bewerken
-  - Notities verwijderen
   buttonCommands:
   - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
   - Druk de "Ga naar de volgende stap" knop in
@@ -11976,9 +11973,6 @@ MonoBehaviour:
   - Pas de grootte aan van de legenda
   - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
   - Hou de A of X knop ingedrukt voor een seconde om verder te gaan
-  - Maak een notitie aan en verplaats hem
-  - Pas de teksten van de notitie aan en stop met hem te bewerken
-  - Verwijder de notitie om de tutorial af te ronden
   explanationTexts:
   - "De RIEC tafel is een programma om te helpen met het te bediscussi\xEBren van
     het witwassen van geld tussen de verschillende overheidsinstanties."
@@ -12003,9 +11997,6 @@ MonoBehaviour:
     op de hoeveelheid en soort thema's die ze aangeven wanneer ze worden opgeklapt.
   - Bij de notities kan het keyboard worden gebruikt om kleine notities te schrijven,
     deze kunnen later ook terug worden gevonden op het hoofdmenu.
-  - 
-  - 
-  - 
   tutorialChallenges:
   - m_PersistentCalls:
       m_Calls:
@@ -12217,48 +12208,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 957971687}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
-        m_MethodName: FourteenthStepOfTutorial
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 957971687}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
-        m_MethodName: FourteenthStepOfTutorial
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 957971687}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
-        m_MethodName: FourteenthStepOfTutorial
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
   initialStartUpForTutorial:
   - m_PersistentCalls:
       m_Calls: []
@@ -12435,48 +12384,6 @@ MonoBehaviour:
       - m_Target: {fileID: 957971687}
         m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
         m_MethodName: StartThirthteenthStepOfTutorial
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 957971687}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
-        m_MethodName: StartFourteenthStepOfTutorial
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 957971687}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
-        m_MethodName: StartFourteenthStepOfTutorial
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 957971687}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
-        m_MethodName: StartFourteenthStepOfTutorial
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -34604,7 +34511,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1408252214
 RectTransform:
   m_ObjectHideFlags: 0
@@ -37411,7 +37318,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1794798470
 Transform:
   m_ObjectHideFlags: 0
@@ -37678,7 +37585,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1858218816
 RectTransform:
   m_ObjectHideFlags: 0

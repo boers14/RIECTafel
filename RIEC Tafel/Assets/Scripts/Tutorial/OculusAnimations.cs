@@ -78,9 +78,6 @@ public class OculusAnimations : MonoBehaviour
         if (isControlledByOtherController)
         {
             gameObject.SetActive(false);
-        } else
-        {
-            ShowExampleRemoveNotesFirstStep();
         }
     }
 
@@ -740,15 +737,47 @@ public class OculusAnimations : MonoBehaviour
     private void ShowExampleRemoveNotesSecondStep()
     {
         exampleLegenda.transform.SetParent(transform);
-        rayEndPosGameObject = removeStickyNoteButton.gameObject;
-        animationAfterButtonPressAnimation = "ShowExampleRemoveNotesThirdStep";
-        showPrimaryOnly = true;
-        showGripOnly = false;
-        iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
-             "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
+        SetStickyNote();
+
+        if (stickyNote)
+        {
+            rayEndPosGameObject = stickyNote.gameObject;
+            animationAfterButtonPressAnimation = "ShowExampleRemoveNotesThirdStep";
+            showPrimaryOnly = true;
+            showGripOnly = false;
+            iTween.RotateTo(gameObject, iTween.Hash("rotation", baseRot, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
+                 "oncomplete", "BaseStartAnimation", "oncompletetarget", gameObject));
+        } else
+        {
+            PrepareFinalStepRemoveNotes();
+        }
     }
 
     private void ShowExampleRemoveNotesThirdStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+
+        if (stickyNote)
+        {
+            animationAfterButtonPressAnimation = "ShowExampleRemoveNotesFourthStep";
+            TurnOnExampleRay();
+        } else
+        {
+            PrepareFinalStepRemoveNotes();
+        }
+    }
+
+    private void ShowExampleRemoveNotesFourthStep()
+    {
+        TurnOffRayAndButtonEffect(false);
+        exampleLegenda.SetActive(true);
+        rayEndPosGameObject = removeStickyNoteButton.gameObject;
+        animationAfterButtonPressAnimation = "ShowExampleRemoveNotesFifthStep";
+        RotateToLookAtObject();
+    }
+
+    private void ShowExampleRemoveNotesFifthStep()
     {
         TurnOffRayAndButtonEffect(false);
         exampleLegenda.SetActive(true);
@@ -760,14 +789,14 @@ public class OculusAnimations : MonoBehaviour
     private void PrepareFinalStepRemoveNotes()
     {
         exampleLegenda.transform.SetParent(null);
-        animationAfterButtonPressAnimation = "ShowExampleRemoveNotesFourthStep";
+        animationAfterButtonPressAnimation = "ShowExampleRemoveNotesSixthStep";
         TurnOffRayAndButtonEffect(false);
         showPrimaryOnly = false;
         showGripOnly = true;
         ShowPrimaryButtonPressAnimation();
     }
 
-    private void ShowExampleRemoveNotesFourthStep()
+    private void ShowExampleRemoveNotesSixthStep()
     {
         startAnimationAfterEndDelay = "ShowExampleRemoveNotesFirstStep";
         TurnOffRayAndButtonEffect(false);
