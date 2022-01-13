@@ -13,13 +13,23 @@ public class CreateStickyNotesButton : MonoBehaviour
 
     private Vector3 stickyNoteScale = Vector3.zero;
 
-    private void Start()
+    public virtual void Start()
     {
         stickyNoteScale = stickyNote.transform.localScale;
-        GetComponent<Button>().onClick.AddListener(CreateNewStickyNote);
+        GetComponent<Button>().onClick.AddListener(StartCreateNewStickyNote);
     }
 
-    private void CreateNewStickyNote()
+    public virtual void StartCreateNewStickyNote()
+    {
+        StickyNote newStickyNote = CreateNewStickyNote();
+
+        if (NotesSaver.instance)
+        {
+            NotesSaver.instance.allStickyNotes.Add(newStickyNote);
+        }
+    }
+
+    public StickyNote CreateNewStickyNote()
     {
         StickyNote newStickyNote = Instantiate(stickyNote);
         newStickyNote.transform.SetParent(bgImage);
@@ -27,6 +37,6 @@ public class CreateStickyNotesButton : MonoBehaviour
         newStickyNote.transform.localScale = stickyNoteScale;
         newStickyNote.transform.localEulerAngles = Vector3.zero;
 
-        NotesSaver.instance.allStickyNotes.Add(newStickyNote);
+        return newStickyNote;
     }
 }

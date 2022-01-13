@@ -15,10 +15,13 @@ public class POIEnableDropdown : DropdownSelection
 
     private MiniMap miniMap = null;
 
+    private POISelectionDropdown poiSelectionDropdown = null;
+
     public override void Start()
     {
         base.Start();
         miniMap = FindObjectOfType<MiniMap>();
+        poiSelectionDropdown = FindObjectOfType<POISelectionDropdown>();
         dropdown.ClearOptions();
     }
 
@@ -92,6 +95,7 @@ public class POIEnableDropdown : DropdownSelection
         dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te zien";
 
         miniMap.SetActiveStateOfPOIs(poiActiveStates);
+        poiSelectionDropdown.EnableOptionsCoordinatesList(poiActiveStates);
         poiManager.poiVisibility = poiActiveStates;
         poiManager.CheckPOIVisibility();
     }

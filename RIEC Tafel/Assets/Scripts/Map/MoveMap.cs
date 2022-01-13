@@ -11,7 +11,10 @@ public class MoveMap : MonoBehaviour
     [SerializeField]
     private Transform table = null;
 
-    private Vector3 offset = Vector3.zero, oldScale = Vector3.one;
+    [System.NonSerialized]
+    public Vector3 offset = Vector3.zero;
+
+    private Vector3 oldScale = Vector3.one, lastRotationOrder = Vector3.zero;
 
     private AbstractMap abstractMap = null;
 
@@ -39,7 +42,7 @@ public class MoveMap : MonoBehaviour
 
     private GameObject pivotObject = null;
 
-    private Transform originalParent = null, closestPOI = null;
+    private Transform closestPOI = null;
 
     private float originalMaxTileOffset = 0, rotationPower = 2, playerWasScalingCooldown = 0.25f, playerWasScalingTimer = 0;
 
@@ -49,9 +52,9 @@ public class MoveMap : MonoBehaviour
     private LineRenderer lineVisual = null;
 
     [System.NonSerialized]
-    public Transform playerConnectionTransform = null;
+    public Transform playerConnectionTransform = null, originalParent = null;
 
-    private int rotationCounter = 0;
+    private int rotationCounter = 0, rotationTries = 0;
 
     [SerializeField]
     private List<PlayerGrab> hands = new List<PlayerGrab>();
@@ -65,6 +68,12 @@ public class MoveMap : MonoBehaviour
     private List<GrabbebleObjects> grabbebleObjects = new List<GrabbebleObjects>();
 
     private PlayerHandsRayInteractor oneHandControlsInteractorObject = null;
+
+    [System.NonSerialized]
+    public bool ffaMap = false;
+
+    [System.NonSerialized]
+    public PlayerConnection ownPlayer = null;
 
     private void Start()
     {
@@ -100,16 +109,29 @@ public class MoveMap : MonoBehaviour
 
     private void Update()
     {
+        if (!ownPlayer)
+        {
+            return;
+        }
+
+        if (!isTweening && transform.localScale.x > maximumScale && transform.parent == originalParent)
+        {
+            if (transform.localScale.x * originalParent.transform.localScale.x >= minimumScale)
+            {
+                ChangeMapScaleToChosenScale(transform.localScale * originalParent.transform.localScale.x);
+            }
+        }
+
+        if (isTweening || !ffaMap && !ownPlayer.playerIsInControlOfMap)
+        {
+            return;
+        }
+
         ComputerControls();
 
         if (inputDevices.Count < 2)
         {
             GrabControllers();
-            return;
-        }
-
-        if (isTweening)
-        {
             return;
         }
 
@@ -200,12 +222,33 @@ public class MoveMap : MonoBehaviour
         return clockWise <= counterClockWise;
     }
 
-    public void RotateMap(float rotation)
+    public void RotateMap(float rotation, bool ignoreRotationCheck = false)
     {
-        if (rotation > 5 || rotation < -5) { return; }
+        if (!ignoreRotationCheck)
+        {
+            if (rotation > 5 || rotation < -5) { return; }
+        }
 
         Vector3 nextRotation = transform.eulerAngles;
-        nextRotation.y += rotation * SettingsManager.rotateMapFactor;
+        if (ignoreRotationCheck)
+        {
+            nextRotation.y += rotation;
+        }
+        else
+        {
+            nextRotation.y += rotation * SettingsManager.rotateMapFactor;
+        }
+
+        RotateTowardsAngle(nextRotation);
+    }
+
+    public void RotateTowardsAngle(Vector3 nextRotation, bool ignoreIsTweeningCheck = false)
+    {
+        if (!ignoreIsTweeningCheck)
+        {
+            if (isTweening) { return; }
+        }
+
         isTweening = true;
 
         if (!closestPOI)
@@ -220,6 +263,8 @@ public class MoveMap : MonoBehaviour
         pivotObject = Instantiate(emptyTransform, closestPOI.position, transform.rotation);
         transform.SetParent(pivotObject.transform);
         poiManager.ParentPOIs(pivotObject.transform, false);
+
+        lastRotationOrder = nextRotation;
 
         iTween.RotateTo(pivotObject, iTween.Hash("rotation", nextRotation, "time", 0.01f, "easetype", iTween.EaseType.linear,
             "oncomplete", "CanTweenAgain", "oncompletetarget", gameObject));
@@ -238,6 +283,21 @@ public class MoveMap : MonoBehaviour
         if (miniMap)
         {
             miniMap.RotateMiniMap(transform.localEulerAngles, poiManager.transform.eulerAngles);
+        }
+
+        if (transform.eulerAngles.y <= lastRotationOrder.y - 1 || transform.eulerAngles.y >= lastRotationOrder.y + 1)
+        {
+            if (rotationTries < 5)
+            {
+                rotationTries++;
+                RotateTowardsAngle(lastRotationOrder);
+            } else
+            {
+                rotationTries = 0;
+            }
+        } else
+        {
+            rotationTries = 0;
         }
 
         poiManager.CheckPOIVisibility();
@@ -266,8 +326,21 @@ public class MoveMap : MonoBehaviour
             movement = steerStickDirection;
         }
 
-        offset.x += movement.x;
-        offset.z += movement.y;
+        Vector3 newPos = offset;
+        newPos.x += movement.x;
+        newPos.z += movement.y;
+        SetMapToNewPos(newPos, movePOIs);
+    }
+
+    public void SetMapToNewPos(Vector3 newPos, bool movePOIs, bool ignoreIsTweeningCheck = false)
+    {
+        if (!ignoreIsTweeningCheck)
+        {
+            if (isTweening) { return; }
+        }
+
+        Vector3 oldOffset = offset;
+        offset = newPos;
 
         if (miniMap)
         {
@@ -276,17 +349,18 @@ public class MoveMap : MonoBehaviour
 
         poiManager.SetExtraOffset(offset);
 
+        Vector3 movement = offset - oldOffset;
         if (movePOIs)
         {
-            poiManager.MovePOIs(new Vector3(movement.x, 0, movement.y));
+            poiManager.MovePOIs(new Vector3(movement.x, 0, movement.z));
         }
 
         CheckIfMapIsStillOnTable();
 
-        Vector3 newPos = transform.position;
-        newPos.x += movement.x;
-        newPos.z += movement.y;
-        transform.position = newPos;
+        Vector3 newMapPos = transform.position;
+        newMapPos.x += movement.x;
+        newMapPos.z += movement.z;
+        transform.position = newMapPos;
     }
 
     public virtual void ChangeMapScale(float changedScale)
@@ -311,13 +385,18 @@ public class MoveMap : MonoBehaviour
         SetScaleOfMap(nextScale, true, amountOfChangedScale);
     }
 
-    public void ChangeMapScaleToChosenScale(Vector3 chosenScale)
+    public void ChangeMapScaleToChosenScale(Vector3 chosenScale, bool ignoreIsTweeningCheck = false)
     {
-        SetScaleOfMap(chosenScale, false, 0);
+        SetScaleOfMap(chosenScale, false, 0, ignoreIsTweeningCheck);
     }
 
-    private void SetScaleOfMap(Vector3 nextScale, bool limitMovement, float changedScale)
+    private void SetScaleOfMap(Vector3 nextScale, bool limitMovement, float changedScale, bool ignoreIsTweeningCheck = false)
     {
+        if (!ignoreIsTweeningCheck)
+        {
+            if (isTweening) { return; }
+        }
+
         transform.localScale = nextScale;
         oldScale = nextScale;
         maxTileOffset = originalMaxTileOffset * nextScale.x - table.localScale.z / 2;
@@ -328,34 +407,37 @@ public class MoveMap : MonoBehaviour
             miniMap.ScalePlayerIndication(nextScale);
         }
 
-        Vector3 mapPosDiff = table.position - transform.position;
-        Vector2 playerMapPart = Vector2.zero;
-        if (mapPosDiff.x < -0.1f)
+        if (changedScale != 0)
         {
-            playerMapPart.x = -1;
-        }
-        else if (mapPosDiff.x > 0.1f)
-        {
-            playerMapPart.x = 1;
-        }
+            Vector3 mapPosDiff = table.position - transform.position;
+            Vector2 playerMapPart = Vector2.zero;
+            if (mapPosDiff.x < -0.1f)
+            {
+                playerMapPart.x = -1;
+            }
+            else if (mapPosDiff.x > 0.1f)
+            {
+                playerMapPart.x = 1;
+            }
 
-        if (mapPosDiff.z < -0.1f)
-        {
-            playerMapPart.y = -1;
-        }
-        else if (mapPosDiff.z > 0.1f)
-        {
-            playerMapPart.y = 1;
-        }
+            if (mapPosDiff.z < -0.1f)
+            {
+                playerMapPart.y = -1;
+            }
+            else if (mapPosDiff.z > 0.1f)
+            {
+                playerMapPart.y = 1;
+            }
 
-        Vector2 movement = playerMapPart;
-        float mapScaler = scaleMapCorrecter;
-        if (changedScale < 0)
-        {
-            mapScaler *= 1.5f;
+            Vector2 movement = playerMapPart;
+            float mapScaler = scaleMapCorrecter;
+            if (changedScale < 0)
+            {
+                mapScaler *= 1.5f;
+            }
+            movement *= mapScaler * Mathf.Clamp(changedScale, -0.02f, 0.03f);
+            MoveTheMap(movement, limitMovement, true, true);
         }
-        movement *= mapScaler * Mathf.Clamp(changedScale, -0.02f, 0.03f);
-        MoveTheMap(movement, limitMovement, true, true);
     }
 
     private void CheckIfMapIsStillOnTable()
@@ -369,8 +451,16 @@ public class MoveMap : MonoBehaviour
         }
     }
 
-    public void SetNewMapCenter(Vector2d newCenter)
+    public void SetNewMapCenter(Vector2d newCenter, bool playerMapControlCheck = true)
     {
+        if (playerMapControlCheck)
+        {
+            if (!ffaMap && !ownPlayer.playerIsInControlOfMap)
+            {
+                return;
+            }
+        }
+
         transform.localScale = Vector3.one;
         float regularMaxTileOffset = originalMaxTileOffset - table.localScale.z / 2;
         float percentageGrowth = maxTileOffset / regularMaxTileOffset;
@@ -390,6 +480,16 @@ public class MoveMap : MonoBehaviour
             poiManager.transform.eulerAngles);
         }
         ChangeMapScaleToChosenScale(oldScale);
+
+        if(!ffaMap && ownPlayer.playerIsInControlOfMap)
+        {
+            ownPlayer.CmdSetNewMapCenter(ownPlayer.playerNumber, newCenter);
+        }
+    }
+
+    public Vector2d RetrieveMapCenter()
+    {
+        return abstractMap.CenterLatitudeLongitude;
     }
 
     private void TwoControllerControls()

@@ -96,12 +96,22 @@ public class TutorialManager : MonoBehaviour
 
     private List<float> buttonPressTimers = new List<float>();
 
+    [SerializeField]
+    private TutorialRemoveStickyNoteButton removeStickyNoteButton = null;
+
+    [System.NonSerialized]
+    public List<StickyNote> stickyNotes = new List<StickyNote>();
+
+    [System.NonSerialized]
+    public int stickyNoteCount = 0;
+
     private void Start()
     {
         SaveSytem.SaveGame();
         abstractMap = map.GetComponent<AbstractMap>();
         buttonCommandText = FindObjectOfType<ButtonCommandText>();
         buttonCommandTextText = buttonCommandText.GetComponent<TMP_Text>();
+        removeStickyNoteButton.gameObject.SetActive(false);
 
         for (int i = 0; i < 2; i++)
         {
@@ -532,13 +542,126 @@ public class TutorialManager : MonoBehaviour
         grabbebleObjectArrows[1].gameObject.SetActive(false);
         notes.gameObject.SetActive(true);
         CheckIfPrimaryButtonIsDown();
-        buttonCommandTextText.fontSize = 13.5f;
     }
 
     public void FourteenthStepOfTutorial()
     {
         TurnOffGrabbebleObjectArrows(notesSet);
         NewCanvasObjectStep();
+    }
+
+    public void StartFifteenthStepOfTutorial()
+    {
+        grabbebleObjectArrows[0].gameObject.SetActive(true);
+        EnablePrimaryArrows(false);
+        EnableGripArrows(false);
+        oculusAnimations.ShowExampleCreateAndMoveNotesFirstStep();
+        completedCanvasStep = false;
+        tutorialTitle.fontSize = 28;
+    }
+
+    public void FifteenthStepOfTutorial()
+    {
+        TurnOffGrabbebleObjectArrows(notesSet);
+
+        if (notesSet.activeSelf)
+        {
+            if (stickyNotes.Count > 0 && !completedCanvasStep)
+            {
+                for (int i = 0; i < stickyNotes.Count; i++)
+                {
+                    if (stickyNotes[i].transform.localPosition != Vector3.zero)
+                    {
+                        completedCanvasStep = true;
+                    }
+                }
+            }
+        }
+        else if (completedCanvasStep && !notesSet.activeSelf)
+        {
+            CelebrateCurrentStepInTurorial();
+        }
+    }
+
+    public void StartSixteenthStepOfTutorial()
+    {
+        grabbebleObjectArrows[0].gameObject.SetActive(true);
+        EnablePrimaryArrows(false);
+        EnableGripArrows(false);
+        oculusAnimations.ShowExampleStartAndStopEditNotesFirstStep();
+        completedCanvasStep = false;
+        tutorialTitle.fontSize = 25;
+    }
+
+    public void SixteenthStepOfTutorial()
+    {
+        TurnOffGrabbebleObjectArrows(notesSet);
+
+        if (notesSet.activeSelf)
+        {
+            if (!completedCanvasStep)
+            {
+                for (int i = 0; i < stickyNotes.Count; i++)
+                {
+                    bool textsHaveBeenEdited = false;
+                    int amountOfTexts = 0;
+                    int textsHaveBeenEditedCounter = 0;
+                    foreach(NotesText text in stickyNotes[i].GetComponentsInChildren<NotesText>())
+                    {
+                        amountOfTexts++;
+                        if (!text.firstTimeEdit && text.text.text != "")
+                        {
+                            textsHaveBeenEditedCounter++;
+                        }
+                    }
+
+                    if (textsHaveBeenEditedCounter == amountOfTexts)
+                    {
+                        textsHaveBeenEdited = true;
+                    }
+
+                    if (textsHaveBeenEdited && !stickyNotes[i].GetStickyNoteBeingEdited())
+                    {
+                        completedCanvasStep = true;
+                    }
+                }
+            }
+        }
+        else if (completedCanvasStep && !notesSet.activeSelf)
+        {
+            CelebrateCurrentStepInTurorial();
+        }
+    }
+
+    public void StartSeventeenthStepOfTutorial()
+    {
+        grabbebleObjectArrows[0].gameObject.SetActive(true);
+        EnablePrimaryArrows(false);
+        EnableGripArrows(false);
+        oculusAnimations.ShowExampleCreateAndMoveNotesFirstStep();
+        completedCanvasStep = false;
+        removeStickyNoteButton.gameObject.SetActive(true);
+        tutorialTitle.fontSize = 30;
+    }
+
+    public void SeventeenthStepOfTutorial()
+    {
+        TurnOffGrabbebleObjectArrows(notesSet);
+
+        if (notesSet.activeSelf)
+        {
+            if (!completedCanvasStep)
+            {
+                if (stickyNotes.Count < stickyNoteCount)
+                {
+                    completedCanvasStep = true;
+                }
+            }
+        }
+        else if (completedCanvasStep && !notesSet.activeSelf)
+        {
+            CelebrateCurrentStepInTurorial();
+        }
     }
 
     private void NewCanvasObjectStep()

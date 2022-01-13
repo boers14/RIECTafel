@@ -14,7 +14,7 @@ public class FlyCamera : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButton(0) && !hover && Input.GetKey(KeyCode.Z))
+        if (Input.GetMouseButton(0) && !hover && Input.GetKey(KeyCode.P))
         {
             lastMouse = Input.mousePosition - lastMouse;
             lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);

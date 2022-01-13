@@ -30,6 +30,8 @@ public class MiniMap : MonoBehaviour
     public void CopyMap(AbstractMap map, List<GameObject> allPOIs, Transform table, List<Vector2d> coordinatesOfPOIs, List<int> poiAmountOfHits,
         float poiScale, Vector3 playerRot)
     {
+        allClonedPOIs.Clear();
+
         transform.eulerAngles = Vector3.zero;
         transform.localScale = Vector3.one;
 

@@ -130,7 +130,7 @@ public class POIManager : MonoBehaviour
 
         if (coordinateGotFromLocationData.x > lastLocation.x - 0.0001 && coordinateGotFromLocationData.x < lastLocation.x + 0.0001 &&
             coordinateGotFromLocationData.y > lastLocation.y - 0.0001 && coordinateGotFromLocationData.y < lastLocation.y + 0.0001 && 
-            amountOfTriesForCurrentLocation <= 3 ||coordinateGotFromLocationData.x <= 0.0001 && coordinateGotFromLocationData.y <= 0.0001 &&
+            amountOfTriesForCurrentLocation <= 3 || coordinateGotFromLocationData.x <= 0.0001 && coordinateGotFromLocationData.y <= 0.0001 &&
             amountOfTriesForCurrentLocation <= 3)
         {
             StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData,
@@ -246,7 +246,11 @@ public class POIManager : MonoBehaviour
 
         moveMap.SetNewMapCenter(coordinateGotFromLocationData);
         allLocationDataIsInitialized = true;
-        FindObjectOfType<PlayerConnection>().FetchOwnPlayer().EnableChooseSeatButtons();
+        PlayerConnection player = FindObjectOfType<PlayerConnection>();
+        if (player)
+        {
+            player.FetchOwnPlayer().EnableChooseSeatButtons();
+        }
     }
 
     public void MovePOIs(Vector3 movement)
@@ -264,11 +268,6 @@ public class POIManager : MonoBehaviour
         for (int i = 0; i < allPOIs.Count; i++)
         {
             allPOIs[i].transform.SetParent(parentObject);
-
-            if (rotateText)
-            {
-                allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
-            }
         }
     }
 
@@ -301,18 +300,9 @@ public class POIManager : MonoBehaviour
         for (int i = 0; i < allPOIs.Count; i++)
         {
             allPOIs[i].transform.SetParent(null);
-            allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
         }
         Destroy(rotationObject);
         CheckPOIVisibility();
-    }
-
-    public void RotatePOITextToPlayer()
-    {
-        for (int i = 0; i < allPOIs.Count; i++)
-        {
-            allPOIs[i].GetComponent<POIText>().SetTextRotation(transform);
-        }
     }
 
     public void SetExtraOffset(Vector3 mapOffset)

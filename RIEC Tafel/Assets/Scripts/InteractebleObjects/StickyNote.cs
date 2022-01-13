@@ -103,9 +103,12 @@ public class StickyNote : MonoBehaviour
         {
             if (allStickyNotes[i] == this) { continue; }
 
-            foreach(BoxCollider collider in allStickyNotes[i].GetComponentsInChildren<BoxCollider>())
+            if (allStickyNotes[i])
             {
-                collider.enabled = enabled;
+                foreach (BoxCollider collider in allStickyNotes[i].GetComponentsInChildren<BoxCollider>())
+                {
+                    collider.enabled = enabled;
+                }
             }
         }
     }

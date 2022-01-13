@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using Mirror;
 using TMPro;
 using UnityEngine.SceneManagement;
+using Mapbox.Utils;
 
 public class PlayerConnection : NetworkBehaviour
 {
@@ -48,15 +49,28 @@ public class PlayerConnection : NetworkBehaviour
     private List<Vector3> lastKnownHandPosses = new List<Vector3>(), lastKnownHandRots = new List<Vector3>(), 
         handRotationOffsets = new List<Vector3>();
 
-    private Vector3 lastKnownCameraRot = Vector3.zero;
+    private Vector3 lastKnownCameraRot = Vector3.zero, lastMapPos = Vector3.zero, lastMapRot = Vector3.zero, lastMapScale = Vector3.zero;
 
     private List<PlayerConnection> serverConnectedPlayersList = new List<PlayerConnection>();
 
     private NetworkManagerRIECTafel networkManager = null;
 
-    private bool playerIsAcceptedToDiscussion = false;
+    private bool playerIsAcceptedToDiscussion = false, isSendingData = false;
 
     private BoxCollider hitbox = null;
+
+    [System.NonSerialized, SyncVar]
+    public bool playerIsInControlOfMap = false;
+
+    private BackToStartPositionButton backToStartPositionButton = null;
+
+    private POISelectionDropdown poiSelectionDropdown = null;
+
+    private PlayerMapControlDropdown playerMapControlDropdown = null;
+
+    private TMP_Text mapOwnerText = null;
+
+    private MoveMap map = null;
 
     private void Start()
     {
@@ -67,6 +81,11 @@ public class PlayerConnection : NetworkBehaviour
         networkManager = FindObjectOfType<NetworkManagerRIECTafel>();
         hitbox = GetComponent<BoxCollider>();
 
+        map = FindObjectOfType<MoveMap>();
+        lastMapPos = map.transform.position;
+        lastMapRot = map.transform.eulerAngles;
+        lastMapScale = map.transform.localScale;
+
         if (!isLocalPlayer) { return; }
 
         CmdSetPlayerNumber();
@@ -76,7 +95,7 @@ public class PlayerConnection : NetworkBehaviour
         FetchGameManager();
         StartCoroutine(StartRequestLocationData());
 
-        MoveMap map = FindObjectOfType<MoveMap>();
+        map.ownPlayer = this;
         map.playerConnectionTransform = transform;
         for (int i = 0; i < hands.Count; i++)
         {
@@ -96,6 +115,7 @@ public class PlayerConnection : NetworkBehaviour
         if (isServer)
         {
             playerIsAcceptedToDiscussion = true;
+            CmdSetServerAsMapOwner();
         }
     }
 
@@ -121,6 +141,135 @@ public class PlayerConnection : NetworkBehaviour
             lastKnownCameraRot = cameraTransform.eulerAngles;
             CmdSetHeadRotation(playerNumber, lastKnownCameraRot);
         }
+
+        if (!playerIsInControlOfMap || isSendingData) { return; }
+
+        if (map.transform.position != lastMapPos && map.transform.parent == map.originalParent)
+        {
+            lastMapPos = map.transform.position;
+            CmdMoveMapOnServer(playerNumber, map.offset, poiManager.transform.eulerAngles.y);
+        }
+        
+        if (map.transform.localScale != lastMapScale && map.transform.parent == map.originalParent)
+        {
+            lastMapScale = map.transform.localScale;
+            CmdScaleMapOnServer(playerNumber, lastMapScale);
+        }
+        
+        if (map.transform.eulerAngles != lastMapRot && map.transform.parent == map.originalParent)
+        {
+            lastMapRot = map.transform.eulerAngles;
+            CmdRotateMapOnServer(playerNumber, lastMapRot, poiManager.transform.eulerAngles.y);
+        }
+    }
+
+    [Command]
+    private void CmdMoveMapOnServer(int playerNumber, Vector3 newPos, float yRotationMapOwner)
+    {
+        RpcMoveMapOnClients(playerNumber, newPos, yRotationMapOwner);
+    }
+
+    [ClientRpc]
+    private void RpcMoveMapOnClients(int playerNumber, Vector3 newPos, float yRotationMapOwner)
+    {
+        if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
+
+        MoveMapOnCorrectAngle(newPos, yRotationMapOwner, false);
+    }
+
+    private void MoveMapOnCorrectAngle(Vector3 newPos, float yRotationMapOwner, bool ignoreIsTweeningCheck)
+    {
+        FetchVRPlayer();
+
+        float xPos = newPos.x;
+        int rotationDiff = (int)(yRotationMapOwner - poiManager.transform.eulerAngles.y);
+
+        switch (rotationDiff)
+        {
+            case 90: case -270:
+                newPos.x = -newPos.z;
+                newPos.z = xPos;
+                break;
+            case 180: case -180:
+                newPos.x = -newPos.x;
+                newPos.z = -newPos.z;
+                break;
+            case 270: case -90:
+                newPos.x = newPos.z;
+                newPos.z = -xPos;
+                break;
+        }
+
+        map.SetMapToNewPos(newPos, true, ignoreIsTweeningCheck);
+    }
+
+    [Command]
+    private void CmdRotateMapOnServer(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
+    {
+        RpcRotateMapOnClients(playerNumber, nextRotation, yRotationMapOwner);
+    }
+
+    [ClientRpc]
+    private void RpcRotateMapOnClients(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
+    {
+        if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
+
+        RotateMapOnCorrectAngle(nextRotation, yRotationMapOwner, false);
+    }
+
+    private void RotateMapOnCorrectAngle(Vector3 nextRotation, float yRotationMapOwner, bool ignoreIsTweeningCheck)
+    {
+        FetchVRPlayer();
+
+        int rotationDiff = (int)(yRotationMapOwner - poiManager.transform.eulerAngles.y);
+        switch (rotationDiff)
+        {
+            case 90: case -270:
+                nextRotation.y = nextRotation.y - 90;
+                break;
+            case 180: case -180:
+                nextRotation.y = nextRotation.y + 180;
+                break;
+            case 270: case -90:
+                nextRotation.y = nextRotation.y + 90;
+                break;
+        }
+
+        map.RotateTowardsAngle(nextRotation, ignoreIsTweeningCheck);
+    }
+
+    [Command]
+    private void CmdScaleMapOnServer(int playerNumber, Vector3 newScale)
+    {
+        RpcScaleMapOnClients(playerNumber, newScale);
+    }
+
+    [ClientRpc]
+    private void RpcScaleMapOnClients(int playerNumber, Vector3 newScale)
+    {
+        if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
+
+        map.ChangeMapScaleToChosenScale(newScale);
+    }
+
+    [Command]
+    public void CmdSetNewMapCenter(int playerNumber, Vector2d newCenter)
+    {
+        RpcSetNewMapCenter(playerNumber, newCenter);
+    }
+
+    [ClientRpc]
+    private void RpcSetNewMapCenter(int playerNumber, Vector2d newCenter)
+    {
+        if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
+
+        map.SetNewMapCenter(newCenter, false);
+    }
+
+    [Command]
+    private void CmdSetServerAsMapOwner()
+    {
+        playerIsInControlOfMap = true;
     }
 
     [Command]
@@ -512,7 +661,6 @@ public class PlayerConnection : NetworkBehaviour
             FetchVRPlayer();
             poiManager.ChangePOIManagerTransform(player.transform);
             poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
-            poiManager.RotatePOITextToPlayer();
 
             PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
             for (int i = 0; i < currentConnections.Length; i++)
@@ -523,6 +671,7 @@ public class PlayerConnection : NetworkBehaviour
                 ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
             }
 
+            StartCoroutine(SetPOIUIObjectAndStats());
         }
         else
         {
@@ -530,8 +679,137 @@ public class PlayerConnection : NetworkBehaviour
             {
                 EnableChildsOfObject(player.transform, true);
                 ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
+
+                StartCoroutine(SetPOIUIObjectAndStats());
             }
         }
+    }
+
+    private IEnumerator SetPOIUIObjectAndStats()
+    {
+        yield return new WaitForEndOfFrame();
+
+        if (!playerMapControlDropdown)
+        {
+            playerMapControlDropdown = FindObjectOfType<PlayerMapControlDropdown>();
+            backToStartPositionButton = FindObjectOfType<BackToStartPositionButton>();
+            poiSelectionDropdown = FindObjectOfType<POISelectionDropdown>();
+            mapOwnerText = GameObject.FindGameObjectWithTag("MapOwnerText").GetComponent<TMP_Text>();
+
+            PlayerConnection ownPlayer = FetchOwnPlayer();
+
+            if (ownPlayer.isServer)
+            {
+                mapOwnerText.enabled = false;
+            }
+            else
+            {
+                backToStartPositionButton.button.interactable = false;
+                poiSelectionDropdown.dropdown.interactable = false;
+                playerMapControlDropdown.gameObject.SetActive(false);
+
+                List<PlayerConnection> players = new List<PlayerConnection>();
+                players.AddRange(FindObjectsOfType<PlayerConnection>());
+
+                PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
+
+                if (mapOwner)
+                {
+                    SetMapOwnerText(mapOwner, ownPlayer);
+
+                    if (mapOwner != ownPlayer)
+                    {
+                        CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, true);
+                    }
+                }
+                else
+                {
+                    mapOwnerText.text = "Iedereen bestuurd de kaart zelfstandig";
+                }
+            }
+        }
+
+        if (isServer)
+        {
+            playerMapControlDropdown.FillDropdownWithPlayers();
+        }
+    }
+
+    [Command]
+    private void CmdRetrieveCurrentMapStats(int playerNumber, bool targetPlayerNumber)
+    {
+        List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
+        PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
+
+        RpcRetrieveCurrentMapStats(mapOwner.playerNumber, playerNumber, targetPlayerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcRetrieveCurrentMapStats(int playerNumberMapOwner, int playerNumber, bool targetPlayerNumber)
+    {
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+
+        if (isLocalPlayer && ownPlayer.playerNumber == playerNumberMapOwner)
+        {
+            MoveMap map = FindObjectOfType<MoveMap>();
+            POIManager poiManager = FindObjectOfType<POIManager>();
+
+            lastMapPos = map.offset;
+            lastMapRot = map.transform.eulerAngles;
+            lastMapScale = map.transform.localScale;
+            isSendingData = false;
+
+            ownPlayer.CmdSetCurrentMapStats(playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), map.offset, map.transform.eulerAngles, 
+                poiManager.transform.eulerAngles.y, map.transform.localScale);
+        }
+    }
+
+    [Command]
+    private void CmdSetCurrentMapStats(int playerNumber, bool targetPlayerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
+        float yRotationMapOwner, Vector3 mapScale)
+    {
+        if (targetPlayerNumber)
+        {
+            RpcSetCurrentMapStatsForTargetedPlayer(playerNumber, mapCenter, mapOffset, mapRotation, yRotationMapOwner, mapScale);
+        }
+        else
+        {
+            RpcSetCurrentMapStatsForAllPlayers(playerNumber, mapCenter, mapOffset, mapRotation, yRotationMapOwner, mapScale);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSetCurrentMapStatsForTargetedPlayer(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation, 
+        float yRotationMapOwner, Vector3 mapScale)
+    {
+        if (FetchOwnPlayer().playerNumber == playerNumber)
+        {
+            SetCurrentMapStats(mapCenter, mapOffset, mapRotation, yRotationMapOwner, mapScale);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSetCurrentMapStatsForAllPlayers(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
+        float yRotationMapOwner, Vector3 mapScale)
+    {
+        if (FetchOwnPlayer().playerNumber != playerNumber)
+        {
+            SetCurrentMapStats(mapCenter, mapOffset, mapRotation, yRotationMapOwner, mapScale);
+        }
+    }
+
+    private void SetCurrentMapStats(Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation, float yRotationMapOwner, Vector3 mapScale)
+    {
+        map.SetNewMapCenter(mapCenter, false);
+        RotateMapOnCorrectAngle(mapRotation, yRotationMapOwner, true);
+        StartCoroutine(SetCurrentMapStatsAfterRotation(mapOffset, mapScale, yRotationMapOwner));
+    }
+
+    private IEnumerator SetCurrentMapStatsAfterRotation(Vector3 mapOffset, Vector3 mapScale, float yRotationMapOwner)
+    {
+        yield return new WaitForSeconds(0.75f);
+        map.ChangeMapScaleToChosenScale(mapScale, true);
+        MoveMapOnCorrectAngle(mapOffset, yRotationMapOwner, true);
     }
 
     [Command]
@@ -569,6 +847,123 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    [Command]
+    public void CmdSetNewMapOwner(int playerNumber)
+    {
+        SetNewMapOwner(playerNumber);
+        RpcSetNewMapOwner(playerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcSetNewMapOwner(int playerNumber)
+    {
+        SetNewMapOwner(playerNumber);
+    }
+
+    private void SetNewMapOwner(int playerNumber)
+    {
+        map.ffaMap = false;
+
+        List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
+
+        PlayerConnection oldPlayerInControl = players.Find(player => player.playerIsInControlOfMap);
+        if (oldPlayerInControl)
+        {
+            oldPlayerInControl.playerIsInControlOfMap = false;
+        }
+
+        PlayerConnection newPlayerInControl = players.Find(i => i.playerNumber == playerNumber);
+
+        newPlayerInControl.playerIsInControlOfMap = true;
+
+        if (newPlayerInControl.hasAuthority)
+        {
+            EnablePOIUI(true);
+        } else
+        {
+            EnablePOIUI(false);
+        }
+
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+        if (!ownPlayer.isServer)
+        {
+            SetMapOwnerText(newPlayerInControl, ownPlayer);
+        }
+
+        if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.hasAuthority)
+        {
+            ownPlayer.isSendingData = true;
+            ownPlayer.CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, false);
+        }
+    }
+
+    [Command]
+    public void CmdSetMapToFreeForAll()
+    {
+        SetMapToFreeForAll();
+        RpcSetMapToFreeForAll();
+    }
+
+    [ClientRpc]
+    private void RpcSetMapToFreeForAll()
+    {
+        SetMapToFreeForAll();
+    }
+
+    private void SetMapToFreeForAll()
+    {
+        map.ffaMap = true;
+
+        List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
+
+        PlayerConnection oldPlayerInControl = players.Find(player => player.playerIsInControlOfMap);
+        if (oldPlayerInControl)
+        {
+            oldPlayerInControl.playerIsInControlOfMap = false;
+        }
+
+        EnablePOIUI(true);
+
+        FetchMapOwnerText();
+
+        if (mapOwnerText)
+        {
+            mapOwnerText.text = "Iedereen bestuurd de kaart zelfstandig";
+        }
+    }
+
+    private void SetMapOwnerText(PlayerConnection mapOwner, PlayerConnection ownPlayer)
+    {
+        FetchMapOwnerText();
+
+        if (mapOwnerText)
+        {
+            if (mapOwner.playerNumber == ownPlayer.playerNumber)
+            {
+                mapOwnerText.text = "U bestuurd de kaart";
+            }
+            else
+            {
+                mapOwnerText.text = mapOwner.playerName.Split('\n')[1] + " bestuurd de kaart";
+            }
+        }
+    }
+
+    private void EnablePOIUI(bool enabled)
+    {
+        if (!backToStartPositionButton)
+        {
+            backToStartPositionButton = FindObjectOfType<BackToStartPositionButton>();
+            poiSelectionDropdown = FindObjectOfType<POISelectionDropdown>();
+        }
+
+        if (backToStartPositionButton)
+        {
+            backToStartPositionButton.button.interactable = enabled;
+            poiSelectionDropdown.dropdown.interactable = enabled;
+        }
+    }
+
     private PlayerConnection FetchPlayerConnectionBasedOnNumber(int playerNumber)
     {
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
@@ -581,6 +976,18 @@ public class PlayerConnection : NetworkBehaviour
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
         return playerConnections.Find(i => i.hasAuthority);
+    }
+
+    private void FetchMapOwnerText()
+    {
+        if (!mapOwnerText)
+        {
+            GameObject text = GameObject.FindGameObjectWithTag("MapOwnerText");
+            if (text)
+            {
+                mapOwnerText = text.GetComponent<TMP_Text>();
+            }
+        }
     }
 
     private void FetchVRPlayer()

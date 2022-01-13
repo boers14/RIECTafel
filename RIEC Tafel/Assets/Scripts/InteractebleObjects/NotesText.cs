@@ -30,13 +30,13 @@ public class NotesText : MonoBehaviour
 
     private KeyBoard keyBoard = null;
 
-    private bool isBeingHovered = false, firstTimeEdit = true;
+    private bool isBeingHovered = false;
 
     [SerializeField]
     private bool cantMoveText = false;
 
     [System.NonSerialized]
-    public bool isCurrentlyEdited = false;
+    public bool isCurrentlyEdited = false, firstTimeEdit = true;
 
     private Vector3 originalPos = Vector3.zero;
 

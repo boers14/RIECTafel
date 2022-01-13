@@ -22,7 +22,7 @@ public class POIText : MonoBehaviour
     private float originalScale = 0, originalYvalue = 0, maxStandardDeviation = 0.19f, minStandardDeviation = 0.425f, originalYTextSize = 0, 
         originalTextBoxYScale = 0, canInteractWithControllerTimer = 0, canInteractWithControllerCooldown = 0.75f;
 
-    private bool expanded = false, startUnExpand = false;
+    private bool expanded = false, startUnExpand = false, checkTextBoxWidth = true;
 
     private List<bool> canInteractWithController = new List<bool>();
 
@@ -31,7 +31,7 @@ public class POIText : MonoBehaviour
 
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
-    private Transform player = null;
+    private Transform player, cameraTransform = null;
 
     private MoveMap map = null;
 
@@ -40,6 +40,8 @@ public class POIText : MonoBehaviour
     public virtual void Start()
     {
         if (originalPos != Vector3.zero) { return; }
+
+        cameraTransform = Camera.main.transform;
 
         textBoxRenderer = textBox.GetComponent<SpriteRenderer>();
         textBox.gameObject.SetActive(false);
@@ -58,6 +60,13 @@ public class POIText : MonoBehaviour
 
     private void Update()
     {
+        transform.LookAt(cameraTransform);
+        Vector3 newRot = transform.eulerAngles;
+        newRot.x = 0;
+        newRot.z = 0;
+        newRot.y += 180;
+        transform.eulerAngles = newRot;
+
         if (!expanded) 
         { 
             for (int i = 0; i < canInteractWithController.Count; i++)
@@ -118,18 +127,28 @@ public class POIText : MonoBehaviour
         this.inputDevices = inputDevices;
     }
 
-    public void SetTextRotation(Transform playerTransform)
-    {
-        Quaternion lookRotation = Quaternion.RotateTowards(transform.rotation, playerTransform.rotation, 360);
-        lookRotation.x = 0;
-        lookRotation.z = 0;
-        transform.rotation = lookRotation;
-    }
-
     public virtual void ExpandText(HoverEnterEventArgs args)
     {
         startUnExpand = false;
         if (expanded) { return; }
+
+        if (checkTextBoxWidth)
+        {
+            checkTextBoxWidth = false;
+            if (poiText.textBounds.size.x > poiText.rectTransform.sizeDelta.x)
+            {
+                float percentualIncrease = poiText.textBounds.size.x / poiText.rectTransform.sizeDelta.x;
+                Vector3 textBoxScale = textBox.transform.localScale;
+                Vector3 oldTextBoxScale = textBox.transform.localScale;
+                textBoxScale.x *= percentualIncrease;
+                textBoxScale.x += 0.025f;
+                textBox.transform.localScale = textBoxScale;
+
+                Vector3 newPos = textBox.transform.localPosition;
+                newPos.x += ((oldTextBoxScale.x * percentualIncrease) - oldTextBoxScale.x) * 4;
+                textBox.transform.localPosition = newPos;
+            }
+        }
 
         textBox.gameObject.SetActive(true);
         textBoxRenderer.material.color = Color.red;

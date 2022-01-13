@@ -87,7 +87,7 @@ public class KeyBoardKey : MonoBehaviour
 
     public void OnKeySelect()
     {
-        if (!currentText)
+        if (!currentText || !currentText.gameObject.activeSelf)
         {
             currentText = FetchCurrentlyEditedText();
         }

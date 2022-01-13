@@ -15,11 +15,15 @@ public class BackToStartPositionButton : MonoBehaviour
 
     private MoveMap mapMovement = null;
 
+    [System.NonSerialized]
+    public Button button = null;
+
     private void Start()
     {
         mapMovement = map.GetComponent<MoveMap>();
         startPosition = map.CenterLatitudeLongitude;
-        GetComponent<Button>().onClick.AddListener(ChangeMapPositionAndScale);
+        button = GetComponent<Button>();
+        button.onClick.AddListener(ChangeMapPositionAndScale);
     }
 
     private void ChangeMapPositionAndScale()

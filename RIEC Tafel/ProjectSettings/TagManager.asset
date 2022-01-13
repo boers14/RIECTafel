@@ -12,6 +12,7 @@ TagManager:
   - Hand
   - Ground
   - ChooseSeatPlacementTitle
+  - MapOwnerText
   layers:
   - Default
   - TransparentFX

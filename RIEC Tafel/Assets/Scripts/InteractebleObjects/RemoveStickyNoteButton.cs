@@ -14,7 +14,7 @@ public class RemoveStickyNoteButton : MeetingButton
         yesButton.onClick.AddListener(RemoveStickyNote);
     }
 
-    private void RemoveStickyNote()
+    public virtual void RemoveStickyNote()
     {
         StickyNote stickyNoteToRemove = NotesSaver.instance.allStickyNotes.Find(stickyNote => stickyNote.GetStickyNoteBeingEdited());
         if (stickyNoteToRemove != null)

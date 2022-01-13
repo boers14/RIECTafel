@@ -20,6 +20,8 @@ public class SetCanvasPosition : MonoBehaviour
 
     private List<DataExplanations> dataExplanations = new List<DataExplanations>();
 
+    private bool hasSetPlayerRotation = false;
+
     private void Start()
     {
         miniMap = FindObjectOfType<MiniMap>();
@@ -28,6 +30,10 @@ public class SetCanvasPosition : MonoBehaviour
 
     public void ChangeCanvasPosition()
     {
+        if (hasSetPlayerRotation) { return; }
+
+        hasSetPlayerRotation = true;
+
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit wallRay, Mathf.Infinity, layer))
         {
             Vector3 newCanvasPos = wallRay.transform.position + wallRay.transform.up * 0.05f;
@@ -52,6 +58,6 @@ public class SetCanvasPosition : MonoBehaviour
         }
 
         float diffInYRotation = transform.eulerAngles.y - map.transform.eulerAngles.y;
-        map.RotateMap(diffInYRotation);
+        map.RotateMap(diffInYRotation, true);
     }
 }
