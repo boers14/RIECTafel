@@ -60,26 +60,26 @@ public class OpenKickPlayerSet : MonoBehaviour
             return;
         }
 
-        if (!isBeingHovered || !player.isServer)
-        {
-            return;
-        }
+        //if (!isBeingHovered || !player.isServer)
+        //{
+        //    return;
+        //}
 
-        for (int i = 0; i < inputDevices.Count; i++)
-        {
-            if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton && 
-                handRays[i].hoveredObjects.Contains(interactor))
-            {
-                if (!buttonIsDown[i])
-                {
-                    buttonIsDown[i] = true;
-                    OnButtonClickAction();
-                }
-            } else if (!primaryButton)
-            {
-                buttonIsDown[i] = false;
-            }
-        }
+        //for (int i = 0; i < inputDevices.Count; i++)
+        //{
+        //    if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton && 
+        //        handRays[i].hoveredObjects.Contains(interactor))
+        //    {
+        //        if (!buttonIsDown[i])
+        //        {
+        //            buttonIsDown[i] = true;
+        //            OnButtonClickAction();
+        //        }
+        //    } else if (!primaryButton)
+        //    {
+        //        buttonIsDown[i] = false;
+        //    }
+        //}
     }
 
     public virtual void OnButtonClickAction()

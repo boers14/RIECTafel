@@ -2,17 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Mirror;
 using TMPro;
 using UnityEngine.SceneManagement;
 using Mapbox.Utils;
+using Photon.Pun;
 
-public class PlayerConnection : NetworkBehaviour
+public class PlayerConnection : MonoBehaviour
 {
-    [SyncVar]
+    //[SyncVar]
     private string avatarData = "";
 
-    [System.NonSerialized, SyncVar]
+    [System.NonSerialized/*, SyncVar*/]
     public string playerName = "";
 
     [SerializeField]
@@ -22,10 +22,10 @@ public class PlayerConnection : NetworkBehaviour
 
     private POIManager poiManager = null;
 
-    [SyncVar]
+    //[SyncVar]
     private GameManager.DataType dataType = GameManager.DataType.Regular;
 
-    [SyncVar, System.NonSerialized]
+    [/*SyncVar,*/ System.NonSerialized]
     public int playerNumber = -1, chosenSeat = -1;
 
     [SerializeField]
@@ -46,7 +46,7 @@ public class PlayerConnection : NetworkBehaviour
 
     private Transform cameraTransform = null;
 
-    private List<Vector3> lastKnownHandPosses = new List<Vector3>(), lastKnownHandRots = new List<Vector3>(), 
+    private List<Vector3> lastKnownHandPosses = new List<Vector3>(), lastKnownHandRots = new List<Vector3>(),
         handRotationOffsets = new List<Vector3>();
 
     private Vector3 lastKnownCameraRot = Vector3.zero, lastMapPos = Vector3.zero, lastMapRot = Vector3.zero, lastMapScale = Vector3.zero;
@@ -59,7 +59,7 @@ public class PlayerConnection : NetworkBehaviour
 
     private BoxCollider hitbox = null;
 
-    [System.NonSerialized, SyncVar]
+    [System.NonSerialized/*, SyncVar*/]
     public bool playerIsInControlOfMap = false;
 
     private BackToStartPositionButton backToStartPositionButton = null;
@@ -90,7 +90,7 @@ public class PlayerConnection : NetworkBehaviour
         lastMapRot = map.transform.eulerAngles;
         lastMapScale = map.transform.localScale;
 
-        if (!isLocalPlayer) { return; }
+        //if (!isLocalPlayer) { return; }
 
         CmdSetPlayerNumber();
         tag = "PlayerConnection";
@@ -116,16 +116,16 @@ public class PlayerConnection : NetworkBehaviour
         actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Left).transform);
         actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Right).transform);
 
-        if (isServer)
-        {
-            playerIsAcceptedToDiscussion = true;
-            CmdSetServerAsMapOwner();
-        }
+        //if (isServer)
+        //{
+        //    playerIsAcceptedToDiscussion = true;
+        //    CmdSetServerAsMapOwner();
+        //}
     }
 
     private void FixedUpdate()
     {
-        if (!hasAuthority || playerNumber == -1 || chosenSeat == -1) { return; }
+        //if (!hasAuthority || playerNumber == -1 || chosenSeat == -1) { return; }
 
         for (int i = 0; i < hands.Count; i++)
         {
@@ -153,13 +153,13 @@ public class PlayerConnection : NetworkBehaviour
             lastMapPos = map.transform.position;
             CmdMoveMapOnServer(playerNumber, map.offset, poiManager.transform.eulerAngles.y);
         }
-        
+
         if (map.transform.localScale != lastMapScale && map.transform.parent == map.originalParent)
         {
             lastMapScale = map.transform.localScale;
             CmdScaleMapOnServer(playerNumber, lastMapScale);
         }
-        
+
         if (map.transform.eulerAngles != lastMapRot && map.transform.parent == map.originalParent)
         {
             lastMapRot = map.transform.eulerAngles;
@@ -167,13 +167,11 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [Command]
     private void CmdMoveMapOnServer(int playerNumber, Vector3 newPos, float yRotationMapOwner)
     {
         RpcMoveMapOnClients(playerNumber, newPos, yRotationMapOwner);
     }
 
-    [ClientRpc]
     private void RpcMoveMapOnClients(int playerNumber, Vector3 newPos, float yRotationMapOwner)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -190,15 +188,18 @@ public class PlayerConnection : NetworkBehaviour
 
         switch (rotationDiff)
         {
-            case 90: case -270:
+            case 90:
+            case -270:
                 newPos.x = -newPos.z;
                 newPos.z = xPos;
                 break;
-            case 180: case -180:
+            case 180:
+            case -180:
                 newPos.x = -newPos.x;
                 newPos.z = -newPos.z;
                 break;
-            case 270: case -90:
+            case 270:
+            case -90:
                 newPos.x = newPos.z;
                 newPos.z = -xPos;
                 break;
@@ -207,13 +208,11 @@ public class PlayerConnection : NetworkBehaviour
         map.SetMapToNewPos(newPos, true, ignoreIsTweeningCheck);
     }
 
-    [Command]
     private void CmdRotateMapOnServer(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
     {
         RpcRotateMapOnClients(playerNumber, nextRotation, yRotationMapOwner);
     }
 
-    [ClientRpc]
     private void RpcRotateMapOnClients(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -228,13 +227,16 @@ public class PlayerConnection : NetworkBehaviour
         int rotationDiff = (int)(yRotationMapOwner - poiManager.transform.eulerAngles.y);
         switch (rotationDiff)
         {
-            case 90: case -270:
+            case 90:
+            case -270:
                 nextRotation.y = nextRotation.y - 90;
                 break;
-            case 180: case -180:
+            case 180:
+            case -180:
                 nextRotation.y = nextRotation.y + 180;
                 break;
-            case 270: case -90:
+            case 270:
+            case -90:
                 nextRotation.y = nextRotation.y + 90;
                 break;
         }
@@ -242,13 +244,11 @@ public class PlayerConnection : NetworkBehaviour
         map.RotateTowardsAngle(nextRotation, ignoreIsTweeningCheck);
     }
 
-    [Command]
     private void CmdScaleMapOnServer(int playerNumber, Vector3 newScale)
     {
         RpcScaleMapOnClients(playerNumber, newScale);
     }
 
-    [ClientRpc]
     private void RpcScaleMapOnClients(int playerNumber, Vector3 newScale)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -256,13 +256,11 @@ public class PlayerConnection : NetworkBehaviour
         map.ChangeMapScaleToChosenScale(newScale);
     }
 
-    [Command]
     public void CmdSetNewMapCenter(int playerNumber, Vector2d newCenter)
     {
         RpcSetNewMapCenter(playerNumber, newCenter);
     }
 
-    [ClientRpc]
     private void RpcSetNewMapCenter(int playerNumber, Vector2d newCenter)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -270,25 +268,22 @@ public class PlayerConnection : NetworkBehaviour
         map.SetNewMapCenter(newCenter, false);
     }
 
-    [Command]
     private void CmdSetServerAsMapOwner()
     {
         playerIsInControlOfMap = true;
     }
 
-    [Command]
     public void CmdDrawHandLines(int handSide, int playerNumber)
     {
         RpcDrawHandLines(handSide, playerNumber);
     }
 
-    [ClientRpc]
     private void RpcDrawHandLines(int handSide, int playerNumber)
     {
         if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
 
         PlayerConnection mapOwner = FetchPlayerConnectionBasedOnNumber(playerNumber);
-        switch((PlayerHandRays.Hand)handSide)
+        switch ((PlayerHandRays.Hand)handSide)
         {
             case PlayerHandRays.Hand.Left:
                 DrawHandLines(mapOwner.leftLineRenderer);
@@ -307,13 +302,11 @@ public class PlayerConnection : NetworkBehaviour
         handSide.SetPositions(new Vector3[] { handSide.transform.position, endPos });
     }
 
-    [Command]
     public void CmdTurnOffhandLine(int handSide, int playerNumber)
     {
         RpcTurnOffhandLine(handSide, playerNumber);
     }
 
-    [ClientRpc]
     private void RpcTurnOffhandLine(int handSide, int playerNumber)
     {
         if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
@@ -331,14 +324,12 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [Command]
     private void CmdSetHeadRotation(int playerNumber, Vector3 newRot)
     {
         SetHeadRotation(playerNumber, newRot);
         RpcSetHeadRotation(playerNumber, newRot);
     }
 
-    [ClientRpc]
     private void RpcSetHeadRotation(int playerNumber, Vector3 newRot)
     {
         SetHeadRotation(playerNumber, newRot);
@@ -352,14 +343,12 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [Command]
     private void CmdSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
     {
         SetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
         RpcSetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
     }
 
-    [ClientRpc]
     private void RpcSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
     {
         SetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
@@ -375,13 +364,11 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [Command]
     public void CmdAcceptPlayerToDiscussion(int playerNumber)
     {
         RpcAcceptPlayerToDiscussion(playerNumber);
     }
 
-    [ClientRpc]
     private void RpcAcceptPlayerToDiscussion(int playerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
@@ -397,18 +384,16 @@ public class PlayerConnection : NetworkBehaviour
         CmdDisconnectPlayerFromDiscussion(connection.playerNumber);
     }
 
-    [Command]
     private void CmdDisconnectPlayerFromDiscussion(int playerNumber)
     {
         RpcDisconnectPlayerFromDiscussion(playerNumber);
     }
 
-    [ClientRpc]
     private void RpcDisconnectPlayerFromDiscussion(int playerNumber)
     {
         if (playerNumber != FetchOwnPlayer().playerNumber) { return; }
 
-        NetworkManager.singleton.StopClient();
+        //NetworkManager.singleton.StopClient();
         SceneManager.LoadScene(mainMenuScene);
     }
 
@@ -418,14 +403,12 @@ public class PlayerConnection : NetworkBehaviour
         CmdStartFillingLocationData(cityName);
     }
 
-    [Command]
     private void CmdStartFillingLocationData(string cityName)
     {
         FetchGameManager();
         gameManager.CmdStartRetrieveCityData(cityName);
     }
 
-    [Command]
     private void CmdSetPlayerNumber()
     {
         playerNumber = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManagerRIECTafel>().numberOfPlayers;
@@ -479,30 +462,28 @@ public class PlayerConnection : NetworkBehaviour
                 chooseSeatButtons[i].playerNumber = playerNumber;
                 chooseSeatButtons[i].CheckIfSeatIsOpen();
             }
-        } else if (!playerIsAcceptedToDiscussion && poiManager.allLocationDataIsInitialized)
+        }
+        else if (!playerIsAcceptedToDiscussion && poiManager.allLocationDataIsInitialized)
         {
             chooseSeatTitle.text = "Wacht tot u wordt toegelaten tot de discussie...";
         }
     }
 
-    [Command]
     private void CmdRequestLocationData(string dataType)
     {
         FetchGameManager();
         gameManager.CmdGiveBackLocationData(dataType, playerNumber);
     }
 
-    [ClientRpc]
     public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
         List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber, string cityName)
     {
-        if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
+        //if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
 
-        FetchVRPlayer();
-        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications, cityName);
+        //FetchVRPlayer();
+        //poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications, cityName);
     }
 
-    [Command]
     public void CmdSetPlayerName(string name, string avatarData, string dataType)
     {
         playerName = name;
@@ -511,7 +492,6 @@ public class PlayerConnection : NetworkBehaviour
         RpcSetPlayerName(name, avatarData, dataType, playerNumber);
     }
 
-    [ClientRpc]
     private void RpcSetPlayerName(string name, string avatarData, string dataType, int playerNumber)
     {
         FetchVRPlayer();
@@ -523,12 +503,12 @@ public class PlayerConnection : NetworkBehaviour
         player.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
 
         PlayerConnection ownPlayer = FetchOwnPlayer();
-        if (isServer && playerNumber != ownPlayer.playerNumber)
-        {
-            TurnOnAcceptPlayerToDiscussionMenu(name, false);
-            ownPlayer.serverConnectedPlayersList.Add(player);
-            networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<RejectPlayerFromDicussionButton>().connections.Add(player);
-        }
+        //if (isServer && playerNumber != ownPlayer.playerNumber)
+        //{
+        //    TurnOnAcceptPlayerToDiscussionMenu(name, false);
+        //    ownPlayer.serverConnectedPlayersList.Add(player);
+        //    networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<RejectPlayerFromDicussionButton>().connections.Add(player);
+        //}
     }
 
     public void TurnOnAcceptPlayerToDiscussionMenu(string name, bool alwaysChangeText)
@@ -544,7 +524,7 @@ public class PlayerConnection : NetworkBehaviour
         {
             text.text = question;
         }
-        
+
         networkManager.acceptPlayerToDiscussionUI.SetActive(true);
     }
 
@@ -676,21 +656,19 @@ public class PlayerConnection : NetworkBehaviour
         {
             bodyParts[i].material.color = bodyColor;
         }
-       
+
         for (int i = 0; i < hands.Count; i++)
         {
             hands[i].GetComponentInChildren<SkinnedMeshRenderer>().material.color = bodyColor;
         }
     }
 
-    [Command]
     public void CmdChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
         SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
         RpcChangePlayerPos(playerNumber, newPos, newRot, seatIndex);
     }
 
-    [ClientRpc]
     private void RpcChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
         SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
@@ -707,40 +685,40 @@ public class PlayerConnection : NetworkBehaviour
         {
             chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
         }
-        
+
         for (int i = 0; i < chooseSeatButtons.Count; i++)
         {
             chooseSeatButtons[i].CheckIfSeatIsOpen();
         }
 
         PlayerConnection ownPlayer = FetchOwnPlayer();
-        if (playerNumber == ownPlayer.playerNumber && isLocalPlayer)
-        {
-            FetchVRPlayer();
-            poiManager.ChangePOIManagerTransform(player.transform);
-            poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
+        //if (playerNumber == ownPlayer.playerNumber && isLocalPlayer)
+        //{
+        //    FetchVRPlayer();
+        //    poiManager.ChangePOIManagerTransform(player.transform);
+        //    poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
 
-            PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-            for (int i = 0; i < currentConnections.Length; i++)
-            {
-                if (currentConnections[i] == this || currentConnections[i].chosenSeat == -1) { continue; }
+        //    PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        //    for (int i = 0; i < currentConnections.Length; i++)
+        //    {
+        //        if (currentConnections[i] == this || currentConnections[i].chosenSeat == -1) { continue; }
 
-                EnableChildsOfObject(currentConnections[i].transform, true);
-                ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
-            }
+        //        EnableChildsOfObject(currentConnections[i].transform, true);
+        //        ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
+        //    }
 
-            StartCoroutine(SetPOIUIObjectAndStats());
-        }
-        else
-        {
-            if (ownPlayer.chosenSeat != -1)
-            {
-                EnableChildsOfObject(player.transform, true);
-                ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
+        //    StartCoroutine(SetPOIUIObjectAndStats());
+        //}
+        //else
+        //{
+        //    if (ownPlayer.chosenSeat != -1)
+        //    {
+        //        EnableChildsOfObject(player.transform, true);
+        //        ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
 
-                StartCoroutine(SetPOIUIObjectAndStats());
-            }
-        }
+        //        StartCoroutine(SetPOIUIObjectAndStats());
+        //    }
+        //}
     }
 
     private IEnumerator SetPOIUIObjectAndStats()
@@ -756,44 +734,43 @@ public class PlayerConnection : NetworkBehaviour
 
             PlayerConnection ownPlayer = FetchOwnPlayer();
 
-            if (ownPlayer.isServer)
-            {
-                mapOwnerText.enabled = false;
-            }
-            else
-            {
-                backToStartPositionButton.button.interactable = false;
-                poiSelectionDropdown.dropdown.interactable = false;
-                playerMapControlDropdown.gameObject.SetActive(false);
+            //if (ownPlayer.isServer)
+            //{
+            //    mapOwnerText.enabled = false;
+            //}
+            //else
+            //{
+            //    backToStartPositionButton.button.interactable = false;
+            //    poiSelectionDropdown.dropdown.interactable = false;
+            //    playerMapControlDropdown.gameObject.SetActive(false);
 
-                List<PlayerConnection> players = new List<PlayerConnection>();
-                players.AddRange(FindObjectsOfType<PlayerConnection>());
+            //    List<PlayerConnection> players = new List<PlayerConnection>();
+            //    players.AddRange(FindObjectsOfType<PlayerConnection>());
 
-                PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
+            //    PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
 
-                if (mapOwner)
-                {
-                    SetMapOwnerText(mapOwner, ownPlayer);
+            //    if (mapOwner)
+            //    {
+            //        SetMapOwnerText(mapOwner, ownPlayer);
 
-                    if (mapOwner != ownPlayer)
-                    {
-                        CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, true);
-                    }
-                }
-                else
-                {
-                    mapOwnerText.text = "Iedereen bestuurd de kaart zelfstandig";
-                }
-            }
+            //        if (mapOwner != ownPlayer)
+            //        {
+            //            CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, true);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        mapOwnerText.text = "Iedereen bestuurd de kaart zelfstandig";
+            //    }
+            //}
         }
 
-        if (isServer)
-        {
-            playerMapControlDropdown.FillDropdownWithPlayers();
-        }
+        //if (isServer)
+        //{
+        //    playerMapControlDropdown.FillDropdownWithPlayers();
+        //}
     }
 
-    [Command]
     private void CmdRetrieveCurrentMapStats(int playerNumber, bool targetPlayerNumber)
     {
         List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
@@ -802,27 +779,25 @@ public class PlayerConnection : NetworkBehaviour
         RpcRetrieveCurrentMapStats(mapOwner.playerNumber, playerNumber, targetPlayerNumber);
     }
 
-    [ClientRpc]
     private void RpcRetrieveCurrentMapStats(int playerNumberMapOwner, int playerNumber, bool targetPlayerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
 
-        if (isLocalPlayer && ownPlayer.playerNumber == playerNumberMapOwner)
-        {
-            MoveMap map = FindObjectOfType<MoveMap>();
-            POIManager poiManager = FindObjectOfType<POIManager>();
+        //if (isLocalPlayer && ownPlayer.playerNumber == playerNumberMapOwner)
+        //{
+        //    MoveMap map = FindObjectOfType<MoveMap>();
+        //    POIManager poiManager = FindObjectOfType<POIManager>();
 
-            lastMapPos = map.offset;
-            lastMapRot = map.transform.eulerAngles;
-            lastMapScale = map.transform.localScale;
-            isSendingData = false;
+        //    lastMapPos = map.offset;
+        //    lastMapRot = map.transform.eulerAngles;
+        //    lastMapScale = map.transform.localScale;
+        //    isSendingData = false;
 
-            ownPlayer.CmdSetCurrentMapStats(playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), map.offset, map.transform.eulerAngles, 
-                poiManager.transform.eulerAngles.y, map.transform.localScale);
-        }
+        //    ownPlayer.CmdSetCurrentMapStats(playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), map.offset, map.transform.eulerAngles,
+        //        poiManager.transform.eulerAngles.y, map.transform.localScale);
+        //}
     }
 
-    [Command]
     private void CmdSetCurrentMapStats(int playerNumber, bool targetPlayerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
         float yRotationMapOwner, Vector3 mapScale)
     {
@@ -836,8 +811,7 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    private void RpcSetCurrentMapStatsForTargetedPlayer(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation, 
+    private void RpcSetCurrentMapStatsForTargetedPlayer(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
         float yRotationMapOwner, Vector3 mapScale)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber)
@@ -846,7 +820,6 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
     private void RpcSetCurrentMapStatsForAllPlayers(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
         float yRotationMapOwner, Vector3 mapScale)
     {
@@ -870,13 +843,11 @@ public class PlayerConnection : NetworkBehaviour
         MoveMapOnCorrectAngle(mapOffset, yRotationMapOwner, true);
     }
 
-    [Command]
     public void CmdCheckIfSeatsOpenedUp(int playerNumber)
     {
         RpcCheckIfSeatsOpenedUp(playerNumber);
     }
 
-    [ClientRpc]
     private void RpcCheckIfSeatsOpenedUp(int playerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
@@ -905,14 +876,12 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    [Command]
     public void CmdSetNewMapOwner(int playerNumber)
     {
         SetNewMapOwner(playerNumber);
         RpcSetNewMapOwner(playerNumber);
     }
 
-    [ClientRpc]
     private void RpcSetNewMapOwner(int playerNumber)
     {
         SetNewMapOwner(playerNumber);
@@ -936,35 +905,34 @@ public class PlayerConnection : NetworkBehaviour
 
         newPlayerInControl.playerIsInControlOfMap = true;
 
-        if (newPlayerInControl.hasAuthority)
-        {
-            EnablePOIUI(true);
-        } else
-        {
-            EnablePOIUI(false);
-        }
+        //if (newPlayerInControl.hasAuthority)
+        //{
+        //    EnablePOIUI(true);
+        //}
+        //else
+        //{
+        //    EnablePOIUI(false);
+        //}
 
         PlayerConnection ownPlayer = FetchOwnPlayer();
-        if (!ownPlayer.isServer)
-        {
-            SetMapOwnerText(newPlayerInControl, ownPlayer);
-        }
+        //if (!ownPlayer.isServer)
+        //{
+        //    SetMapOwnerText(newPlayerInControl, ownPlayer);
+        //}
 
-        if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.hasAuthority)
-        {
-            ownPlayer.isSendingData = true;
-            ownPlayer.CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, false);
-        }
+        //if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.hasAuthority)
+        //{
+        //    ownPlayer.isSendingData = true;
+        //    ownPlayer.CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, false);
+        //}
     }
 
-    [Command]
     public void CmdSetMapToFreeForAll()
     {
         SetMapToFreeForAll();
         RpcSetMapToFreeForAll();
     }
 
-    [ClientRpc]
     private void RpcSetMapToFreeForAll()
     {
         SetMapToFreeForAll();
@@ -1033,9 +1001,10 @@ public class PlayerConnection : NetworkBehaviour
 
     public PlayerConnection FetchOwnPlayer()
     {
-        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
-        return playerConnections.Find(i => i.hasAuthority);
+        //PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        //List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        //return playerConnections.Find(i => i.hasAuthority);
+        return null;
     }
 
     private void FetchMapOwnerText()

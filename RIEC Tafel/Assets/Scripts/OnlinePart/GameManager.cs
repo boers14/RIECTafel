@@ -1,12 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Mirror;
 using Mapbox.Unity.Map;
 using Mapbox.Utils;
 using UnityEngine.Networking;
 
-public class GameManager : NetworkBehaviour
+public class GameManager : MonoBehaviour
 {
     public enum DataType
     {
@@ -22,10 +21,9 @@ public class GameManager : NetworkBehaviour
     private List<string> allLocations = new List<string>(), conclusions = new List<string>(), indications = new List<string>(), 
         featureAmounts = new List<string>(), extraExplanations = new List<string>();
 
-    [SyncVar]
+    //[SyncVar]
     private string cityName = "Utrecht";
 
-    [Command]
     public void CmdStartRetrieveCityData(string cityName)
     {
         if (cityName != "")
@@ -115,7 +113,7 @@ public class GameManager : NetworkBehaviour
         poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, cityName);
     }
 
-    [Command (channel = 0, requiresAuthority = false)]
+    //[Command (channel = 0, requiresAuthority = false)]
     public void CmdGiveBackLocationData(string dataType, int playerNumber)
     {
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
