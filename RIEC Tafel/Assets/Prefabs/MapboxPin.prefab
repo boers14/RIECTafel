@@ -138,6 +138,7 @@ MonoBehaviour:
   nameText: {fileID: 654382142985156887}
   leftCharacteristics: 320
   rightCharacteristics: 576
+  maskAfterClickingButton: 0
   player: {fileID: 7092064847597304369}
 --- !u!1 &1774860472619129106
 GameObject:
@@ -212,6 +213,7 @@ GameObject:
   - component: {fileID: 1774860472619129317}
   - component: {fileID: 1774860472619129270}
   - component: {fileID: 1774860472619129273}
+  - component: {fileID: 847419737947475546}
   m_Layer: 0
   m_Name: Right Hand Model
   m_TagString: Hand
@@ -267,6 +269,104 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.018139059, y: 0.01884275, z: 0.036014304}
   m_Center: {x: 0.015468084, y: 0.017360175, z: 0.0896529}
+--- !u!120 &847419737947475546
+LineRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1774860472619129108}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 96fdfbb38cc17f341821f3afeef824de, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 1}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 0.025
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
 --- !u!1 &1774860472619129109
 GameObject:
   m_ObjectHideFlags: 0
@@ -1369,7 +1469,8 @@ MonoBehaviour:
   hands:
   - {fileID: 9031117897658986648}
   - {fileID: 1774860472619129317}
-  rotOffsetOfHands: {x: 0, y: 0, z: -90}
+  leftLineRenderer: {fileID: 7986190327002670602}
+  rightLineRenderer: {fileID: 847419737947475546}
 --- !u!65 &7290673169331664104
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1419,6 +1520,7 @@ MonoBehaviour:
   nameText: {fileID: 654382142985156887}
   leftCharacteristics: 320
   rightCharacteristics: 576
+  maskAfterClickingButton: 2
   player: {fileID: 7092064847597304369}
 --- !u!1 &4952190158923569800
 GameObject:
@@ -1604,7 +1706,6 @@ GameObject:
   - component: {fileID: 69083506393274964}
   - component: {fileID: 1303851503133810614}
   - component: {fileID: 2269818475406872638}
-  - component: {fileID: 1805969324427076258}
   m_Layer: 0
   m_Name: NoText
   m_TagString: Untagged
@@ -1764,24 +1865,6 @@ MonoBehaviour:
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
---- !u!114 &1805969324427076258
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5170955172033368990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d7d8b1c147258d42822cc5312a425ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enableSet: 1
-  kickPlayerSet: {fileID: 7428016825313214092}
-  nameText: {fileID: 654382142985156887}
-  leftCharacteristics: 0
-  rightCharacteristics: 0
-  player: {fileID: 7092064847597304369}
 --- !u!1 &5374823619912718293
 GameObject:
   m_ObjectHideFlags: 0
@@ -2129,6 +2212,7 @@ MonoBehaviour:
   nameText: {fileID: 654382142985156887}
   leftCharacteristics: 320
   rightCharacteristics: 576
+  maskAfterClickingButton: 0
   player: {fileID: 7092064847597304369}
 --- !u!1 &9031117897658986528
 GameObject:
@@ -2326,6 +2410,7 @@ GameObject:
   - component: {fileID: 9031117897658986648}
   - component: {fileID: 9031117897658986712}
   - component: {fileID: 9031117897658986711}
+  - component: {fileID: 7986190327002670602}
   m_Layer: 0
   m_Name: Left Hand Model
   m_TagString: Hand
@@ -2381,6 +2466,104 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.018139059, y: 0.01884275, z: 0.036014304}
   m_Center: {x: -0.01, y: 0.017360175, z: 0.085}
+--- !u!120 &7986190327002670602
+LineRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9031117897658986534}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 96fdfbb38cc17f341821f3afeef824de, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 1}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 0.025
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
 --- !u!1 &9031117897658986535
 GameObject:
   m_ObjectHideFlags: 0

@@ -68,9 +68,12 @@ public class PlayerConnection : NetworkBehaviour
 
     private PlayerMapControlDropdown playerMapControlDropdown = null;
 
-    private TMP_Text mapOwnerText = null;
+    private TMP_Text mapOwnerText = null, chooseSeatTitle = null;
 
     private MoveMap map = null;
+
+    [SerializeField]
+    private LineRenderer leftLineRenderer = null, rightLineRenderer = null;
 
     private void Start()
     {
@@ -78,6 +81,7 @@ public class PlayerConnection : NetworkBehaviour
         EnableChildsOfObject(transform, false);
 
         chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
+        chooseSeatTitle = GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>();
         networkManager = FindObjectOfType<NetworkManagerRIECTafel>();
         hitbox = GetComponent<BoxCollider>();
 
@@ -273,6 +277,61 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
+    public void CmdDrawHandLines(int handSide, int playerNumber)
+    {
+        RpcDrawHandLines(handSide, playerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcDrawHandLines(int handSide, int playerNumber)
+    {
+        if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
+
+        PlayerConnection mapOwner = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        switch((PlayerHandRays.Hand)handSide)
+        {
+            case PlayerHandRays.Hand.Left:
+                DrawHandLines(mapOwner.leftLineRenderer);
+                break;
+            case PlayerHandRays.Hand.Right:
+                DrawHandLines(mapOwner.rightLineRenderer);
+                break;
+        }
+    }
+
+    private void DrawHandLines(LineRenderer handSide)
+    {
+        handSide.enabled = true;
+
+        Vector3 endPos = handSide.transform.position + handSide.transform.forward * 10;
+        handSide.SetPositions(new Vector3[] { handSide.transform.position, endPos });
+    }
+
+    [Command]
+    public void CmdTurnOffhandLine(int handSide, int playerNumber)
+    {
+        RpcTurnOffhandLine(handSide, playerNumber);
+    }
+
+    [ClientRpc]
+    private void RpcTurnOffhandLine(int handSide, int playerNumber)
+    {
+        if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
+
+        PlayerConnection mapOwner = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        PlayerHandRays.Hand hand = (PlayerHandRays.Hand)handSide;
+        switch (hand)
+        {
+            case PlayerHandRays.Hand.Left:
+                mapOwner.leftLineRenderer.enabled = false;
+                break;
+            case PlayerHandRays.Hand.Right:
+                mapOwner.rightLineRenderer.enabled = false;
+                break;
+        }
+    }
+
+    [Command]
     private void CmdSetHeadRotation(int playerNumber, Vector3 newRot)
     {
         SetHeadRotation(playerNumber, newRot);
@@ -412,7 +471,7 @@ public class PlayerConnection : NetworkBehaviour
     {
         if (playerIsAcceptedToDiscussion && poiManager.allLocationDataIsInitialized)
         {
-            GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>().text = "Kies een plek om te zitten:";
+            chooseSeatTitle.text = "Kies een plek om te zitten:";
             for (int i = 0; i < chooseSeatButtons.Count; i++)
             {
                 chooseSeatButtons[i].GetComponent<Image>().enabled = true;
@@ -422,8 +481,7 @@ public class PlayerConnection : NetworkBehaviour
             }
         } else if (!playerIsAcceptedToDiscussion && poiManager.allLocationDataIsInitialized)
         {
-            GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>().text = 
-                "Wacht tot u wordt toegelaten tot de discussie...";
+            chooseSeatTitle.text = "Wacht tot u wordt toegelaten tot de discussie...";
         }
     }
 
@@ -870,6 +928,8 @@ public class PlayerConnection : NetworkBehaviour
         if (oldPlayerInControl)
         {
             oldPlayerInControl.playerIsInControlOfMap = false;
+            oldPlayerInControl.leftLineRenderer.enabled = false;
+            oldPlayerInControl.rightLineRenderer.enabled = false;
         }
 
         PlayerConnection newPlayerInControl = players.Find(i => i.playerNumber == playerNumber);

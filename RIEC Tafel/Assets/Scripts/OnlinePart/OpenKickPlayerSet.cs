@@ -20,6 +20,9 @@ public class OpenKickPlayerSet : MonoBehaviour
     [SerializeField]
     private InputDeviceCharacteristics leftCharacteristics = 0, rightCharacteristics = 0;
 
+    [SerializeField]
+    private int maskAfterClickingButton = 0;
+
     private List<InputDevice> inputDevices = new List<InputDevice>();
 
     public PlayerConnection player = null;
@@ -28,11 +31,17 @@ public class OpenKickPlayerSet : MonoBehaviour
 
     private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
 
+    private List<bool> buttonIsDown = new List<bool>();
+
     private void Start()
     {
         InitializeControllers.InitializeControllersBasedOnHandRays(inputDevices, handRays, rightCharacteristics, leftCharacteristics);
 
         handRays.AddRange(FindObjectsOfType<PlayerHandRays>());
+        for (int i = 0; i < handRays.Count; i++)
+        {
+            buttonIsDown.Add(false);
+        }
 
         interactor = GetComponent<PlayerHandsRayInteractor>();
         if (interactor != null)
@@ -61,7 +70,14 @@ public class OpenKickPlayerSet : MonoBehaviour
             if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton && 
                 handRays[i].hoveredObjects.Contains(interactor))
             {
-                OnButtonClickAction();
+                if (!buttonIsDown[i])
+                {
+                    buttonIsDown[i] = true;
+                    OnButtonClickAction();
+                }
+            } else if (!primaryButton)
+            {
+                buttonIsDown[i] = false;
             }
         }
     }
@@ -69,6 +85,8 @@ public class OpenKickPlayerSet : MonoBehaviour
     public virtual void OnButtonClickAction()
     {
         if (kickPlayerSet.activeSelf == enableSet) { return; }
+
+        player.gameObject.layer = maskAfterClickingButton;
 
         kickPlayerSet.SetActive(enableSet);
         if (enableSet)

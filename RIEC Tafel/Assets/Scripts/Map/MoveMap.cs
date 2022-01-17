@@ -61,9 +61,11 @@ public class MoveMap : MonoBehaviour
 
     private MiniMap miniMap = null;
 
-    private List<Vector3> prevHandPosses = new List<Vector3>(), prevHandDirections = new List<Vector3>();
+    private List<Vector3> prevHandPosses = new List<Vector3>(), prevHandDirections = new List<Vector3>(), 
+        prevHandPossesLineRendering = new List<Vector3>(), prevHandRotationsLineRendering = new List<Vector3>();
     private List<Quaternion> prevHandRotations = new List<Quaternion>();
     private List<PlayerHandRays> handRays = new List<PlayerHandRays>();
+    private List<bool> handLinesVisibility = new List<bool>();
 
     private List<GrabbebleObjects> grabbebleObjects = new List<GrabbebleObjects>();
 
@@ -81,8 +83,11 @@ public class MoveMap : MonoBehaviour
         {
             prevHandDirections.Add(Vector3.zero);
             prevHandPosses.Add(Vector3.zero);
+            prevHandRotationsLineRendering.Add(Vector3.zero);
+            prevHandPossesLineRendering.Add(Vector3.zero);
             prevHandRotations.Add(Quaternion.identity);
             handRays.Add(hands[i].GetComponent<PlayerHandRays>());
+            handLinesVisibility.Add(false);
         }
 
         GrabbebleObjects[] grabbebleObjects = FindObjectsOfType<GrabbebleObjects>();
@@ -119,6 +124,32 @@ public class MoveMap : MonoBehaviour
             if (transform.localScale.x * originalParent.transform.localScale.x >= minimumScale)
             {
                 ChangeMapScaleToChosenScale(transform.localScale * originalParent.transform.localScale.x);
+            }
+        }
+
+        if (!ffaMap && ownPlayer.playerIsInControlOfMap)
+        {
+            for (int i = 0; i < handRays.Count; i++)
+            {
+                if (handRays[i].hoveredObjects.Contains(oneHandControlsInteractorObject))
+                {
+                    handLinesVisibility[i] = true;
+                    if (prevHandPossesLineRendering[i] != hands[i].transform.position ||
+                        prevHandRotationsLineRendering[i] != hands[i].transform.eulerAngles)
+                    {
+                        ownPlayer.CmdDrawHandLines((int)handRays[i].hand, ownPlayer.playerNumber);
+                    }
+                } else
+                {
+                    if (handLinesVisibility[i])
+                    {
+                        handLinesVisibility[i] = false;
+                        ownPlayer.CmdTurnOffhandLine((int)handRays[i].hand, ownPlayer.playerNumber);
+                    }
+                }
+
+                prevHandPossesLineRendering[i] = hands[i].transform.position;
+                prevHandRotationsLineRendering[i] = hands[i].transform.eulerAngles;
             }
         }
 

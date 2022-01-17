@@ -5561,6 +5561,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characteristics: 320
+  players: []
 --- !u!1 &771404722
 GameObject:
   m_ObjectHideFlags: 0
@@ -13239,7 +13240,7 @@ GameObject:
   - component: {fileID: 2044814394}
   m_Layer: 5
   m_Name: TitleAcceptPlayer
-  m_TagString: ChooseSeatPlacementTitle
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
