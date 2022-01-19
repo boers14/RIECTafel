@@ -5,12 +5,11 @@ using UnityEngine;
 public static class ConnectionManager
 {
     public enum ConnectFunction {
-        ServerClient,
-        Server,
-        Client
+        Host,
+        Join
     }
 
-    public static ConnectFunction connectFunction = ConnectFunction.Client;
+    public static ConnectFunction connectFunction = ConnectFunction.Join;
 
-    public static string cityName = "";
+    public static string cityName = "", roomName = "";
 }

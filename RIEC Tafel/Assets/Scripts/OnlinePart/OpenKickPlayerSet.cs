@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 using TMPro;
+using Photon.Pun;
 
 public class OpenKickPlayerSet : MonoBehaviour
 {
@@ -60,26 +61,27 @@ public class OpenKickPlayerSet : MonoBehaviour
             return;
         }
 
-        //if (!isBeingHovered || !player.isServer)
-        //{
-        //    return;
-        //}
+        if (!isBeingHovered || !PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
 
-        //for (int i = 0; i < inputDevices.Count; i++)
-        //{
-        //    if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton && 
-        //        handRays[i].hoveredObjects.Contains(interactor))
-        //    {
-        //        if (!buttonIsDown[i])
-        //        {
-        //            buttonIsDown[i] = true;
-        //            OnButtonClickAction();
-        //        }
-        //    } else if (!primaryButton)
-        //    {
-        //        buttonIsDown[i] = false;
-        //    }
-        //}
+        for (int i = 0; i < inputDevices.Count; i++)
+        {
+            if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton &&
+                handRays[i].hoveredObjects.Contains(interactor))
+            {
+                if (!buttonIsDown[i])
+                {
+                    buttonIsDown[i] = true;
+                    OnButtonClickAction();
+                }
+            }
+            else if (!primaryButton)
+            {
+                buttonIsDown[i] = false;
+            }
+        }
     }
 
     public virtual void OnButtonClickAction()

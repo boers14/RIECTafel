@@ -137,14 +137,14 @@ public class MoveMap : MonoBehaviour
                     if (prevHandPossesLineRendering[i] != hands[i].transform.position ||
                         prevHandRotationsLineRendering[i] != hands[i].transform.eulerAngles)
                     {
-                        ownPlayer.CmdDrawHandLines((int)handRays[i].hand, ownPlayer.playerNumber);
+                        ownPlayer.StartDrawHandLines((int)handRays[i].hand, ownPlayer.playerNumber);
                     }
                 } else
                 {
                     if (handLinesVisibility[i])
                     {
                         handLinesVisibility[i] = false;
-                        ownPlayer.CmdTurnOffhandLine((int)handRays[i].hand, ownPlayer.playerNumber);
+                        ownPlayer.StartTurnOffHandLine((int)handRays[i].hand, ownPlayer.playerNumber);
                     }
                 }
 
@@ -514,7 +514,7 @@ public class MoveMap : MonoBehaviour
 
         if(!ffaMap && ownPlayer.playerIsInControlOfMap)
         {
-            ownPlayer.CmdSetNewMapCenter(ownPlayer.playerNumber, newCenter);
+            ownPlayer.StartSetNewMapCenter(ownPlayer.playerNumber, newCenter);
         }
     }
 

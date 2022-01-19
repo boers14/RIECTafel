@@ -4,8 +4,10 @@ using UnityEngine;
 using Mapbox.Unity.Map;
 using Mapbox.Utils;
 using UnityEngine.Networking;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviourPunCallbacks
 {
     public enum DataType
     {
@@ -21,10 +23,9 @@ public class GameManager : MonoBehaviour
     private List<string> allLocations = new List<string>(), conclusions = new List<string>(), indications = new List<string>(), 
         featureAmounts = new List<string>(), extraExplanations = new List<string>();
 
-    //[SyncVar]
     private string cityName = "Utrecht";
 
-    public void CmdStartRetrieveCityData(string cityName)
+    public void StartRetrieveCityData(string cityName)
     {
         if (cityName != "")
         {
@@ -113,8 +114,14 @@ public class GameManager : MonoBehaviour
         poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, cityName);
     }
 
-    //[Command (channel = 0, requiresAuthority = false)]
-    public void CmdGiveBackLocationData(string dataType, int playerNumber)
+    public void StartGiveBackLocationData(string dataType, int playerNumber)
+    {
+        Player targetedPlayer = FindObjectOfType<PlayerConnection>().FetchPlayerConnectionBasedOnNumber(playerNumber).controlledPlayer;
+        photonView.RPC("RpcGiveBackLocationData", targetedPlayer, dataType, playerNumber);
+    }
+
+    [PunRPC]
+    private void RpcGiveBackLocationData(string dataType, int playerNumber)
     {
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
@@ -135,7 +142,7 @@ public class GameManager : MonoBehaviour
             AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, requiredDatatype);
         }
 
-        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, 
+        player.StartSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, 
             playerNumber, cityName);
     }
 

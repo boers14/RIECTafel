@@ -36,7 +36,7 @@ public class AcceptPlayerToDiscussionButton : MeetingButton
     {
         if (!playerIsRejected)
         {
-            rejectPlayerButton.connections[0].FetchOwnPlayer().CmdAcceptPlayerToDiscussion(rejectPlayerButton.connections[0].playerNumber);
+            rejectPlayerButton.connections[0].FetchOwnPlayer().AcceptPlayerToDiscussion(rejectPlayerButton.connections[0].playerNumber);
         }
 
         rejectPlayerButton.connections.RemoveAt(0);

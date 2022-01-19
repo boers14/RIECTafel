@@ -78,11 +78,11 @@ public class PlayerMapControlDropdown : DropdownSelection
     {
         if (value == players.Count)
         {
-            players[0].FetchOwnPlayer().CmdSetMapToFreeForAll();
+            players[0].FetchOwnPlayer().StartSettingMapToFreeForAll();
         }
         else
         {
-            players[0].FetchOwnPlayer().CmdSetNewMapOwner(players[value].playerNumber);
+            players[0].FetchOwnPlayer().StartSettingNewMapOwner(players[value].playerNumber);
         }
     }
 }

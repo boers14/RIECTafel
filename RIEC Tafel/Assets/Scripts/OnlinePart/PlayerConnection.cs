@@ -6,13 +6,13 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using Mapbox.Utils;
 using Photon.Pun;
+using Photon.Realtime;
 
-public class PlayerConnection : MonoBehaviour
+public class PlayerConnection : MonoBehaviourPunCallbacks
 {
-    //[SyncVar]
     private string avatarData = "";
 
-    [System.NonSerialized/*, SyncVar*/]
+    [System.NonSerialized]
     public string playerName = "";
 
     [SerializeField]
@@ -22,10 +22,9 @@ public class PlayerConnection : MonoBehaviour
 
     private POIManager poiManager = null;
 
-    //[SyncVar]
     private GameManager.DataType dataType = GameManager.DataType.Regular;
 
-    [/*SyncVar,*/ System.NonSerialized]
+    [System.NonSerialized]
     public int playerNumber = -1, chosenSeat = -1;
 
     [SerializeField]
@@ -59,7 +58,7 @@ public class PlayerConnection : MonoBehaviour
 
     private BoxCollider hitbox = null;
 
-    [System.NonSerialized/*, SyncVar*/]
+    [System.NonSerialized]
     public bool playerIsInControlOfMap = false;
 
     private BackToStartPositionButton backToStartPositionButton = null;
@@ -74,6 +73,9 @@ public class PlayerConnection : MonoBehaviour
 
     [SerializeField]
     private LineRenderer leftLineRenderer = null, rightLineRenderer = null;
+
+    [System.NonSerialized]
+    public Player controlledPlayer = null;
 
     private void Start()
     {
@@ -90,9 +92,9 @@ public class PlayerConnection : MonoBehaviour
         lastMapRot = map.transform.eulerAngles;
         lastMapScale = map.transform.localScale;
 
-        //if (!isLocalPlayer) { return; }
+        if (!controlledPlayer.IsLocal) { return; }
 
-        CmdSetPlayerNumber();
+        photonView.RPC("RpcSetPlayerNumber", RpcTarget.All, controlledPlayer);
         tag = "PlayerConnection";
 
         FetchVRPlayer();
@@ -116,16 +118,16 @@ public class PlayerConnection : MonoBehaviour
         actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Left).transform);
         actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Right).transform);
 
-        //if (isServer)
-        //{
-        //    playerIsAcceptedToDiscussion = true;
-        //    CmdSetServerAsMapOwner();
-        //}
+        if (PhotonNetwork.IsMasterClient)
+        {
+            playerIsAcceptedToDiscussion = true;
+            photonView.RPC("RpcSetServerAsMapOwner", RpcTarget.All, controlledPlayer);
+        }
     }
 
     private void FixedUpdate()
     {
-        //if (!hasAuthority || playerNumber == -1 || chosenSeat == -1) { return; }
+        if (!photonView.IsMine || playerNumber == -1 || chosenSeat == -1) { return; }
 
         for (int i = 0; i < hands.Count; i++)
         {
@@ -136,14 +138,15 @@ public class PlayerConnection : MonoBehaviour
             {
                 lastKnownHandPosses[i] = hands[i].localPosition;
                 lastKnownHandRots[i] = hands[i].localEulerAngles;
-                CmdSetHandPosAndRot(playerNumber, lastKnownHandPosses[i], lastKnownHandRots[i], handRotationOffsets[i], i);
+                photonView.RPC("RpcSetHandPosAndRot", RpcTarget.Others, playerNumber, lastKnownHandPosses[i], lastKnownHandRots[i], 
+                    handRotationOffsets[i], i);
             }
         }
 
         if (cameraTransform.eulerAngles != lastKnownCameraRot)
         {
             lastKnownCameraRot = cameraTransform.eulerAngles;
-            CmdSetHeadRotation(playerNumber, lastKnownCameraRot);
+            photonView.RPC("RpcSetHeadRotation", RpcTarget.Others, playerNumber, lastKnownCameraRot);
         }
 
         if (!playerIsInControlOfMap || isSendingData) { return; }
@@ -151,27 +154,23 @@ public class PlayerConnection : MonoBehaviour
         if (map.transform.position != lastMapPos && map.transform.parent == map.originalParent)
         {
             lastMapPos = map.transform.position;
-            CmdMoveMapOnServer(playerNumber, map.offset, poiManager.transform.eulerAngles.y);
+            photonView.RPC("RpcMoveMapOnClients", RpcTarget.Others, playerNumber, map.offset, poiManager.transform.eulerAngles.y);
         }
 
         if (map.transform.localScale != lastMapScale && map.transform.parent == map.originalParent)
         {
             lastMapScale = map.transform.localScale;
-            CmdScaleMapOnServer(playerNumber, lastMapScale);
+            photonView.RPC("RpcScaleMapOnClients", RpcTarget.Others, playerNumber, lastMapScale);
         }
 
         if (map.transform.eulerAngles != lastMapRot && map.transform.parent == map.originalParent)
         {
             lastMapRot = map.transform.eulerAngles;
-            CmdRotateMapOnServer(playerNumber, lastMapRot, poiManager.transform.eulerAngles.y);
+            photonView.RPC("RpcRotateMapOnClients", RpcTarget.Others, playerNumber, lastMapRot, poiManager.transform.eulerAngles.y);
         }
     }
 
-    private void CmdMoveMapOnServer(int playerNumber, Vector3 newPos, float yRotationMapOwner)
-    {
-        RpcMoveMapOnClients(playerNumber, newPos, yRotationMapOwner);
-    }
-
+    [PunRPC]
     private void RpcMoveMapOnClients(int playerNumber, Vector3 newPos, float yRotationMapOwner)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -188,18 +187,15 @@ public class PlayerConnection : MonoBehaviour
 
         switch (rotationDiff)
         {
-            case 90:
-            case -270:
+            case 90: case -270:
                 newPos.x = -newPos.z;
                 newPos.z = xPos;
                 break;
-            case 180:
-            case -180:
+            case 180: case -180:
                 newPos.x = -newPos.x;
                 newPos.z = -newPos.z;
                 break;
-            case 270:
-            case -90:
+            case 270: case -90:
                 newPos.x = newPos.z;
                 newPos.z = -xPos;
                 break;
@@ -208,11 +204,7 @@ public class PlayerConnection : MonoBehaviour
         map.SetMapToNewPos(newPos, true, ignoreIsTweeningCheck);
     }
 
-    private void CmdRotateMapOnServer(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
-    {
-        RpcRotateMapOnClients(playerNumber, nextRotation, yRotationMapOwner);
-    }
-
+    [PunRPC]
     private void RpcRotateMapOnClients(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -227,16 +219,13 @@ public class PlayerConnection : MonoBehaviour
         int rotationDiff = (int)(yRotationMapOwner - poiManager.transform.eulerAngles.y);
         switch (rotationDiff)
         {
-            case 90:
-            case -270:
+            case 90: case -270:
                 nextRotation.y = nextRotation.y - 90;
                 break;
-            case 180:
-            case -180:
+            case 180: case -180:
                 nextRotation.y = nextRotation.y + 180;
                 break;
-            case 270:
-            case -90:
+            case 270: case -90:
                 nextRotation.y = nextRotation.y + 90;
                 break;
         }
@@ -244,11 +233,7 @@ public class PlayerConnection : MonoBehaviour
         map.RotateTowardsAngle(nextRotation, ignoreIsTweeningCheck);
     }
 
-    private void CmdScaleMapOnServer(int playerNumber, Vector3 newScale)
-    {
-        RpcScaleMapOnClients(playerNumber, newScale);
-    }
-
+    [PunRPC]
     private void RpcScaleMapOnClients(int playerNumber, Vector3 newScale)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -256,11 +241,12 @@ public class PlayerConnection : MonoBehaviour
         map.ChangeMapScaleToChosenScale(newScale);
     }
 
-    public void CmdSetNewMapCenter(int playerNumber, Vector2d newCenter)
+    public void StartSetNewMapCenter(int playerNumber, Vector2d newCenter)
     {
-        RpcSetNewMapCenter(playerNumber, newCenter);
+        photonView.RPC("RpcSetNewMapCenter", RpcTarget.Others, playerNumber, newCenter);
     }
 
+    [PunRPC]
     private void RpcSetNewMapCenter(int playerNumber, Vector2d newCenter)
     {
         if (FetchOwnPlayer().playerNumber == playerNumber) { return; }
@@ -268,16 +254,19 @@ public class PlayerConnection : MonoBehaviour
         map.SetNewMapCenter(newCenter, false);
     }
 
-    private void CmdSetServerAsMapOwner()
+    [PunRPC]
+    private void RpcSetServerAsMapOwner(Player player)
     {
-        playerIsInControlOfMap = true;
+        List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
+        players.Find(x => x.controlledPlayer == player).playerIsInControlOfMap = true;
     }
 
-    public void CmdDrawHandLines(int handSide, int playerNumber)
+    public void StartDrawHandLines(int handSide, int playerNumber)
     {
-        RpcDrawHandLines(handSide, playerNumber);
+        photonView.RPC("RpcDrawHandLines", RpcTarget.Others, handSide, playerNumber);
     }
 
+    [PunRPC]
     private void RpcDrawHandLines(int handSide, int playerNumber)
     {
         if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
@@ -302,11 +291,12 @@ public class PlayerConnection : MonoBehaviour
         handSide.SetPositions(new Vector3[] { handSide.transform.position, endPos });
     }
 
-    public void CmdTurnOffhandLine(int handSide, int playerNumber)
+    public void StartTurnOffHandLine(int handSide, int playerNumber)
     {
-        RpcTurnOffhandLine(handSide, playerNumber);
+        photonView.RPC("RpcTurnOffhandLine", RpcTarget.Others, handSide, playerNumber);
     }
 
+    [PunRPC]
     private void RpcTurnOffhandLine(int handSide, int playerNumber)
     {
         if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
@@ -324,12 +314,7 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    private void CmdSetHeadRotation(int playerNumber, Vector3 newRot)
-    {
-        SetHeadRotation(playerNumber, newRot);
-        RpcSetHeadRotation(playerNumber, newRot);
-    }
-
+    [PunRPC]
     private void RpcSetHeadRotation(int playerNumber, Vector3 newRot)
     {
         SetHeadRotation(playerNumber, newRot);
@@ -343,12 +328,7 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    private void CmdSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
-    {
-        SetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
-        RpcSetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
-    }
-
+    [PunRPC]
     private void RpcSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
     {
         SetHandPosAndRot(playerNumber, newPos, newRot, rotOffset, handIndex);
@@ -364,11 +344,13 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    public void CmdAcceptPlayerToDiscussion(int playerNumber)
+    public void AcceptPlayerToDiscussion(int playerNumber)
     {
-        RpcAcceptPlayerToDiscussion(playerNumber);
+        PlayerConnection targetedPlayer = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        photonView.RPC("RpcAcceptPlayerToDiscussion", targetedPlayer.controlledPlayer, playerNumber);
     }
 
+    [PunRPC]
     private void RpcAcceptPlayerToDiscussion(int playerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
@@ -381,43 +363,45 @@ public class PlayerConnection : MonoBehaviour
     public void StartDisconnectPlayerFromDiscussion(PlayerConnection connection)
     {
         serverConnectedPlayersList.Remove(connection);
-        CmdDisconnectPlayerFromDiscussion(connection.playerNumber);
+        PlayerConnection targetedPlayer = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        photonView.RPC("RpcDisconnectPlayerFromDiscussion", targetedPlayer.controlledPlayer, playerNumber);
     }
 
-    private void CmdDisconnectPlayerFromDiscussion(int playerNumber)
-    {
-        RpcDisconnectPlayerFromDiscussion(playerNumber);
-    }
-
+    [PunRPC]
     private void RpcDisconnectPlayerFromDiscussion(int playerNumber)
     {
         if (playerNumber != FetchOwnPlayer().playerNumber) { return; }
 
-        //NetworkManager.singleton.StopClient();
+        PhotonNetwork.Disconnect();
         SceneManager.LoadScene(mainMenuScene);
     }
 
     public IEnumerator StartConnectionWithGamemanager(string cityName)
     {
         yield return new WaitForEndOfFrame();
-        CmdStartFillingLocationData(cityName);
+        photonView.RPC("RpcStartFillingLocationData", RpcTarget.AllBuffered, cityName);
     }
 
-    private void CmdStartFillingLocationData(string cityName)
+    [PunRPC]
+    private void RpcStartFillingLocationData(string cityName)
     {
         FetchGameManager();
-        gameManager.CmdStartRetrieveCityData(cityName);
+        gameManager.StartRetrieveCityData(cityName);
     }
 
-    private void CmdSetPlayerNumber()
+    [PunRPC]
+    private void RpcSetPlayerNumber(Player player)
     {
-        playerNumber = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManagerRIECTafel>().numberOfPlayers;
+        List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
+        players.Find(x => x.controlledPlayer == player).playerNumber = 
+            GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManagerRIECTafel>().numberOfPlayers;
     }
 
     private IEnumerator StartRequestLocationData()
     {
         yield return new WaitForSeconds(3f);
-        CmdRequestLocationData(poiManager.dataType.ToString());
+        FetchGameManager();
+        gameManager.StartGiveBackLocationData(poiManager.dataType.ToString(), playerNumber);
 
         string nameString = "";
         switch (poiManager.dataType)
@@ -439,7 +423,8 @@ public class PlayerConnection : MonoBehaviour
                 break;
         }
         nameString += ":\n" + LogInManager.username;
-        CmdSetPlayerName(nameString, LogInManager.avatarData, poiManager.dataType.ToString());
+        photonView.RPC("RpcSetPlayerName", RpcTarget.All, nameString, LogInManager.avatarData, poiManager.dataType.ToString(), 
+            playerNumber);
     }
 
     private void EnableChildsOfObject(Transform parent, bool enabled)
@@ -469,46 +454,41 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    private void CmdRequestLocationData(string dataType)
-    {
-        FetchGameManager();
-        gameManager.CmdGiveBackLocationData(dataType, playerNumber);
-    }
-
-    public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
+    public void StartSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
         List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber, string cityName)
     {
-        //if (playerNumber != this.playerNumber || !isLocalPlayer) { return; }
-
-        //FetchVRPlayer();
-        //poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications, cityName);
+        PlayerConnection targetedPlayer = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        photonView.RPC("RpcSetLocationDataForPlayer", targetedPlayer.controlledPlayer, locationData, dataTypes, neededAmounts,
+            neededExtraInfo, conclusions, indications, playerNumber, cityName);
     }
 
-    public void CmdSetPlayerName(string name, string avatarData, string dataType)
+    [PunRPC]
+    private void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
+        List<string> neededExtraInfo, List<string> conclusions, List<string> indications, int playerNumber, string cityName)
     {
-        playerName = name;
-        this.avatarData = avatarData;
+        if (playerNumber != this.playerNumber || !photonView.IsMine) { return; }
 
-        RpcSetPlayerName(name, avatarData, dataType, playerNumber);
+        FetchVRPlayer();
+        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications, cityName);
     }
 
+    [PunRPC]
     private void RpcSetPlayerName(string name, string avatarData, string dataType, int playerNumber)
     {
         FetchVRPlayer();
-        playerName = name;
-        nameText.text = playerName;
-
         PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
+        player.playerName = name;
+        player.nameText.text = playerName;
         player.avatarData = avatarData;
         player.dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataType);
 
         PlayerConnection ownPlayer = FetchOwnPlayer();
-        //if (isServer && playerNumber != ownPlayer.playerNumber)
-        //{
-        //    TurnOnAcceptPlayerToDiscussionMenu(name, false);
-        //    ownPlayer.serverConnectedPlayersList.Add(player);
-        //    networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<RejectPlayerFromDicussionButton>().connections.Add(player);
-        //}
+        if (PhotonNetwork.IsMasterClient && playerNumber != ownPlayer.playerNumber)
+        {
+            TurnOnAcceptPlayerToDiscussionMenu(name, false);
+            ownPlayer.serverConnectedPlayersList.Add(player);
+            networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<RejectPlayerFromDicussionButton>().connections.Add(player);
+        }
     }
 
     public void TurnOnAcceptPlayerToDiscussionMenu(string name, bool alwaysChangeText)
@@ -663,12 +643,12 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    public void CmdChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
+    public void StartChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
-        SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
-        RpcChangePlayerPos(playerNumber, newPos, newRot, seatIndex);
+        photonView.RPC("RpcChangePlayerPos", RpcTarget.All, playerNumber, newPos, newRot, seatIndex);
     }
 
+    [PunRPC]
     private void RpcChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
         SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
@@ -692,33 +672,33 @@ public class PlayerConnection : MonoBehaviour
         }
 
         PlayerConnection ownPlayer = FetchOwnPlayer();
-        //if (playerNumber == ownPlayer.playerNumber && isLocalPlayer)
-        //{
-        //    FetchVRPlayer();
-        //    poiManager.ChangePOIManagerTransform(player.transform);
-        //    poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
+        if (playerNumber == ownPlayer.playerNumber && photonView.IsMine)
+        {
+            FetchVRPlayer();
+            poiManager.ChangePOIManagerTransform(player.transform);
+            poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
 
-        //    PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        //    for (int i = 0; i < currentConnections.Length; i++)
-        //    {
-        //        if (currentConnections[i] == this || currentConnections[i].chosenSeat == -1) { continue; }
+            PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+            for (int i = 0; i < currentConnections.Length; i++)
+            {
+                if (currentConnections[i] == this || currentConnections[i].chosenSeat == -1) { continue; }
 
-        //        EnableChildsOfObject(currentConnections[i].transform, true);
-        //        ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
-        //    }
+                EnableChildsOfObject(currentConnections[i].transform, true);
+                ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
+            }
 
-        //    StartCoroutine(SetPOIUIObjectAndStats());
-        //}
-        //else
-        //{
-        //    if (ownPlayer.chosenSeat != -1)
-        //    {
-        //        EnableChildsOfObject(player.transform, true);
-        //        ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
+            StartCoroutine(SetPOIUIObjectAndStats());
+        }
+        else
+        {
+            if (ownPlayer.chosenSeat != -1)
+            {
+                EnableChildsOfObject(player.transform, true);
+                ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
 
-        //        StartCoroutine(SetPOIUIObjectAndStats());
-        //    }
-        //}
+                StartCoroutine(SetPOIUIObjectAndStats());
+            }
+        }
     }
 
     private IEnumerator SetPOIUIObjectAndStats()
@@ -734,71 +714,66 @@ public class PlayerConnection : MonoBehaviour
 
             PlayerConnection ownPlayer = FetchOwnPlayer();
 
-            //if (ownPlayer.isServer)
-            //{
-            //    mapOwnerText.enabled = false;
-            //}
-            //else
-            //{
-            //    backToStartPositionButton.button.interactable = false;
-            //    poiSelectionDropdown.dropdown.interactable = false;
-            //    playerMapControlDropdown.gameObject.SetActive(false);
+            if (PhotonNetwork.IsMasterClient)
+            {
+                mapOwnerText.enabled = false;
+            }
+            else
+            {
+                backToStartPositionButton.button.interactable = false;
+                poiSelectionDropdown.dropdown.interactable = false;
+                playerMapControlDropdown.gameObject.SetActive(false);
 
-            //    List<PlayerConnection> players = new List<PlayerConnection>();
-            //    players.AddRange(FindObjectsOfType<PlayerConnection>());
+                List<PlayerConnection> players = new List<PlayerConnection>();
+                players.AddRange(FindObjectsOfType<PlayerConnection>());
 
-            //    PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
+                PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
 
-            //    if (mapOwner)
-            //    {
-            //        SetMapOwnerText(mapOwner, ownPlayer);
+                if (mapOwner)
+                {
+                    SetMapOwnerText(mapOwner, ownPlayer);
 
-            //        if (mapOwner != ownPlayer)
-            //        {
-            //            CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, true);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        mapOwnerText.text = "Iedereen bestuurd de kaart zelfstandig";
-            //    }
-            //}
+                    if (mapOwner != ownPlayer)
+                    {
+                        Player targetedPlayer = FetchPlayerConnectionBasedOnNumber(mapOwner.playerNumber).controlledPlayer;
+                        photonView.RPC("RpcRetrieveCurrentMapStats", targetedPlayer, mapOwner.playerNumber, playerNumber, true);
+                    }
+                }
+                else
+                {
+                    mapOwnerText.text = "Iedereen bestuurd de kaart zelfstandig";
+                }
+            }
         }
 
-        //if (isServer)
-        //{
-        //    playerMapControlDropdown.FillDropdownWithPlayers();
-        //}
+        if (PhotonNetwork.IsMasterClient)
+        {
+            playerMapControlDropdown.FillDropdownWithPlayers();
+        }
     }
 
-    private void CmdRetrieveCurrentMapStats(int playerNumber, bool targetPlayerNumber)
-    {
-        List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
-        PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
-
-        RpcRetrieveCurrentMapStats(mapOwner.playerNumber, playerNumber, targetPlayerNumber);
-    }
-
+    [PunRPC]
     private void RpcRetrieveCurrentMapStats(int playerNumberMapOwner, int playerNumber, bool targetPlayerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
 
-        //if (isLocalPlayer && ownPlayer.playerNumber == playerNumberMapOwner)
-        //{
-        //    MoveMap map = FindObjectOfType<MoveMap>();
-        //    POIManager poiManager = FindObjectOfType<POIManager>();
+        if (photonView.IsMine && ownPlayer.playerNumber == playerNumberMapOwner)
+        {
+            MoveMap map = FindObjectOfType<MoveMap>();
+            POIManager poiManager = FindObjectOfType<POIManager>();
 
-        //    lastMapPos = map.offset;
-        //    lastMapRot = map.transform.eulerAngles;
-        //    lastMapScale = map.transform.localScale;
-        //    isSendingData = false;
+            lastMapPos = map.offset;
+            lastMapRot = map.transform.eulerAngles;
+            lastMapScale = map.transform.localScale;
+            isSendingData = false;
 
-        //    ownPlayer.CmdSetCurrentMapStats(playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), map.offset, map.transform.eulerAngles,
-        //        poiManager.transform.eulerAngles.y, map.transform.localScale);
-        //}
+            photonView.RPC("RpcSetCurrentMapStats", RpcTarget.All, playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), 
+                map.offset, map.transform.eulerAngles, poiManager.transform.eulerAngles.y, map.transform.localScale);
+        }
     }
 
-    private void CmdSetCurrentMapStats(int playerNumber, bool targetPlayerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
+    [PunRPC]
+    private void RpcSetCurrentMapStats(int playerNumber, bool targetPlayerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
         float yRotationMapOwner, Vector3 mapScale)
     {
         if (targetPlayerNumber)
@@ -843,11 +818,7 @@ public class PlayerConnection : MonoBehaviour
         MoveMapOnCorrectAngle(mapOffset, yRotationMapOwner, true);
     }
 
-    public void CmdCheckIfSeatsOpenedUp(int playerNumber)
-    {
-        RpcCheckIfSeatsOpenedUp(playerNumber);
-    }
-
+    [PunRPC]
     private void RpcCheckIfSeatsOpenedUp(int playerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
@@ -876,12 +847,12 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    public void CmdSetNewMapOwner(int playerNumber)
+    public void StartSettingNewMapOwner(int playerNumber)
     {
-        SetNewMapOwner(playerNumber);
-        RpcSetNewMapOwner(playerNumber);
+        photonView.RPC("RpcSetNewMapOwner", RpcTarget.All, playerNumber);
     }
 
+    [PunRPC]
     private void RpcSetNewMapOwner(int playerNumber)
     {
         SetNewMapOwner(playerNumber);
@@ -905,34 +876,36 @@ public class PlayerConnection : MonoBehaviour
 
         newPlayerInControl.playerIsInControlOfMap = true;
 
-        //if (newPlayerInControl.hasAuthority)
-        //{
-        //    EnablePOIUI(true);
-        //}
-        //else
-        //{
-        //    EnablePOIUI(false);
-        //}
+        if (newPlayerInControl.photonView.IsMine)
+        {
+            EnablePOIUI(true);
+        }
+        else
+        {
+            EnablePOIUI(false);
+        }
 
         PlayerConnection ownPlayer = FetchOwnPlayer();
-        //if (!ownPlayer.isServer)
-        //{
-        //    SetMapOwnerText(newPlayerInControl, ownPlayer);
-        //}
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            SetMapOwnerText(newPlayerInControl, ownPlayer);
+        }
 
-        //if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.hasAuthority)
-        //{
-        //    ownPlayer.isSendingData = true;
-        //    ownPlayer.CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, false);
-        //}
+        if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.photonView.IsMine)
+        {
+            ownPlayer.isSendingData = true;
+            Player targetedPlayer = FetchPlayerConnectionBasedOnNumber(newPlayerInControl.playerNumber).controlledPlayer;
+            photonView.RPC("RpcRetrieveCurrentMapStats", targetedPlayer, newPlayerInControl.playerNumber, ownPlayer.playerNumber, 
+                false);
+        }
     }
 
-    public void CmdSetMapToFreeForAll()
+    public void StartSettingMapToFreeForAll()
     {
-        SetMapToFreeForAll();
-        RpcSetMapToFreeForAll();
+        photonView.RPC("RpcSetMapToFreeForAll", RpcTarget.All);
     }
 
+    [PunRPC]
     private void RpcSetMapToFreeForAll()
     {
         SetMapToFreeForAll();
@@ -992,7 +965,7 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
-    private PlayerConnection FetchPlayerConnectionBasedOnNumber(int playerNumber)
+    public PlayerConnection FetchPlayerConnectionBasedOnNumber(int playerNumber)
     {
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
@@ -1001,10 +974,9 @@ public class PlayerConnection : MonoBehaviour
 
     public PlayerConnection FetchOwnPlayer()
     {
-        //PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        //List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
-        //return playerConnections.Find(i => i.hasAuthority);
-        return null;
+        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        return playerConnections.Find(i => i.photonView.IsMine);
     }
 
     private void FetchMapOwnerText()

@@ -36,6 +36,28 @@ MonoBehaviour:
   RpcList:
   - ClickRpc
   - DestroyRpc
+  - RpcAcceptPlayerToDiscussion
+  - RpcChangePlayerPos
+  - RpcCheckIfSeatsOpenedUp
+  - RpcDisconnectPlayerFromDiscussion
+  - RpcDrawHandLines
+  - RpcGiveBackLocationData
+  - RpcMoveMapOnClients
+  - RpcRetrieveCurrentMapStats
+  - RpcRotateMapOnClients
+  - RpcScaleMapOnClients
+  - RpcSetCurrentMapStats
+  - RpcSetHandPosAndRot
+  - RpcSetHeadRotation
+  - RpcSetLocationDataForPlayer
+  - RpcSetMapToFreeForAll
+  - RpcSetNewMapCenter
+  - RpcSetNewMapOwner
+  - RpcSetPlayerName
+  - RpcSetPlayerNumber
+  - RpcSetServerAsMapOwner
+  - RpcStartFillingLocationData
+  - RpcTurnOffhandLine
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

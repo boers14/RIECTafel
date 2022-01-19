@@ -41,7 +41,7 @@ public class ChooseSeatButton : MeetingButton
         List<PlayerConnection> playerConnections = new List<PlayerConnection>();
         playerConnections.AddRange(FindObjectsOfType<PlayerConnection>());
         PlayerConnection player = playerConnections.Find(x => x.playerNumber == playerNumber);
-        player.CmdChangePlayerPos(playerNumber, seatPosition.position, seatPosition.eulerAngles, seatIndex);
+        player.StartChangePlayerPos(playerNumber, seatPosition.position, seatPosition.eulerAngles, seatIndex);
 
         miniMap.gameObject.SetActive(true);
         EnableMapRendererPieces(true);
