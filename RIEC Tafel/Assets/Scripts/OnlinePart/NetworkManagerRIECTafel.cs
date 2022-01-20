@@ -117,6 +117,8 @@ public class NetworkManagerRIECTafel : MonoBehaviourPunCallbacks
         print("player left room");
     }
 
+
+
     //public override void OnServerAddPlayer(NetworkConnection conn)
     //{
     //    numberOfPlayers++;
