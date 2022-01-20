@@ -15,6 +15,10 @@ public class SpatialKeyBoardKey : KeyBoardKey
 
     private string addedString = "";
 
+    /// <summary>
+    /// Decide what the key does based on its type
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -29,6 +33,10 @@ public class SpatialKeyBoardKey : KeyBoardKey
                 break;
         }
     }
+
+    /// <summary>
+    /// Add given string to the text that is currently being edited
+    /// </summary>
 
     public override void KeyFunction()
     {

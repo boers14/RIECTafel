@@ -33,6 +33,10 @@ public class KeyBoardKey : MonoBehaviour
 
     private List<Collider> hands = new List<Collider>();
 
+    /// <summary>
+    /// Set required variables
+    /// </summary>
+
     public virtual void Start()
     {
         GetComponentInChildren<TMP_Text>().text = textForKey;
@@ -41,6 +45,10 @@ public class KeyBoardKey : MonoBehaviour
         keyBoard = GetComponentInParent<KeyBoard>();
         renderer = GetComponent<MeshRenderer>();
     }
+
+    /// <summary>
+    /// If the keyboard is touchkeyboard the keyboard key is being pressed
+    /// </summary>
 
     private void OnTriggerEnter(Collider other)
     {
@@ -51,6 +59,10 @@ public class KeyBoardKey : MonoBehaviour
         renderer.material.color = gray;
         OnKeySelect();
     }
+
+    /// <summary>
+    /// If the keyboard is touchkeyboard the keyboard key is unpressed
+    /// </summary>
 
     private void OnTriggerExit(Collider other)
     {

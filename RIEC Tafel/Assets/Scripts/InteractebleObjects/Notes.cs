@@ -22,6 +22,10 @@ public class Notes : GrabbebleObjects
     [System.NonSerialized]
     public bool cantMoveText = false;
 
+    /// <summary>
+    /// Set notes center pos if possible
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -31,12 +35,20 @@ public class Notes : GrabbebleObjects
         }
     }
 
+    /// <summary>
+    /// Perform standard update and count change font size timer down
+    /// </summary>
+
     public override void Update()
     {
         if (!notesText) { return; }
         changeFontSizeTimer -= Time.deltaTime;
         base.Update();
     }
+
+    /// <summary>
+    /// Move the notesText over the y axis based on input.
+    /// </summary>
 
     public override void MoveImage(Vector2 steerStickInput, GameObject image, Vector3 originalPosition, float extraYMovement, bool nullifyMovement)
     {
@@ -54,6 +66,7 @@ public class Notes : GrabbebleObjects
         float ySize = (float)notesText.textInfo.lineCount * (notesText.fontSize * 1.15f);
 
         newPos.y += -steerStickInput.y * movementPower * notesText.rectTransform.localScale.x;
+        // Make sure notesText doesnt move past boundries
         if (newPos.y > notesCenterPos.y + ySize)
         {
             newPos.y = notesCenterPos.y + ySize;
@@ -65,6 +78,10 @@ public class Notes : GrabbebleObjects
 
         notesText.rectTransform.localPosition = newPos;
     }
+
+    /// <summary>
+    /// Change fontsize of notesText, then check if pos didnt move past the bounderies
+    /// </summary>
 
     public override void ChangeImageScale(float scalePower, GameObject image, Vector3 vector3, float extraYMovement)
     {
@@ -92,18 +109,34 @@ public class Notes : GrabbebleObjects
         MoveImage(Vector3.one, notesText.gameObject, notesCenterPos, 0, true);
     }
 
+    /// <summary>
+    /// Enable all required objects for creating notes
+    /// </summary>
+
     public override void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
         base.OnGrabEnter(selectEnterEventArgs, setOriginalVectors);
-        keyBoard.EnableKeyBoard(true);
-        notesSet.SetActive(true);
+        EnableNotesObjects(true);
         notesSet.transform.SetAsLastSibling();
     }
+
+    /// <summary>
+    /// Disable required object for creating notes
+    /// </summary>
 
     public override void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
         base.OnSelectExit(selectExitEventArgs);
-        keyBoard.EnableKeyBoard(false);
-        notesSet.SetActive(false);
+        EnableNotesObjects(false);
+    }
+
+    /// <summary>
+    /// Enable notes objects
+    /// </summary>
+
+    private void EnableNotesObjects(bool enabled)
+    {
+        keyBoard.EnableKeyBoard(enabled);
+        notesSet.SetActive(enabled);
     }
 }

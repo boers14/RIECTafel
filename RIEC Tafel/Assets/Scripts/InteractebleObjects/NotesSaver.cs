@@ -14,6 +14,10 @@ public class NotesSaver : MonoBehaviour
     [System.NonSerialized]
     public List<StickyNote> allStickyNotes = new List<StickyNote>();
 
+    /// <summary>
+    /// Make notes saver a singleton
+    /// </summary>
+
     private void Start()
     {
         if (instance == null)
@@ -26,6 +30,10 @@ public class NotesSaver : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    /// <summary>
+    /// Format the text of all sticky notes to a single string.
+    /// </summary>
 
     public void SetTextToBeSaved()
     {
@@ -47,6 +55,10 @@ public class NotesSaver : MonoBehaviour
             textToBeSaved += addedText;
         }
     }
+
+    /// <summary>
+    /// Check if the text that is saved is not empty else start saving the text
+    /// </summary>
 
     private void OnLevelWasLoaded(int level)
     {
@@ -77,6 +89,10 @@ public class NotesSaver : MonoBehaviour
         System.DateTime currentDate = System.DateTime.Now;
         StartCoroutine(SaveNotes(currentDate.ToString().Split(' ')[0]));
     }
+
+    /// <summary>
+    /// Save the notes to the database
+    /// </summary>
 
     private IEnumerator SaveNotes(string dateTimeString)
     {

@@ -13,11 +13,19 @@ public class CreateStickyNotesButton : MonoBehaviour
 
     private Vector3 stickyNoteScale = Vector3.zero;
 
+    /// <summary>
+    /// Initialize required variables
+    /// </summary>
+
     public virtual void Start()
     {
         stickyNoteScale = stickyNote.transform.localScale;
         GetComponent<Button>().onClick.AddListener(StartCreateNewStickyNote);
     }
+
+    /// <summary>
+    /// Create a new stickynote and add to notes list of notes saver
+    /// </summary>
 
     public virtual void StartCreateNewStickyNote()
     {
@@ -28,6 +36,10 @@ public class CreateStickyNotesButton : MonoBehaviour
             NotesSaver.instance.allStickyNotes.Add(newStickyNote);
         }
     }
+
+    /// <summary>
+    /// Create new note and set all correct stats for it
+    /// </summary>
 
     public StickyNote CreateNewStickyNote()
     {

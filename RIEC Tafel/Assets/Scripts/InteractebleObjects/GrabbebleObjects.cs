@@ -43,6 +43,10 @@ public class GrabbebleObjects : MonoBehaviour
 
     private GameSceneSettingsButton settingsButton = null;
 
+    /// <summary>
+    /// Initialize all variables not set with serialize fields
+    /// </summary>
+
     public virtual void Start()
     {
         for (int i = 0; i < 2; i++)
@@ -68,6 +72,10 @@ public class GrabbebleObjects : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Perform hand control functions if that is set in setting else perform controller functions.
+    /// </summary>
+
     public virtual void Update()
     {
         if (inputDevices.Count < 2)
@@ -79,8 +87,10 @@ public class GrabbebleObjects : MonoBehaviour
             return;
         }
 
+        // Hand controls
         if (hands[0].oneButtonControl)
         {
+            // Check if hovered by two controllers and both controllers have the primary button down
             int hoverCount = 0;
 
             for (int i = 0; i < inputDevices.Count; i++)
@@ -100,6 +110,7 @@ public class GrabbebleObjects : MonoBehaviour
                 {
                     if (handRays[i].hoveredObjects.Contains(connectedCanvasObject))
                     {
+                        // Move object if not hovered by both controllers
                         if (hoverCount != inputDevices.Count)
                         {
                             Vector3 movement = hands[i].transform.position - prevHandPosses[i];
@@ -109,6 +120,7 @@ public class GrabbebleObjects : MonoBehaviour
                             MoveImage(movement, null, Vector3.zero, 0, false);
                         }
                         else
+                        // Scale object if hovered by both controllers
                         {
                             float oldDist = Vector3.Distance(prevHandPosses[0], prevHandPosses[1]);
                             float newDist = Vector3.Distance(hands[0].transform.position, hands[1].transform.position);
@@ -117,11 +129,13 @@ public class GrabbebleObjects : MonoBehaviour
                     }
                 }
 
+                // Update previous handposses for moving and scaling objects
                 prevHandPosses[i] = hands[i].transform.position;
             }
         }
         else
         {
+            // Check for input and if correct input perform function
             if (inputDevices[1].TryGetFeatureValue(CommonUsages.primaryButton, out bool XButton) && XButton)
             {
                 ChangeImageScale(scalePower, null, Vector3.zero, 0);
@@ -137,6 +151,10 @@ public class GrabbebleObjects : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Change the scale of the ui object based on scale power.
+    /// </summary>
 
     public virtual void ChangeImageScale(float scalePower, GameObject image, Vector3 originalPosition, float extraYMovement)
     {
@@ -164,13 +182,19 @@ public class GrabbebleObjects : MonoBehaviour
 
         imageRectTransform.localScale = nextScale;
 
+        // Make sure objects stays within bounderies
         MoveImage(Vector2.one, image, originalPosition, extraYMovement, true);
-    } 
+    }
+
+    /// <summary>
+    /// Move ui object based on input en movement power.
+    /// </summary>
 
     public virtual void MoveImage(Vector2 steerStickInput, GameObject image, Vector3 originalPosition, float extraYMovement, bool nullifyMovement)
     {
         if (steerStickInput.x < 0.1f && steerStickInput.y < 0.1f && steerStickInput.x > -0.1f && steerStickInput.y > -0.1f || !image) { return; }
 
+        // For letting objects stay within bounderies.
         if (nullifyMovement)
         {
             steerStickInput = Vector2.zero;
@@ -185,6 +209,8 @@ public class GrabbebleObjects : MonoBehaviour
 
         float xMovementFactor = scaleFactor * imageRectTransform.sizeDelta.x / 2;
         newPos.x += -steerStickInput.x * movementPower * regularScaleFactor;
+
+        // Bounderies check for x-axis
         if (newPos.x < originalPosition.x - xMovementFactor)
         {
             newPos.x = originalPosition.x - xMovementFactor;
@@ -196,6 +222,8 @@ public class GrabbebleObjects : MonoBehaviour
 
         float yMovementFactor = scaleFactor * imageRectTransform.sizeDelta.y / 2;
         newPos.y += -steerStickInput.y * movementPower * regularScaleFactor;
+
+        // Bounderies check for y-axis
         if (newPos.y < originalPosition.y - yMovementFactor)
         {
             newPos.y = originalPosition.y - yMovementFactor;
@@ -208,6 +236,10 @@ public class GrabbebleObjects : MonoBehaviour
         imageRectTransform.localPosition = newPos;
     }
 
+    /// <summary>
+    /// Move the object back to its original position after being dropped using tweening
+    /// </summary>
+
     private void ReturnToPos()
     {
         float time = Vector3.Distance(transform.position, originalPos) * distanceFactor;
@@ -219,6 +251,10 @@ public class GrabbebleObjects : MonoBehaviour
         isPlayingTween = true;
     }
 
+    /// <summary>
+    /// Turn the gravity of the object back on
+    /// </summary>
+
     private void TurnGravityBackOn()
     {
         rigidbody.useGravity = true;
@@ -226,6 +262,10 @@ public class GrabbebleObjects : MonoBehaviour
         collider.enabled = true;
         isPlayingTween = false;
     }
+
+    /// <summary>
+    /// Perform this function when object is being grabbed, turn off object that would block vision of canvas objects.
+    /// </summary>
 
     public virtual void OnGrabEnter(SelectEnterEventArgs selectEnterEventArgs, bool setOriginalVectors)
     {
@@ -241,37 +281,48 @@ public class GrabbebleObjects : MonoBehaviour
             TurnGravityBackOn();
         }
 
-        if (miniMap)
-        {
-            miniMap.gameObject.SetActive(false);
-        }
-
-        if (settingsButton)
-        {
-            settingsButton.gameObject.SetActive(false);
-        }
+        EnableCanvasBlockingObjects(false);
 
         collider.enabled = false;
         isGrabbed = true;
     }
 
+    /// <summary>
+    /// Perform this function when object is dropped, turn all turned off object back on again.
+    /// </summary>
+
     public virtual void OnSelectExit(SelectExitEventArgs selectExitEventArgs)
     {
-        if (miniMap)
-        {
-            miniMap.gameObject.SetActive(true);
-        }
-
-        if (settingsButton)
-        {
-            settingsButton.gameObject.SetActive(true);
-        }
+        EnableCanvasBlockingObjects(true);
 
         isGrabbed = false;
         transform.localScale = originalScale;
         rigidbody.useGravity = true;
+
+        // Move object back to original position
         ReturnToPos();
     }
+
+    /// <summary>
+    /// Turn canvas blocking objects on/ off
+    /// </summary>
+
+    private void EnableCanvasBlockingObjects(bool enabled)
+    {
+        if (miniMap)
+        {
+            miniMap.gameObject.SetActive(enabled);
+        }
+
+        if (settingsButton)
+        {
+            settingsButton.gameObject.SetActive(enabled);
+        }
+    }
+
+    /// <summary>
+    /// Get all required stats from the movemap function to properly function
+    /// </summary>
 
     public void SetInputDevices(List<InputDevice> inputDevices, List<PlayerGrab> hands, List<PlayerHandRays> handRays, MiniMap miniMap)
     {
@@ -280,6 +331,10 @@ public class GrabbebleObjects : MonoBehaviour
         this.hands = hands;
         this.handRays = handRays;
     }
+
+    /// <summary>
+    /// Get controllers based on characteristics, order matters for controller based controls
+    /// </summary>
 
     private void GrabControllers()
     {
@@ -293,6 +348,10 @@ public class GrabbebleObjects : MonoBehaviour
             handRays.Add(hands[i].GetComponent<PlayerHandRays>());
         }
     }
+
+    /// <summary>
+    /// Add controller to list with given characteristics
+    /// </summary>
 
     private void AddControllersToList(InputDeviceCharacteristics characteristics)
     {

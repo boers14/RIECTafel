@@ -27,6 +27,10 @@ public class StickyNote : MonoBehaviour
 
     private List<StickyNote> allStickyNotes = new List<StickyNote>();
 
+    /// <summary>
+    /// Initialize all variables not set throught serialize field
+    /// </summary>
+
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -49,6 +53,10 @@ public class StickyNote : MonoBehaviour
         texts.AddRange(GetComponentsInChildren<NotesText>());
     }
 
+    /// <summary>
+    /// Check if the stickynote is being hovered. Move the stickynote if the primary button is down.
+    /// </summary>
+
     private void Update()
     {
         if (inputDevices.Count < 2)
@@ -61,10 +69,12 @@ public class StickyNote : MonoBehaviour
 
         if (isBeingHovered)
         {
+            // Check for both the title and the body
             for (int i = 0; i < interactors.Count; i++)
             {
                 for (int j = 0; j < inputDevices.Count; j++)
                 {
+                    // Check for input of the primary button
                     if (inputDevices[j].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton &&
                         handRays[j].hoveredObjects.Contains(interactors[i]))
                     {
@@ -72,11 +82,13 @@ public class StickyNote : MonoBehaviour
                         {
                             moveStickyNote = true;
                             SetAsLastChild();
+                            // Update the sticky notes list
                             allStickyNotes.Clear();
                             allStickyNotes.AddRange(FindObjectsOfType<StickyNote>());
                             EnableStickyNotesColliders(false);
                         }
 
+                        // Movement calculation
                         Vector3 currentPos = handRays[j].transform.localPosition;
                         Vector3 movement = Vector3.zero;
                         movement.y = currentPos.y - lastHandPosses[j].y;
@@ -87,15 +99,21 @@ public class StickyNote : MonoBehaviour
             }
         } else if (!isBeingHovered && moveStickyNote)
         {
+            // Set everything to normal after moving the stickynote
             moveStickyNote = false;
             EnableStickyNotesColliders(true);
         }
 
+        // Update last posses as to correctly calculate movement
         for (int i = 0; i < lastHandPosses.Count; i++)
         {
             lastHandPosses[i] = handRays[i].transform.localPosition;
         }
     }
+
+    /// <summary>
+    /// Turn all colliders of other stickynotes on/ off (turn off so that the user cant accidentally grab another stickynote to move.)
+    /// </summary>
 
     private void EnableStickyNotesColliders(bool enabled)
     {
@@ -113,6 +131,10 @@ public class StickyNote : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Check is the stickynote is currently being edited
+    /// </summary>
+
     public bool GetStickyNoteBeingEdited()
     {
         for (int i = 0; i < texts.Count; i++)
@@ -126,10 +148,18 @@ public class StickyNote : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Set object to being hovered if player aims at the stickynote
+    /// </summary>
+
     private void SetObjectToBeingHovered()
     {
         isBeingHovered = true;
     }
+
+    /// <summary>
+    /// Check if the title and body of sticky note are not hovered, if so set object to not being hovered
+    /// </summary>
 
     private void SetObjectToBeingUnHovered()
     {
@@ -151,6 +181,10 @@ public class StickyNote : MonoBehaviour
             isBeingHovered = false;
         }
     }
+
+    /// <summary>
+    /// Set as last child to appear in front of all other stickynotes
+    /// </summary>
 
     public void SetAsLastChild()
     {
