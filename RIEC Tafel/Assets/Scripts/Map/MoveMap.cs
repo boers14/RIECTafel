@@ -8,8 +8,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class MoveMap : MonoBehaviour
 {
-    [SerializeField]
-    private Transform table = null;
+    public Transform table = null;
 
     [System.NonSerialized]
     public Vector3 offset = Vector3.zero;
@@ -137,7 +136,9 @@ public class MoveMap : MonoBehaviour
                     if (prevHandPossesLineRendering[i] != hands[i].transform.position ||
                         prevHandRotationsLineRendering[i] != hands[i].transform.eulerAngles)
                     {
-                        ownPlayer.CmdDrawHandLines((int)handRays[i].hand, ownPlayer.playerNumber);
+                        ownPlayer.CmdDrawHandLines((int)handRays[i].hand, ownPlayer.playerNumber, 
+                            table.InverseTransformPoint(handRays[i].hitPoints[handRays[i].hoveredObjects.
+                            IndexOf(oneHandControlsInteractorObject)]), poiManager.transform.eulerAngles.y);
                     }
                 } else
                 {

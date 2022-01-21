@@ -55,7 +55,7 @@ public class PlayerConnection : NetworkBehaviour
 
     private NetworkManagerRIECTafel networkManager = null;
 
-    private bool playerIsAcceptedToDiscussion = false, isSendingData = false;
+    private bool playerIsAcceptedToDiscussion = false, isSendingData = false, setUIStats = false;
 
     private BoxCollider hitbox = null;
 
@@ -75,15 +75,25 @@ public class PlayerConnection : NetworkBehaviour
     [SerializeField]
     private LineRenderer leftLineRenderer = null, rightLineRenderer = null;
 
+    private PlayerConnection mapManager = null;
+
+    private ObjectHolder objectHolder = null;
+
     private void Start()
     {
         nameText.text = playerName;
         EnableChildsOfObject(transform, false);
 
-        chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
-        chooseSeatTitle = GameObject.FindGameObjectWithTag("ChooseSeatPlacementTitle").GetComponent<TMP_Text>();
         networkManager = FindObjectOfType<NetworkManagerRIECTafel>();
         hitbox = GetComponent<BoxCollider>();
+        chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
+
+        objectHolder = FindObjectOfType<ObjectHolder>();
+        chooseSeatTitle = objectHolder.chooseSeatTitle;
+        mapOwnerText = objectHolder.mapOwnerText;
+        backToStartPositionButton = objectHolder.backToStartPositionButton;
+        poiSelectionDropdown = objectHolder.poiSelectionDropdown;
+        playerMapControlDropdown = objectHolder.playerMapControlDropdown;
 
         map = FindObjectOfType<MoveMap>();
         lastMapPos = map.transform.position;
@@ -118,6 +128,7 @@ public class PlayerConnection : NetworkBehaviour
 
         if (isServer)
         {
+            mapManager = this;
             playerIsAcceptedToDiscussion = true;
             CmdSetServerAsMapOwner();
         }
@@ -277,13 +288,13 @@ public class PlayerConnection : NetworkBehaviour
     }
 
     [Command]
-    public void CmdDrawHandLines(int handSide, int playerNumber)
+    public void CmdDrawHandLines(int handSide, int playerNumber, Vector3 tableLocalPos, float playerYRot)
     {
-        RpcDrawHandLines(handSide, playerNumber);
+        RpcDrawHandLines(handSide, playerNumber, tableLocalPos, playerYRot);
     }
 
     [ClientRpc]
-    private void RpcDrawHandLines(int handSide, int playerNumber)
+    private void RpcDrawHandLines(int handSide, int playerNumber, Vector3 tableLocalPos, float playerYRot)
     {
         if (playerNumber == FetchOwnPlayer().playerNumber) { return; }
 
@@ -291,19 +302,48 @@ public class PlayerConnection : NetworkBehaviour
         switch((PlayerHandRays.Hand)handSide)
         {
             case PlayerHandRays.Hand.Left:
-                DrawHandLines(mapOwner.leftLineRenderer);
+                DrawHandLines(mapOwner.leftLineRenderer, tableLocalPos, playerYRot);
                 break;
             case PlayerHandRays.Hand.Right:
-                DrawHandLines(mapOwner.rightLineRenderer);
+                DrawHandLines(mapOwner.rightLineRenderer, tableLocalPos, playerYRot);
                 break;
         }
     }
 
-    private void DrawHandLines(LineRenderer handSide)
+    private void DrawHandLines(LineRenderer handSide, Vector3 tableLocalPos, float playerYRot)
     {
+        FetchVRPlayer();
+        if (map == null)
+        {
+            FindObjectOfType<MoveMap>();
+        }
+
         handSide.enabled = true;
 
-        Vector3 endPos = handSide.transform.position + handSide.transform.forward * 10;
+        float xPos = tableLocalPos.x;
+        int rotationDiff = (int)(playerYRot - poiManager.transform.eulerAngles.y);
+
+        switch (rotationDiff)
+        {
+            case 90: case -270:
+                tableLocalPos.x = -tableLocalPos.z;
+                tableLocalPos.z = xPos;
+                break;
+            case 180: case -180:
+                tableLocalPos.x = -tableLocalPos.x;
+                tableLocalPos.z = -tableLocalPos.z;
+                break;
+            case 270: case -90:
+                tableLocalPos.x = tableLocalPos.z;
+                tableLocalPos.z = -xPos;
+                break;
+        }
+
+        Vector3 endPos = map.table.position;
+        endPos.x += tableLocalPos.x * map.table.localScale.x;
+        endPos.y += tableLocalPos.y * map.table.localScale.y;
+        endPos.z += tableLocalPos.z * map.table.localScale.z;
+
         handSide.SetPositions(new Vector3[] { handSide.transform.position, endPos });
     }
 
@@ -747,12 +787,9 @@ public class PlayerConnection : NetworkBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        if (!playerMapControlDropdown)
+        if (!setUIStats)
         {
-            playerMapControlDropdown = FindObjectOfType<PlayerMapControlDropdown>();
-            backToStartPositionButton = FindObjectOfType<BackToStartPositionButton>();
-            poiSelectionDropdown = FindObjectOfType<POISelectionDropdown>();
-            mapOwnerText = GameObject.FindGameObjectWithTag("MapOwnerText").GetComponent<TMP_Text>();
+            setUIStats = true;
 
             PlayerConnection ownPlayer = FetchOwnPlayer();
 
@@ -865,7 +902,7 @@ public class PlayerConnection : NetworkBehaviour
 
     private IEnumerator SetCurrentMapStatsAfterRotation(Vector3 mapOffset, Vector3 mapScale, float yRotationMapOwner)
     {
-        yield return new WaitForSeconds(0.75f);
+        yield return new WaitForSeconds(0.175f);
         map.ChangeMapScaleToChosenScale(mapScale, true);
         MoveMapOnCorrectAngle(mapOffset, yRotationMapOwner, true);
     }
@@ -950,6 +987,8 @@ public class PlayerConnection : NetworkBehaviour
             SetMapOwnerText(newPlayerInControl, ownPlayer);
         }
 
+        ownPlayer.mapManager = newPlayerInControl;
+
         if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.hasAuthority)
         {
             ownPlayer.isSendingData = true;
@@ -982,9 +1021,8 @@ public class PlayerConnection : NetworkBehaviour
             oldPlayerInControl.playerIsInControlOfMap = false;
         }
 
+        FetchOwnPlayer().mapManager = null;
         EnablePOIUI(true);
-
-        FetchMapOwnerText();
 
         if (mapOwnerText)
         {
@@ -994,8 +1032,6 @@ public class PlayerConnection : NetworkBehaviour
 
     private void SetMapOwnerText(PlayerConnection mapOwner, PlayerConnection ownPlayer)
     {
-        FetchMapOwnerText();
-
         if (mapOwnerText)
         {
             if (mapOwner.playerNumber == ownPlayer.playerNumber)
@@ -1009,14 +1045,28 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
-    private void EnablePOIUI(bool enabled)
+    [Command]
+    public void CmdRefillPlayerMapControlDropdown()
     {
-        if (!backToStartPositionButton)
+        RpcRefillPlayerMapControlDropdown();
+    }
+
+    [ClientRpc]
+    private void RpcRefillPlayerMapControlDropdown()
+    {
+        PlayerConnection ownPlayer = FetchOwnPlayer();
+        if (!ownPlayer.isServer) { return; }
+
+        if (!ownPlayer.map.ffaMap && ownPlayer.mapManager == null)
         {
-            backToStartPositionButton = FindObjectOfType<BackToStartPositionButton>();
-            poiSelectionDropdown = FindObjectOfType<POISelectionDropdown>();
+            ownPlayer.CmdSetNewMapOwner(ownPlayer.playerNumber);
         }
 
+        ownPlayer.playerMapControlDropdown.FillDropdownWithPlayers();
+    }
+
+    private void EnablePOIUI(bool enabled)
+    {
         if (backToStartPositionButton)
         {
             backToStartPositionButton.button.interactable = enabled;
@@ -1036,18 +1086,6 @@ public class PlayerConnection : NetworkBehaviour
         PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
         List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
         return playerConnections.Find(i => i.hasAuthority);
-    }
-
-    private void FetchMapOwnerText()
-    {
-        if (!mapOwnerText)
-        {
-            GameObject text = GameObject.FindGameObjectWithTag("MapOwnerText");
-            if (text)
-            {
-                mapOwnerText = text.GetComponent<TMP_Text>();
-            }
-        }
     }
 
     private void FetchVRPlayer()

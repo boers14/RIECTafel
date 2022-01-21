@@ -88,6 +88,12 @@ public class NetworkManagerRIECTafel : NetworkManager
 
         PlayerConnection connection = FindObjectOfType<PlayerConnection>();
         PlayerConnection ownConnection = connection.FetchOwnPlayer();
+
+        if (ownConnection.isServer)
+        {
+            ownConnection.CmdRefillPlayerMapControlDropdown();
+        }
+
         if (!ownConnection || ownConnection.isServer || playerConnectedToNumber.Count == 1) { return; }
 
         ownConnection.CmdCheckIfSeatsOpenedUp(playerConnectedToNumber[conn]);

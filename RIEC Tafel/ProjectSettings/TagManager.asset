@@ -11,8 +11,6 @@ TagManager:
   - DontDisableHandOnGrab
   - Hand
   - Ground
-  - ChooseSeatPlacementTitle
-  - MapOwnerText
   layers:
   - Default
   - TransparentFX

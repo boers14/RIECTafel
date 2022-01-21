@@ -9,6 +9,9 @@ public class PlayerHandRays : MonoBehaviour
     [System.NonSerialized]
     public List<PlayerHandsRayInteractor> hoveredObjects = new List<PlayerHandsRayInteractor>();
 
+    [System.NonSerialized]
+    public List<Vector3> hitPoints = new List<Vector3>();
+
     private List<int> frameCounters = new List<int>();
 
     [SerializeField]
@@ -40,10 +43,13 @@ public class PlayerHandRays : MonoBehaviour
                 {
                     hoveredObjects.Add(interactor);
                     frameCounters.Add(2);
+                    hitPoints.Add(hit.point);
                     interactor.objectHoverEnteredEvent.Invoke();
                 } else
                 {
-                    frameCounters[hoveredObjects.IndexOf(interactor)] = 2;
+                    int index = hoveredObjects.IndexOf(interactor);
+                    frameCounters[index] = 2;
+                    hitPoints[index] = hit.point;
                 }
             }
         }
@@ -56,6 +62,7 @@ public class PlayerHandRays : MonoBehaviour
                 PlayerHandsRayInteractor interactor = hoveredObjects[i];
                 frameCounters.RemoveAt(i);
                 hoveredObjects.RemoveAt(i);
+                hitPoints.RemoveAt(i);
                 interactor.objectHoverExitedEvent.Invoke();
             }
         }
