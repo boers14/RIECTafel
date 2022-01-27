@@ -20,12 +20,20 @@ public class TutorialHands : MonoBehaviour
 
     public HandCharacteristic handCharacteristic = 0;
 
+    /// <summary>
+    /// Add all arrows to the list of arrows and hands to the hands list in the tutorial manager
+    /// </summary>
+
     private void Start()
     {
         tutorialManager = FindObjectOfType<TutorialManager>();
         tutorialManager.AddTutorialHandToList(this);
         allArrows.AddRange(new TutorialControllerArrows[] { primaryButtonArrow, secondaryButtonArrow, steerStickArrow, triggerArrow, gripArrow });
     }
+
+    /// <summary>
+    /// Disable all arrows
+    /// </summary>
 
     public void ClearAllArrows()
     {
@@ -34,6 +42,10 @@ public class TutorialHands : MonoBehaviour
             allArrows[i].gameObject.SetActive(false);
         }
     }
+
+    /// <summary>
+    /// Activate arrow connected to function name
+    /// </summary>
 
     public void EnablePrimaryButtonArrow(bool enabled)
     {

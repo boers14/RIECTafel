@@ -842,7 +842,7 @@ public class TutorialManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 
+    /// Learn the player how to remove a sticky note
     /// </summary>
 
     public void StartSeventeenthStepOfTutorial()
@@ -855,6 +855,11 @@ public class TutorialManager : MonoBehaviour
         removeStickyNoteButton.gameObject.SetActive(true);
         tutorialTitle.fontSize = 30;
     }
+
+    /// <summary>
+    /// When the stickynote count is lower then the amount of stickynotes in the list the step will be set to complete.
+    /// When the player closes the notes UI finish the tutorial.
+    /// </summary>
 
     public void SeventeenthStepOfTutorial()
     {
@@ -876,6 +881,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Cannot register if the player is holding input or not when UI of grabbeble objects is open
+    /// </summary>
+
     private void NewCanvasObjectStep()
     {
         for (int i = 0; i < canvasObjects.Count; i++)
@@ -887,6 +896,10 @@ public class TutorialManager : MonoBehaviour
         }
         SixthStepOfTutorial();
     }
+
+    /// <summary>
+    /// Deactivates animations and checks whether a primary button is pressed
+    /// </summary>
 
     private void CheckIfPrimaryButtonIsDown()
     {
@@ -903,6 +916,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Enables primary button arrow animation for controller hands.
+    /// </summary>
+
     private void EnablePrimaryArrows(bool bothHands)
     {
         if (bothHands)
@@ -914,9 +931,14 @@ public class TutorialManager : MonoBehaviour
         }
         else
         {
+            // Activates only right to prevent confusing the players on which inputs to use
             SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnablePrimaryButtonArrow(true);
         }
     }
+
+    /// <summary>
+    /// Enables grip button arrow animation for controller hands.
+    /// </summary>
 
     private void EnableGripArrows(bool bothHands)
     {
@@ -929,9 +951,14 @@ public class TutorialManager : MonoBehaviour
         }
         else
         {
+            // Same as primary buttons
             SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableGripArrow(true);
         }
     }
+
+    /// <summary>
+    /// Turns off all current animations and states that the current step is done. Activate particle effects.
+    /// </summary>
 
     private void CelebrateCurrentStepInTurorial()
     {
@@ -942,6 +969,10 @@ public class TutorialManager : MonoBehaviour
         buttonCommandText.StartCelebrateStepDone();
     }
 
+    /// <summary>
+    /// Turn off all arrows of controllers
+    /// </summary>
+
     private void TurnOffAllHandArrows()
     {
         for (int i = 0; i < tutorialHands.Count; i++)
@@ -949,6 +980,11 @@ public class TutorialManager : MonoBehaviour
             tutorialHands[i].ClearAllArrows();
         }
     }
+
+    /// <summary>
+    /// Checks when the given canvas objects has been opened. When the connected object of the arrow is grabbed by the player,
+    /// turn off the arrow. Skip deactivated arrows to prevent null refrences.
+    /// </summary>
 
     private void TurnOffGrabbebleObjectArrows(GameObject canvasObject)
     {
@@ -970,9 +1006,15 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Add one to the tutorial counter to go to the next step in the tutorial. Invoke the start of tutorial event and state that
+    /// current is is no longer done.
+    /// </summary>
+
     public void StartNextStepInTutorial()
     {
         stepInTutorial++;
+        // End the tutorial if the player has done the last step of the tutorial
         if (stepInTutorial > tutorialChallenges.Count - 1)
         {
             SceneManager.LoadScene(TutorialSceneManager.sceneToSwitchTo);
@@ -992,6 +1034,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Grab controllers based on the controller characteristics
+    /// </summary>
+
     private void InitializeControllers()
     {
         InputDevices.GetDevicesWithCharacteristics(controllerCharacteristics, inputDevices);
@@ -1005,6 +1051,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Reset button timer, so player always has to press a second before going to a next round
+    /// </summary>
+
     private void ResetButtonPressTimers()
     {
         for (int i = 0; i < buttonPressTimers.Count; i++)
@@ -1013,10 +1063,18 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Return a hand depending whether it is the right or left hand
+    /// </summary>
+
     private TutorialHands SearchForCorrectHand(TutorialHands.HandCharacteristic handCharacteristic)
     {
         return tutorialHands.Find(hand => hand.handCharacteristic == handCharacteristic);
     }
+
+    /// <summary>
+    /// Add given hand to tutorial hands list. This is done when the hand is created.
+    /// </summary>
 
     public void AddTutorialHandToList(TutorialHands tutorialHand)
     {

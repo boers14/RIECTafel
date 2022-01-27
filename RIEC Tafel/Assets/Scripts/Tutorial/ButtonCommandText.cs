@@ -22,6 +22,10 @@ public class ButtonCommandText : MonoBehaviour
 
     private bool setRegularTweenColor = false;
 
+    /// <summary>
+    /// Initialize variables and start tweening
+    /// </summary>
+
     private void Start()
     {
         tutorialManager = FindObjectOfType<TutorialManager>();
@@ -33,11 +37,21 @@ public class ButtonCommandText : MonoBehaviour
         StartNormalTween();
     }
 
+    /// <summary>
+    /// Tweens from a given start color to a given end color in the given time.
+    /// Normally this is from a gold yellow color with an alpha 100% to the same color with 0% alpha
+    /// </summary>
+
     private void StartNormalTween()
     {
         iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", textAlphaTweenTime, "easetype", iTween.EaseType.easeInOutSine,
             "onupdate", "UpdateColor", "oncomplete", "SwitchTweenColor", "oncompletetarget", gameObject));
     }
+
+    /// <summary>
+    /// Is the update function of the tween
+    /// Calculates the new color value based on the progress of the tween
+    /// </summary>
 
     private void UpdateColor(float val)
     {
@@ -49,6 +63,11 @@ public class ButtonCommandText : MonoBehaviour
         text.color = newColor;
     }
 
+    /// <summary>
+    /// Is the on complete funtion of the tween
+    /// If the tween coloring was different then the regular tween color, set it to the regular tween color
+    /// </summary>
+
     private void SwitchTweenColor()
     {
         Color32 currentStartColor = startTweenColor;
@@ -59,8 +78,14 @@ public class ButtonCommandText : MonoBehaviour
         }
         startTweenColor = endTweenColor;
         endTweenColor = currentStartColor;
+        // Loop the tween infinetly
         StartNormalTween();
     }
+
+    /// <summary>
+    /// Stop the current tween on the object, start the regular tween where the text colors to green but have the on complete function
+    /// be different
+    /// </summary>
 
     public void StartCelebrateStepDone()
     {
@@ -73,10 +98,18 @@ public class ButtonCommandText : MonoBehaviour
             "onupdate", "UpdateColor", "oncomplete", "CelebrateStepDone", "oncompletetarget", gameObject));
     }
 
+    /// <summary>
+    /// Start the coroutine of the next step
+    /// </summary>
+
     private void CelebrateStepDone()
     {
         StartCoroutine(StartNextStep());
     }
+
+    /// <summary>
+    /// Play all the particle systems and start the normal tweens again
+    /// </summary>
 
     private IEnumerator StartNextStep()
     {
@@ -91,6 +124,7 @@ public class ButtonCommandText : MonoBehaviour
         endTweenColor = normalEndTweenColor;
         setRegularTweenColor = true;
         StartNormalTween();
+        // Start next step in tutorial at end celebration
         tutorialManager.StartNextStepInTutorial();
     }
 }

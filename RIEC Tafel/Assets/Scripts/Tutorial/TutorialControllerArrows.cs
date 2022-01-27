@@ -26,8 +26,13 @@ public class TutorialControllerArrows : MonoBehaviour
 
     private TMP_Text buttonText = null;
 
+    /// <summary>
+    /// Start the tween of the arrow if it always needs to tween, else make sure it goes down in the tween.
+    /// </summary>
+
     private void Start()
     {
+        // Not all arrows have text
         buttonText = GetComponentInChildren<TMP_Text>();
         if (buttonText)
         {
@@ -47,6 +52,10 @@ public class TutorialControllerArrows : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Create a position it needs to tween from and to
+    /// </summary>
+
     private void CreateTargetStartPos()
     {
         if (targetStartPos == null)
@@ -55,6 +64,11 @@ public class TutorialControllerArrows : MonoBehaviour
             targetStartPos.SetParent(transform.parent);
         }
     }
+
+    /// <summary>
+    /// If the the arrow doesnt continually tweens, reset it to the start position and reset text start position
+    /// Start the tween
+    /// </summary>
 
     public void DisplayTween()
     {
@@ -74,11 +88,17 @@ public class TutorialControllerArrows : MonoBehaviour
             "onupdate", "UpdatePosition", "oncomplete", "SwitchTweenPosition", "oncompletetarget", gameObject));
     }
 
+    /// <summary>
+    /// Update og the tween
+    /// Update the position of the arrow based on how far the tween is
+    /// </summary>
+
     private void UpdatePosition(float val)
     {
         Vector3 startPos = targetStartPos.position;
         Vector3 expectedEndPos = startPos - transform.right * arrowMovementSpace;
 
+        // if going downwards, switch start and end pos
         if (!isGoingUpwards)
         {
             startPos = targetStartPos.position - transform.right * arrowMovementSpace;
@@ -93,6 +113,10 @@ public class TutorialControllerArrows : MonoBehaviour
         SetButtonTextPos();
     }
 
+    /// <summary>
+    /// Set the position of the text above the arrow
+    /// </summary>
+
     private void SetButtonTextPos()
     {
         if (buttonText)
@@ -100,6 +124,11 @@ public class TutorialControllerArrows : MonoBehaviour
             buttonText.transform.position = transform.position + (-transform.right * (transform.localScale.x * textDistanceFactor));
         }
     }
+
+    /// <summary>
+    /// On complete of the tween
+    /// Switch direction that the tween is going and start the tween again
+    /// </summary>
 
     private void SwitchTweenPosition()
     {
@@ -109,6 +138,10 @@ public class TutorialControllerArrows : MonoBehaviour
             DisplayTween();
         }
     }
+
+    /// <summary>
+    /// Change the tween position of the arrow to a new given position
+    /// </summary>
 
     public void SetTweenPosition(Transform newTargetStartPos)
     {

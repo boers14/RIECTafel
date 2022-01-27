@@ -10,6 +10,10 @@ public class BaseInputField : EditebleText
 
     private EditebleText editebleText = null;
 
+    /// <summary>
+    /// Sets a inputfield as editeble when it is selected
+    /// </summary>
+
     public override void Start()
     {
         base.Start();

@@ -20,12 +20,20 @@ public class DropdownSelection : MonoBehaviour
 
     private PlayerGrab hand = null;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     public virtual void Start()
     {
         hand = FindObjectOfType<PlayerGrab>();
         inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
         dropdown = GetComponent<TMP_Dropdown>();
     }
+
+    /// <summary>
+    /// Move dropdown list based on the user input if the dropdown has content
+    /// </summary>
 
     private void Update()
     {
@@ -35,6 +43,7 @@ public class DropdownSelection : MonoBehaviour
             return;
         }
 
+        // Return if it is hand controls
         if (hand)
         {
             if (hand.oneButtonControl)
@@ -43,6 +52,7 @@ public class DropdownSelection : MonoBehaviour
             }
         }
 
+        // Check if dropdown is open
         if (dropdown.transform.childCount == 4)
         {
             if (scrollBar == null)
@@ -51,7 +61,8 @@ public class DropdownSelection : MonoBehaviour
             }
             else
             {
-                if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
+                if (inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && 
+                    steerStickInput != Vector2.zero)
                 {
                     if (dropdown.options.Count == 0) { return; }
                     UpdateScrollbarValue(steerStickInput);
@@ -59,6 +70,10 @@ public class DropdownSelection : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Move the dropdown based on the y-input of the input of the controller
+    /// </summary>
 
     public virtual void UpdateScrollbarValue(Vector2 steerStickInput)
     {

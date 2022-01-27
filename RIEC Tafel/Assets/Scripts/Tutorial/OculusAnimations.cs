@@ -53,6 +53,12 @@ public class OculusAnimations : MonoBehaviour
 
     private Renderer exampleGrabObjectRenderer = null;
 
+    /// <summary>
+    /// This class provides all the example animations for the tutorial. These are linked looping tweens. It will be stated when a 
+    /// new animations is started.
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         basePos = transform.position;
@@ -81,6 +87,10 @@ public class OculusAnimations : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Example when pressing a button
+    /// </summary>
+
     public void ShowExampleButtonAnimationFirstStep()
     {
         animationAfterButtonPressAnimation = "EndDelayAnimation";
@@ -90,6 +100,10 @@ public class OculusAnimations : MonoBehaviour
         rayEndPosGameObject = exampleButton;
         BaseStartAnimation();
     }
+
+    /// <summary>
+    /// Example of using the keyboard and inputfield
+    /// </summary>
 
     public void ShowExampleInputfieldAnimationFirstStep()
     {
@@ -114,6 +128,10 @@ public class OculusAnimations : MonoBehaviour
         iTween.MoveTo(gameObject, iTween.Hash("position", keyBoard.position + keyBoard.up * 0.35f + keyBoard.forward * 0.2f, "time", 2f, 
             "easetype", iTween.EaseType.easeInOutSine, "oncomplete", "ShowExampleInputfieldAnimationThirdStep", "oncompletetarget", gameObject));
     }
+
+    /// <summary>
+    /// Get all required keyboard keys from the lists of strings
+    /// </summary>
 
     private IEnumerator SetNeccesaryKeyBoardKeys()
     {
@@ -155,6 +173,10 @@ public class OculusAnimations : MonoBehaviour
             animationAfterButtonPressAnimation = "EndDelayAnimation";
         }
     }
+
+    /// <summary>
+    /// Example of moving map
+    /// </summary>
 
     public void ShowExampleMoveMapFirstStep()
     {
@@ -201,6 +223,10 @@ public class OculusAnimations : MonoBehaviour
             "onupdate", "UpdateRayPos", "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject, "delay", 0.5f));
     }
 
+    /// <summary>
+    /// Example of rotating map. Re-uses moving map animation but with grip pressed.
+    /// </summary>
+
     public void ShowExampleRotateMapFirstStep()
     {
         showPrimaryAndGrip = true;
@@ -210,6 +236,10 @@ public class OculusAnimations : MonoBehaviour
         rayEndPosGameObject = table;
         BaseStartAnimation();
     }
+
+    /// <summary>
+    /// Scale map animation. Re-uses move map animation, but with two controllers
+    /// </summary>
 
     public void ShowExampleScaleMapFirstStep()
     {
@@ -232,6 +262,10 @@ public class OculusAnimations : MonoBehaviour
         BaseStartAnimation();
     }
 
+    /// <summary>
+    /// Example of hovering a POI
+    /// </summary>
+
     public void ShowExampleOpenPOIInformation()
     {
         if (examplePOI == null)
@@ -247,6 +281,10 @@ public class OculusAnimations : MonoBehaviour
         BaseStartAnimation();
     }
 
+    /// <summary>
+    /// Example of pulling a POI
+    /// </summary>
+
     public void ShowExamplePullPOI()
     {
         showPrimaryOnly = true;
@@ -256,6 +294,10 @@ public class OculusAnimations : MonoBehaviour
         rayEndPosGameObject = examplePOI;
         BaseStartAnimation();
     }
+
+    /// <summary>
+    /// Example of grabbing an object
+    /// </summary>
 
     public void ShowExampleGrabObjectFirstStep()
     {
@@ -293,6 +335,10 @@ public class OculusAnimations : MonoBehaviour
         iTween.MoveTo(exampleLegenda, iTween.Hash("position", exampleLegendaBasePos, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine,
             "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
     }
+
+    /// <summary>
+    /// Example of moving a grabbed object. Re-uses part of grabbing an object.
+    /// </summary>
 
     public void ShowExampleMoveGrabbedObjectFirstStep()
     {
@@ -354,6 +400,10 @@ public class OculusAnimations : MonoBehaviour
             "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
         iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
     }
+
+    /// <summary>
+    /// Example of scaling a grabbed object. Re-uses part of grabbing an object.
+    /// </summary>
 
     public void ShowExampleScaleGrabbedObjectFirstStep()
     {
@@ -442,6 +492,10 @@ public class OculusAnimations : MonoBehaviour
             ShowPrimaryButtonPressAnimation();
         }
     }
+
+    /// <summary>
+    /// Example of creating and moving a stickynote. Re-uses part of grabbing an object.
+    /// </summary>
 
     public void ShowExampleCreateAndMoveNotesFirstStep()
     {
@@ -532,6 +586,10 @@ public class OculusAnimations : MonoBehaviour
             "oncomplete", "EndDelayAnimation", "oncompletetarget", gameObject));
         iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
     }
+
+    /// <summary>
+    /// Example of start/ stop editing a stickynote. Re-uses part of grabbing an object.
+    /// </summary>
 
     public void ShowExampleStartAndStopEditNotesFirstStep()
     {
@@ -720,6 +778,10 @@ public class OculusAnimations : MonoBehaviour
         iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
     }
 
+    /// <summary>
+    /// Example of removing a stickynote. Re-uses part of grabbing an object.
+    /// </summary>
+
     public void ShowExampleRemoveNotesFirstStep()
     {
         showPrimaryOnly = false;
@@ -805,6 +867,10 @@ public class OculusAnimations : MonoBehaviour
         iTween.RotateTo(exampleLegenda, iTween.Hash("rotation", exampleLegendaBaseRot, "time", 0.35f, "easetype", iTween.EaseType.easeInOutSine));
     }
 
+    /// <summary>
+    /// Example of moving the map with controller controls
+    /// </summary>
+
     public void ShowExampleMoveMapFirstStepWithControllers()
     {
         startAnimationAfterEndDelay = "ShowExampleMoveMapFirstStepWithControllers";
@@ -874,6 +940,10 @@ public class OculusAnimations : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Example of rotating the map with controller controls
+    /// </summary>
+
     public void ShowExampleRotateMapFirstStepWithControllers()
     {
         TurnOffRayAndButtonEffect(true);
@@ -905,6 +975,10 @@ public class OculusAnimations : MonoBehaviour
         startAnimationAfterEndDelay = "ShowExampleRotateMapFirstStepWithControllers";
         EndDelayAnimation();
     }
+
+    /// <summary>
+    /// Example of scaling the mpa using controller controls
+    /// </summary>
 
     public void ShowExampleScaleMapFirstStepWithControllers()
     {
@@ -950,6 +1024,10 @@ public class OculusAnimations : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Example of moving a grabbed object with controllers. Re-uses part of grabbing an object.
+    /// </summary>
+
     public void ShowExampleMoveGrabbedObjectFirstStepWithControllers()
     {
         showPrimaryOnly = false;
@@ -989,6 +1067,10 @@ public class OculusAnimations : MonoBehaviour
         otherController.ShowExampleMoveMapFirstStepWithControllers();
     }
 
+    /// <summary>
+    /// Example of scaling a grabbed object with controller controls. Re-uses part of grabbing an object.
+    /// </summary>
+
     public void ShowExampleScaleGrabbedObjectFirstStepWithControllers()
     {
         TurnOffRayAndButtonEffect(true);
@@ -1020,6 +1102,10 @@ public class OculusAnimations : MonoBehaviour
         otherController.gameObject.SetActive(true);
         otherController.ShowExampleScaleMapFirstStepWithControllers();
     }
+
+    /// <summary>
+    /// Example of scrolling throught dropdown with controller input.
+    /// </summary>
 
     public void ShowExampleMoveDropdownFirstStepWithControllers()
     {
@@ -1080,11 +1166,19 @@ public class OculusAnimations : MonoBehaviour
         EndDelayAnimation();
     }
 
+    /// <summary>
+    /// Moves object to given base start position to look at a given object
+    /// </summary>
+
     private void BaseStartAnimation()
     {
         iTween.MoveTo(gameObject, iTween.Hash("position", standardTweenStartPos, "time", 2f, "easetype", iTween.EaseType.easeInOutSine,
             "oncomplete", "RotateToLookAtObject", "oncompletetarget", gameObject, "delay", 1f));
     }
+
+    /// <summary>
+    /// Looks at a given object or ends animation
+    /// </summary>
 
     private void RotateToLookAtObject()
     {
@@ -1105,18 +1199,31 @@ public class OculusAnimations : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Short delay at end of animation to make animations feel less rushed
+    /// </summary>
+
     private void EndDelayAnimation()
     {
         iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 1f, "onupdate", "EmptyUpdate",
             "oncomplete", startAnimationAfterEndDelay, "oncompletetarget", gameObject));
     }
 
+    /// <summary>
+    /// Empty update for value to tweens where no update is required
+    /// </summary>
+
     private void EmptyUpdate()
     {
     }
 
+    /// <summary>
+    /// Updates position on linerender based on movement of object
+    /// </summary>
+
     private void UpdateRayPos()
     {
+        // If there is no object stop the tween and start end delay animation
         if (!rayEndPosGameObject)
         {
             iTween.Stop(gameObject);
@@ -1131,6 +1238,10 @@ public class OculusAnimations : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Turns on line renderer and sets its positions. Performs a button press animation afterwards
+    /// </summary>
+
     private void TurnOnExampleRay()
     {
         exampleRay.enabled = true;
@@ -1139,6 +1250,10 @@ public class OculusAnimations : MonoBehaviour
         iTween.ValueTo(gameObject, iTween.Hash("from", 0f, "to", 1f, "time", 0.5f, "onupdate", "EmptyUpdate", 
             "oncomplete", "ShowPrimaryButtonPressAnimation", "oncompletetarget", gameObject));
     }
+
+    /// <summary>
+    /// Performs arrow animation to simulate pressing a button, performs an empty tween
+    /// </summary>
 
     private void ShowPrimaryButtonPressAnimation()
     {
@@ -1162,6 +1277,10 @@ public class OculusAnimations : MonoBehaviour
             "oncomplete", animationAfterButtonPressAnimation, "oncompletetarget", gameObject));
     }
 
+    /// <summary>
+    /// Turns off the example ray and arrows. Can also rest positions of itsself and the example grab object
+    /// </summary>
+
     private void TurnOffRayAndButtonEffect(bool resetPos)
     {
         if (resetPos)
@@ -1182,6 +1301,10 @@ public class OculusAnimations : MonoBehaviour
         exampleRay.enabled = false;
     }
 
+    /// <summary>
+    /// Stops all tweens on both animating controllers and their objects
+    /// </summary>
+
     public void TurnOffAllTweenObjects()
     {
         iTween.Stop(gameObject);
@@ -1197,6 +1320,10 @@ public class OculusAnimations : MonoBehaviour
             otherController.TurnOffAllTweenObjects();
         }
     }
+
+    /// <summary>
+    /// Searches for a stickynote in the scene to use for the animations
+    /// </summary>
 
     private void SetStickyNote()
     {
