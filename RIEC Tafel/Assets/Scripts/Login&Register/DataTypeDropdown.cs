@@ -9,6 +9,10 @@ public class DataTypeDropdown : DropdownSelection
     [System.NonSerialized]
     public string dataType = "";
 
+    /// <summary>
+    /// Fill the datatype dropdown with the dutch versions of all the selectable jobs
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -44,6 +48,10 @@ public class DataTypeDropdown : DropdownSelection
         }
         dropdown.AddOptions(options);
     }
+
+    /// <summary>
+    /// Set datatype to chosen option (value + 1, becuase regular is first option, that cant be chosen)
+    /// </summary>
 
     private void ChangePlayerDataType(int value)
     {

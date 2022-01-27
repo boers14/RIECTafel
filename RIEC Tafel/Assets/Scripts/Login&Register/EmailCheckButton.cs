@@ -18,6 +18,11 @@ public class EmailCheckButton : SwitchSceneButton
 
     private bool isCheckingPincode = false;
 
+    /// <summary>
+    /// If pincode is there and the right pincode is filled in let the user in the program, else countdown how many times the user
+    /// can try and fill in the right password
+    /// </summary>
+
     public override void SwitchScene()
     {
         if (isCheckingPincode) { return; }
@@ -30,6 +35,10 @@ public class EmailCheckButton : SwitchSceneButton
             StartCoroutine(CountDownAmountOfTries());
         }
     }
+
+    /// <summary>
+    /// Send user to main menu and set his account lock out tries to 5
+    /// </summary>
 
     private IEnumerator SentUserToMainMenu()
     {
@@ -48,6 +57,10 @@ public class EmailCheckButton : SwitchSceneButton
             Debug.LogError("Sent user to main menu failed. Error#" + www.downloadHandler.text);
         }
     }
+
+    /// <summary>
+    /// Count in the database down how many tries the user still has to log in at 0 start to lock out the user
+    /// </summary>
 
     private IEnumerator CountDownAmountOfTries()
     {
@@ -71,11 +84,16 @@ public class EmailCheckButton : SwitchSceneButton
             }
         } else
         {
+            // If the back-end crashed just send the user back to the login screen
             SceneManager.LoadScene(failedPincodeScene);
             LogInManager.LogOut(this);
             Debug.LogError("Update lock count down failed. Error#" + www.downloadHandler.text);
         }
     }
+
+    /// <summary>
+    /// Lock the user out of the program for 1 day and send the user to the login screen
+    /// </summary>
 
     private IEnumerator LockoutUser()
     {
@@ -94,6 +112,10 @@ public class EmailCheckButton : SwitchSceneButton
         SceneManager.LoadScene(failedPincodeScene);
         LogInManager.LogOut(this);
     }
+
+    /// <summary>
+    /// Logout the user if the user quits the application on this screen so the user is also logged out in the database
+    /// </summary>
 
     private void OnApplicationQuit()
     {

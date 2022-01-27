@@ -7,6 +7,10 @@ public class PlayerTable : MonoBehaviour
     [SerializeField]
     private Transform ground = null;
 
+    /// <summary>
+    /// Make sure player table is at ground level
+    /// </summary>
+
     private void Start()
     {
         CheckYPosition();

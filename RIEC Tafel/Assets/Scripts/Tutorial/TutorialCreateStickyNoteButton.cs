@@ -6,6 +6,10 @@ public class TutorialCreateStickyNoteButton : CreateStickyNotesButton
 {
     private TutorialManager tutorialManager = null;
 
+    /// <summary>
+    /// Updates the stickynotes count and adds it to the list in the tutorial manager
+    /// </summary>
+
     public override void Start()
     {
         base.Start();

@@ -17,6 +17,10 @@ public class ChooseSeatButton : MeetingButton
     private MoveMap map = null;
     private POIManager poiManager = null;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -28,6 +32,10 @@ public class ChooseSeatButton : MeetingButton
         StartCoroutine(TurnOffDiscussionUI());
     }
 
+    /// <summary>
+    /// Turn off objects that arent required to be turned on at start of scene
+    /// </summary>
+
     private IEnumerator TurnOffDiscussionUI()
     {
         yield return new WaitForEndOfFrame();
@@ -36,10 +44,14 @@ public class ChooseSeatButton : MeetingButton
         objectToAcivate.gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Seat the player with the playernumber of the owned player in the scene
+    /// Also turn on the minimap and the actual map
+    /// </summary>
+
     private void SeatPlayer()
     {
-        List<PlayerConnection> playerConnections = new List<PlayerConnection>();
-        playerConnections.AddRange(FindObjectsOfType<PlayerConnection>());
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
         PlayerConnection player = playerConnections.Find(x => x.playerNumber == playerNumber);
         player.CmdChangePlayerPos(playerNumber, seatPosition.position, seatPosition.eulerAngles, seatIndex);
 
@@ -47,10 +59,19 @@ public class ChooseSeatButton : MeetingButton
         EnableMapRendererPieces(true);
     }
 
+    /// <summary>
+    /// Turn on all currently visible POI's when the seat button UI deactivates (all POI's are set inactive at start so that they are 
+    /// not visible when selecting a seat)
+    /// </summary>
+
     private void OnDisable()
     {
         poiManager.CheckPOIVisibility();
     }
+
+    /// <summary>
+    /// (de)Activate the visibility of the map
+    /// </summary>
 
     private void EnableMapRendererPieces(bool enabled)
     {
@@ -60,10 +81,18 @@ public class ChooseSeatButton : MeetingButton
         }
     }
 
+    /// <summary>
+    /// Show the current seat button
+    /// </summary>
+
     public void ActivateSeat()
     {
         EnableButton(true);
     }
+
+    /// <summary>
+    /// Check if a current player has the seatindex of the seat. If so deactivate this button.
+    /// </summary>
 
     public void CheckIfSeatIsOpen()
     {
@@ -76,6 +105,10 @@ public class ChooseSeatButton : MeetingButton
             }
         }
     }
+
+    /// <summary>
+    /// (de)Activate the button visibility
+    /// </summary>
 
     private void EnableButton(bool enabled)
     {

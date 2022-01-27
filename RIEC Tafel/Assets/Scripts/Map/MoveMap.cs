@@ -33,7 +33,7 @@ public class MoveMap : MonoBehaviour
 
     public float minimumScale = 0.5f, maximumScale = 5;
 
-    [SerializeField, Tooltip("Abstractmap-UnityTileSize * 2 / 10")]
+    [SerializeField, Tooltip("Abstractmap-UnityTileSize * 2 / 10, this variable always returns 1 if gotten from Abstractmap at runtime")]
     private float maxTileOffset = 12f;
 
     [SerializeField]
@@ -76,6 +76,10 @@ public class MoveMap : MonoBehaviour
     [System.NonSerialized]
     public PlayerConnection ownPlayer = null;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         for (int i = 0; i < hands.Count; i++)
@@ -111,6 +115,11 @@ public class MoveMap : MonoBehaviour
         transform.position = table.position + offset;
     }
 
+    /// <summary>
+    /// Perform map movement functions (moving rotating, scaling) with all different controls
+    /// If player is the map owner send draw line functions over to other players to show what the players is pointing at
+    /// </summary>
+
     private void Update()
     {
         if (!ownPlayer)
@@ -118,6 +127,7 @@ public class MoveMap : MonoBehaviour
             return;
         }
 
+        // If map scale got bigger then its supposed to then scale the map down to a normal size
         if (!isTweening && transform.localScale.x > maximumScale && transform.parent == originalParent)
         {
             if (transform.localScale.x * originalParent.transform.localScale.x >= minimumScale)
@@ -126,6 +136,7 @@ public class MoveMap : MonoBehaviour
             }
         }
 
+        // Check whether player should send draw line commands
         if (!ffaMap && ownPlayer.playerIsInControlOfMap)
         {
             for (int i = 0; i < handRays.Count; i++)
@@ -133,9 +144,11 @@ public class MoveMap : MonoBehaviour
                 if (handRays[i].hoveredObjects.Contains(oneHandControlsInteractorObject))
                 {
                     handLinesVisibility[i] = true;
+                    // Check whether hands moved or rotated
                     if (prevHandPossesLineRendering[i] != hands[i].transform.position ||
                         prevHandRotationsLineRendering[i] != hands[i].transform.eulerAngles)
                     {
+                        // Send the command to draw hand lines for other players
                         ownPlayer.CmdDrawHandLines((int)handRays[i].hand, ownPlayer.playerNumber, 
                             table.InverseTransformPoint(handRays[i].hitPoints[handRays[i].hoveredObjects.
                             IndexOf(oneHandControlsInteractorObject)]), poiManager.transform.eulerAngles.y);
@@ -144,6 +157,7 @@ public class MoveMap : MonoBehaviour
                 {
                     if (handLinesVisibility[i])
                     {
+                        //  Send the command to turn off handlines
                         handLinesVisibility[i] = false;
                         ownPlayer.CmdTurnOffhandLine((int)handRays[i].hand, ownPlayer.playerNumber);
                     }
@@ -154,11 +168,13 @@ public class MoveMap : MonoBehaviour
             }
         }
 
+        // The player needs to be in control of the map or it needs to be a free for all map to use the map functions
         if (isTweening || !ffaMap && !ownPlayer.playerIsInControlOfMap)
         {
             return;
         }
 
+        // These are for if the player has no VR headset on
         ComputerControls();
 
         if (inputDevices.Count < 2)
@@ -167,8 +183,10 @@ public class MoveMap : MonoBehaviour
             return;
         }
 
+        // Hand controls
         if (hands[0].oneButtonControl)
         {
+            // Check whether the players has both primary buttons down and is aiming them at the table
             int hoverCount = 0;
 
             for (int i = 0; i < inputDevices.Count; i++)
@@ -188,10 +206,13 @@ public class MoveMap : MonoBehaviour
                 {
                     if (handRays[i].hoveredObjects.Contains(oneHandControlsInteractorObject))
                     {
+                        // Check if player is trying to scale the map
                         if (hoverCount != inputDevices.Count && playerWasScalingTimer < 0)
                         {
+                            // Rotate the map if the grip is pressed
                             if (inputDevices[i].TryGetFeatureValue(CommonUsages.grip, out float gripButton) && gripButton > 0.1f)
                             {
+                                // Based on the direction the controller moves rotate the map
                                 Quaternion newAngle = hands[i].transform.rotation;
                                 Quaternion oldAngle = prevHandRotations[i];
                                 float angle = Quaternion.Angle(oldAngle, newAngle);
@@ -205,6 +226,7 @@ public class MoveMap : MonoBehaviour
                             }
                             else
                             {
+                                // Based on where the controller moves, move the map
                                 Vector3 movement = hands[i].transform.position - prevHandPosses[i];
                                 movement.y = movement.z * 200;
                                 movement.x *= 150;
@@ -213,6 +235,7 @@ public class MoveMap : MonoBehaviour
                             }
                         } else if (hoverCount == inputDevices.Count)
                         {
+                            // Based on if the controller get close or further away from each other scale the map
                             playerWasScalingTimer = playerWasScalingCooldown;
                             float oldDist = Vector3.Distance(prevHandPosses[0], prevHandPosses[1]);
                             float newDist = Vector3.Distance(hands[0].transform.position, hands[1].transform.position);
@@ -221,6 +244,7 @@ public class MoveMap : MonoBehaviour
                     }
                 }
 
+                // Update variables
                 prevHandDirections[i] = hands[i].transform.eulerAngles - prevHandRotations[i].eulerAngles;
                 prevHandPosses[i] = hands[i].transform.position;
                 prevHandRotations[i] = hands[i].transform.rotation;
@@ -230,9 +254,14 @@ public class MoveMap : MonoBehaviour
         }
         else
         {
+            // Controller controls
             TwoControllerControls();
         }
     }
+
+    /// <summary>
+    /// Check in which direction the hand moves in order to decide whether to rotate left or right
+    /// </summary>
 
     private bool GetRotationDirection(Quaternion from, Quaternion to)
     {
@@ -254,6 +283,10 @@ public class MoveMap : MonoBehaviour
         return clockWise <= counterClockWise;
     }
 
+    /// <summary>
+    /// Add the given rotation to the current rotation if the rotation isnt to big
+    /// </summary>
+
     public void RotateMap(float rotation, bool ignoreRotationCheck = false)
     {
         if (!ignoreRotationCheck)
@@ -262,6 +295,9 @@ public class MoveMap : MonoBehaviour
         }
 
         Vector3 nextRotation = transform.eulerAngles;
+
+        // If the added rotation skips the rotation check then dont amplify it with the settings (this is for precisely setting the
+        // the rotation)
         if (ignoreRotationCheck)
         {
             nextRotation.y += rotation;
@@ -274,6 +310,10 @@ public class MoveMap : MonoBehaviour
         RotateTowardsAngle(nextRotation);
     }
 
+    /// <summary>
+    /// Set the rotation of the map to a given angle, chooses the POI closest to the center of the map to rotate around
+    /// </summary>
+
     public void RotateTowardsAngle(Vector3 nextRotation, bool ignoreIsTweeningCheck = false)
     {
         if (!ignoreIsTweeningCheck)
@@ -283,6 +323,7 @@ public class MoveMap : MonoBehaviour
 
         isTweening = true;
 
+        // If there is no closest POI grab one, if there is still not one then use the table as rotation point
         if (!closestPOI)
         {
             closestPOI = poiManager.ReturnClosestPOIToTransform(table.position);
@@ -292,20 +333,27 @@ public class MoveMap : MonoBehaviour
             }
         }
 
+        // Use a empty transform as an object to rotate around
         pivotObject = Instantiate(emptyTransform, closestPOI.position, transform.rotation);
         transform.SetParent(pivotObject.transform);
-        poiManager.ParentPOIs(pivotObject.transform, false);
+        poiManager.ParentPOIs(pivotObject.transform);
 
         lastRotationOrder = nextRotation;
 
+        // Use iTween to rotate, just setting the rotation directly bugged the map and it wouldnt show the correct angle
         iTween.RotateTo(pivotObject, iTween.Hash("rotation", nextRotation, "time", 0.01f, "easetype", iTween.EaseType.linear,
             "oncomplete", "CanTweenAgain", "oncompletetarget", gameObject));
     }
 
+    /// <summary>
+    /// Perform this function when the rotation tween is done, update variables that changed throught the rotation (including 
+    /// POI's and minimap)
+    /// </summary>
+
     private void CanTweenAgain()
     {
         isTweening = false;
-        poiManager.ParentPOIs(null, true);
+        poiManager.ParentPOIs(null);
         transform.SetParent(originalParent);
         Destroy(pivotObject);
 
@@ -317,8 +365,10 @@ public class MoveMap : MonoBehaviour
             miniMap.RotateMiniMap(transform.localEulerAngles, poiManager.transform.eulerAngles);
         }
 
+        // If the rotation failed to correctly be set to the last given rotation, try to rotate to that given rotation again
         if (transform.eulerAngles.y <= lastRotationOrder.y - 1 || transform.eulerAngles.y >= lastRotationOrder.y + 1)
         {
+            // To prevent it from going on infinetly, stop at 5 tries
             if (rotationTries < 5)
             {
                 rotationTries++;
@@ -336,6 +386,10 @@ public class MoveMap : MonoBehaviour
         StartCoroutine(CheckIfMapStillRotates());
     }
 
+    /// <summary>
+    /// To keep the same POI as pivot point, have a delay before setting the closest POI to null
+    /// </summary>
+
     private IEnumerator CheckIfMapStillRotates()
     {
         rotationCounter++;
@@ -347,12 +401,21 @@ public class MoveMap : MonoBehaviour
         }
     }
 
-    public void MoveTheMap(Vector2 steerStickDirection, bool movePOIs, bool disregardMoveMapPower, bool skipSteerStickDirectionCheck = false)
-    {
-        if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f && steerStickDirection.y > -0.1f &&
-            !skipSteerStickDirectionCheck) { return; }
+    /// <summary>
+    /// Move the map by a given steerStickDirection, set a new position based on the current offset
+    /// skipSteerStickDirectionCheck if its not user input but used for moving the map after scaling
+    /// </summary>
 
-        Vector2 movement = new Vector2(steerStickDirection.x, steerStickDirection.y) * moveMapPower * SettingsManager.moveMapSpeedFactor;
+    public void MoveTheMap(Vector2 steerStickDirection, bool movePOIs, bool disregardMoveMapPower, 
+        bool skipSteerStickDirectionCheck = false)
+    {
+        // Make sure that the movement of the map doesnt get too weird if its hand movement and that the map doesnt
+        // always start moving if a controller has bugged input
+        if (steerStickDirection.x < 0.1f && steerStickDirection.y < 0.1f && steerStickDirection.x > -0.1f 
+            && steerStickDirection.y > -0.1f && !skipSteerStickDirectionCheck) { return; }
+
+        Vector2 movement = new Vector2(steerStickDirection.x, steerStickDirection.y) * moveMapPower * 
+            SettingsManager.moveMapSpeedFactor;
         if (disregardMoveMapPower)
         {
             movement = steerStickDirection;
@@ -363,6 +426,11 @@ public class MoveMap : MonoBehaviour
         newPos.z += movement.y;
         SetMapToNewPos(newPos, movePOIs);
     }
+
+    /// <summary>
+    /// Set the map to a given position, update minimap and POI's based on the new position
+    /// Check whether the map is still on the table
+    /// </summary>
 
     public void SetMapToNewPos(Vector3 newPos, bool movePOIs, bool ignoreIsTweeningCheck = false)
     {
@@ -395,9 +463,14 @@ public class MoveMap : MonoBehaviour
         transform.position = newMapPos;
     }
 
+    /// <summary>
+    /// Calculate the next vector3 to set as the new map scale. Make sure its within the min/ max map scale bounderies
+    /// </summary>
+
     public virtual void ChangeMapScale(float changedScale)
     {
-        if (changedScale < 0 && transform.localScale.x == minimumScale || changedScale > 0 && transform.localScale.x == maximumScale) { return; }
+        if (changedScale < 0 && transform.localScale.x == minimumScale || changedScale > 0 
+            && transform.localScale.x == maximumScale) { return; }
 
         float amountOfChangedScale = changedScale * SettingsManager.scaleMapFactor * oldScale.x;
         Vector3 nextScale = transform.localScale;
@@ -417,10 +490,19 @@ public class MoveMap : MonoBehaviour
         SetScaleOfMap(nextScale, true, amountOfChangedScale);
     }
 
+    /// <summary>
+    /// Set the map to a given scale
+    /// </summary>
+
     public void ChangeMapScaleToChosenScale(Vector3 chosenScale, bool ignoreIsTweeningCheck = false)
     {
         SetScaleOfMap(chosenScale, false, 0, ignoreIsTweeningCheck);
     }
+
+    /// <summary>
+    /// Set a new scale of the map and also update this new scale for the POI's and the minimap. Update all other required 
+    /// variables as well. Try to keep the same map position on this changed scale (TODO: Fix this)
+    /// </summary>
 
     private void SetScaleOfMap(Vector3 nextScale, bool limitMovement, float changedScale, bool ignoreIsTweeningCheck = false)
     {
@@ -441,6 +523,7 @@ public class MoveMap : MonoBehaviour
 
         if (changedScale != 0)
         {
+            // Based on what quadrant of the map the player is on calculate in which direction the map should theoratically move
             Vector3 mapPosDiff = table.position - transform.position;
             Vector2 playerMapPart = Vector2.zero;
             if (mapPosDiff.x < -0.1f)
@@ -472,6 +555,10 @@ public class MoveMap : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Check if the current position of the map didnt move past any of its edges
+    /// </summary>
+
     private void CheckIfMapIsStillOnTable()
     {
         Vector3 offsetValueWithYZero = offset;
@@ -483,6 +570,10 @@ public class MoveMap : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets a new map center to a given center and updates to minimap and POI's accordingly
+    /// </summary>
+
     public void SetNewMapCenter(Vector2d newCenter, bool playerMapControlCheck = true)
     {
         if (playerMapControlCheck)
@@ -493,41 +584,61 @@ public class MoveMap : MonoBehaviour
             }
         }
 
+        // Reset scale and set offset accordingly. Then caluclate what the map position would be on original scale.
+        // This is required to accurately get the new center of the map
         transform.localScale = Vector3.one;
         float regularMaxTileOffset = originalMaxTileOffset - table.localScale.z / 2;
         float percentageGrowth = maxTileOffset / regularMaxTileOffset;
         offset.x /= percentageGrowth;
         offset.z /= percentageGrowth;
         transform.position = table.position + offset;
+
+        // Set new center and force update
         abstractMap.SetCenterLatitudeLongitude(newCenter);
         abstractMap.UpdateMap();
+
+        // Update POI's and reset position
         offset = Vector3.zero;
         offset.y = table.transform.localScale.y / 2 + 0.01f;
         poiManager.SetExtraOffset(offset);
         poiManager.SetPOIsScale(oldScale);
         transform.position = table.position + offset;
+
+        // Make a new copy of the minimap based on the new look of the map
         if (miniMap)
         {
-            miniMap.CopyMap(abstractMap, poiManager.allPOIs, table, poiManager.locationCoordinates, poiManager.poiHits, poiManager.poiScale,
-            poiManager.transform.eulerAngles);
+            miniMap.CopyMap(abstractMap, poiManager.allPOIs, table, poiManager.locationCoordinates, poiManager.poiHits, 
+                poiManager.poiScale, poiManager.transform.eulerAngles);
         }
         ChangeMapScaleToChosenScale(oldScale);
 
+        // Make sure all players in the discussion have the same map
         if(!ffaMap && ownPlayer.playerIsInControlOfMap)
         {
             ownPlayer.CmdSetNewMapCenter(ownPlayer.playerNumber, newCenter);
         }
     }
 
+    /// <summary>
+    /// Returns the center point of the map in latlong (world coordinates)
+    /// </summary>
+
     public Vector2d RetrieveMapCenter()
     {
         return abstractMap.CenterLatitudeLongitude;
     }
 
+    /// <summary>
+    /// The controllers controls for moving, rotating and scaling the map
+    /// </summary>
+
     private void TwoControllerControls()
     {
         if (inputDevices[0].TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 steerStickInput) && steerStickInput != Vector2.zero)
         {
+            // Calculate the player rotation in when moving the map (so that it moves correcly based from the perspective of the
+            // player)
+
             if (playerConnectionTransform)
             {
                 float xInput = steerStickInput.x;
@@ -554,11 +665,13 @@ public class MoveMap : MonoBehaviour
             MoveTheMap(steerStickInput, true, false);
         }
 
+        // Dont perform the other functions if a handray is visible or if the player just grabbed something with his right hand
         if (lineVisual.colorGradient.alphaKeys[0].alpha != 0 || hands[0].grabTimer > 0 )
         {
             return;
         }
 
+        // Input for scaling the map
         if (inputDevices[0].TryGetFeatureValue(CommonUsages.primaryButton, out bool AButton) && AButton)
         {
             ChangeMapScale(scalePower);
@@ -568,6 +681,7 @@ public class MoveMap : MonoBehaviour
             ChangeMapScale(-scalePower);
         }
 
+        // Input for rotating the map
         if (inputDevices[0].TryGetFeatureValue(CommonUsages.trigger, out float triggerButton) && triggerButton > 0.1f)
         {
             RotateMap(rotationPower);
@@ -577,6 +691,10 @@ public class MoveMap : MonoBehaviour
             RotateMap(-rotationPower);
         }
     }
+
+    /// <summary>
+    /// Grab controllers based on characteristics, if both controllers are there set the stats for pickupable objects
+    /// </summary>
 
     private void GrabControllers()
     {
@@ -593,6 +711,10 @@ public class MoveMap : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Add a controller to the inputdevice list based on a given charactaristic
+    /// </summary>
+
     private void AddControllersToList(InputDeviceCharacteristics characteristics)
     {
         List<InputDevice> inputDeviceList = new List<InputDevice>();
@@ -605,6 +727,10 @@ public class MoveMap : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// The controls if there is no VR headset connected, does not change based on player position
+    /// </summary>
 
     private void ComputerControls()
     {

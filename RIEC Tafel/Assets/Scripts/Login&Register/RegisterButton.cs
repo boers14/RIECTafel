@@ -29,12 +29,18 @@ public class RegisterButton : SwitchSceneButton
     [SerializeField]
     private List<AvatarChangebleBodypart> bodyparts = new List<AvatarChangebleBodypart>();
 
-    private bool canRegister = false;
+    private bool canRegister = false, isRegistering = false;
+
+    /// <summary>
+    /// Check whether all inputfields have the required input and if the privacy statement toggle is toggled
+    /// This is checked whenever input is changed from the inputfields and when privacy statement toggle is toggled
+    /// </summary>
 
     public void CheckIfCanRegister()
     {
         bool canRegister = true;
 
+        // At least 2 characters in every field
         for (int i = 0; i < inputFields.Count; i++)
         {
             if (inputFields[i].text.Length < 2)
@@ -47,6 +53,7 @@ public class RegisterButton : SwitchSceneButton
             }
         }
 
+        // Has to be a mail from the government
         if (!emailField.text.EndsWith("@om.nl"))
         {
             canRegister = false;
@@ -57,6 +64,7 @@ public class RegisterButton : SwitchSceneButton
             emailField.isFilledIn = true;
         }
 
+        // Checks whether all required characters are in there
         bool lowerCase = false, upperCase = false, number = false;
         foreach (char c in passwordField.text)
         {
@@ -79,6 +87,7 @@ public class RegisterButton : SwitchSceneButton
             }
         }
 
+        // With password minimum length of 8
         if (!lowerCase || !upperCase || !number || passwordField.text.Length < 8)
         {
             canRegister = false;
@@ -97,6 +106,11 @@ public class RegisterButton : SwitchSceneButton
         this.canRegister = canRegister;
     }
 
+    /// <summary>
+    /// If cant register, turn on warning texts for all fields not having the required input
+    /// If can register, start register
+    /// </summary>
+
     public override void SwitchScene()
     {
         if (!canRegister)
@@ -109,8 +123,15 @@ public class RegisterButton : SwitchSceneButton
             return;
         }
 
+        if (isRegistering) { return; }
+        isRegistering = true;
+
         StartCoroutine(RegisterUser());
     }
+
+    /// <summary>
+    /// Add the user to the database with the required variables
+    /// </summary>
 
     private IEnumerator RegisterUser()
     {
@@ -139,6 +160,9 @@ public class RegisterButton : SwitchSceneButton
         UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/register.php", form);
         yield return www.SendWebRequest();
 
+        isRegistering = false;
+
+        // Switch scene if the user was succesfully placed in the database else print the error
         if (www.downloadHandler.text == "0")
         {
             SceneManager.LoadScene(sceneToSwitchTo);

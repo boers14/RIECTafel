@@ -6,6 +6,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public static class SaveSytem
 {
+    /// <summary>
+    /// Saves the game to a binary file.
+    /// </summary>
+
     public static void SaveGame()
     {
         DeleteGame();
@@ -19,6 +23,10 @@ public static class SaveSytem
             stream.Close();
         }
     }
+
+    /// <summary>
+    /// Loads the game by grabbing and decoding the saved data if there is a file to be found.
+    /// </summary>
 
     public static PlayerData LoadGame()
     {
@@ -40,6 +48,10 @@ public static class SaveSytem
         }
     }
 
+    /// <summary>
+    /// Delete the current save file if there is one.
+    /// </summary>
+
     public static void DeleteGame()
     {
         string path = Path.Combine(Application.persistentDataPath, "savedGame.RIECTable");
@@ -53,6 +65,10 @@ public static class SaveSytem
             Debug.Log("No file found");
         }
     }
+
+    /// <summary>
+    /// Checks whether there is a saved file.
+    /// </summary>
 
     public static bool CheckIfFileExist()
     {

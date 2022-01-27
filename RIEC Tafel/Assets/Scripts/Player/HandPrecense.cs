@@ -17,10 +17,18 @@ public class HandPrecense : MonoBehaviour
     [SerializeField]
     private InputDeviceCharacteristics characteristics = InputDeviceCharacteristics.None;
 
+    /// <summary>
+    /// Initialize controller
+    /// </summary>
+
     private void Start()
     {
         InitializeController();
     }
+
+    /// <summary>
+    /// Only update if there is a controller. Update hand animations.
+    /// </summary>
 
     private void Update()
     {
@@ -33,6 +41,10 @@ public class HandPrecense : MonoBehaviour
         UpdateHandAnimations();
     }
 
+    /// <summary>
+    /// Set hand animations equal to the amount that the grip is pressed
+    /// </summary>
+
     private void UpdateHandAnimations()
     {
         if (inputDevice.TryGetFeatureValue(CommonUsages.grip, out float gripValue))
@@ -44,6 +56,10 @@ public class HandPrecense : MonoBehaviour
             handAnimator.SetFloat("Grip", 0);
         }
     }
+
+    /// <summary>
+    /// Fetch the input device and create the hand prefab if the device is valid 
+    /// </summary>
 
     private void InitializeController()
     {

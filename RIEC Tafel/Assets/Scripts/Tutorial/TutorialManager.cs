@@ -17,7 +17,8 @@ public class TutorialManager : MonoBehaviour
     public int stepInTutorial { get; set; } = 0;
 
     [System.NonSerialized]
-    public bool tutorialHasStarted = false, currentStepIsDone = false, checkForPOIOpen = false, checkForPOIPull = false, cantZoomMap = false;
+    public bool tutorialHasStarted = false, currentStepIsDone = false, checkForPOIOpen = false, checkForPOIPull = false, 
+        cantZoomMap = false;
 
     private ButtonCommandText buttonCommandText = null;
 
@@ -27,7 +28,8 @@ public class TutorialManager : MonoBehaviour
     private TMP_Text buttonCommandTextText = null;
 
     [SerializeField]
-    private List<string> tutorialTitles = new List<string>(), buttonCommands = new List<string>(), explanationTexts = new List<string>();
+    private List<string> tutorialTitles = new List<string>(), buttonCommands = new List<string>(), 
+        explanationTexts = new List<string>();
 
     [SerializeField]
     private List<UnityEvent> tutorialChallenges = new List<UnityEvent>(), initialStartUpForTutorial = new List<UnityEvent>();
@@ -89,7 +91,8 @@ public class TutorialManager : MonoBehaviour
     private List<TutorialControllerArrows> grabbebleObjectArrows = new List<TutorialControllerArrows>();
 
     [SerializeField]
-    private Transform legendaArrowBasePos = null, conclusionArrowBasePos = null, indicationArrowBasePos = null, notesArrowBasePos = null;
+    private Transform legendaArrowBasePos = null, conclusionArrowBasePos = null, indicationArrowBasePos = null, 
+        notesArrowBasePos = null;
 
     [SerializeField]
     private TutorialDropdown tutorialDropdown = null;
@@ -104,6 +107,10 @@ public class TutorialManager : MonoBehaviour
 
     [System.NonSerialized]
     public int stickyNoteCount = 0;
+
+    /// <summary>
+    /// Initialize variables, turn off non required objects and retrieve data from the game manager
+    /// </summary>
 
     private void Start()
     {
@@ -124,6 +131,10 @@ public class TutorialManager : MonoBehaviour
         StartCoroutine(gameManager.RetrieveCityData());
     }
 
+    /// <summary>
+    /// Turn off objects not neccesary to the player at the start of the tutorial
+    /// </summary>
+
     private IEnumerator TurnOffMapAndTable()
     {
         yield return new WaitForEndOfFrame();
@@ -136,6 +147,11 @@ public class TutorialManager : MonoBehaviour
             objectsToDeactivate[i].SetActive(false);
         }
     }
+
+    /// <summary>
+    /// Use Q to skip steps in the tutorial. Perform the current step in the tutorial.
+    /// The tutorial challenges list is filled with functions from this script to perform based on where in the tutorial the player is
+    /// </summary>
 
     private void Update()
     {
@@ -157,6 +173,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// After a few second show which buttons the player has to hold if the player didnt start the tutorial yet
+    /// </summary>
+
     private IEnumerator StartTutorial()
     {
         yield return new WaitForSeconds(timeBeforeTutorialStarts);
@@ -165,6 +185,10 @@ public class TutorialManager : MonoBehaviour
             EnablePrimaryArrows(true);
         }
     }
+
+    /// <summary>
+    /// Hold a primary button for a second to start the next step in the tutorial
+    /// </summary>
 
     public void IntroductionOfTutorial()
     {
@@ -186,6 +210,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Activate learn UI button, to learn the player how to use buttons on the UI
+    /// </summary>
+
     public void StartFirstStepOfTutorial()
     {
         learnUIButton.gameObject.SetActive(true);
@@ -193,6 +221,10 @@ public class TutorialManager : MonoBehaviour
         oculusAnimations.ShowExampleButtonAnimationFirstStep();
         EnablePrimaryArrows(false);
     }
+
+    /// <summary>
+    /// If the learn UI buttons has been pressed go to the next step
+    /// </summary>
 
     public void FirstStepOfTutorial()
     {
@@ -203,6 +235,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Activate keyboard to learn the player how to use the keyboard and inputfield on the UI
+    /// </summary>
+
     public void StartSecondStepOfTutorial()
     {
         learnUIInputField.gameObject.SetActive(true);
@@ -210,6 +246,10 @@ public class TutorialManager : MonoBehaviour
         EnablePrimaryArrows(false);
         oculusAnimations.ShowExampleInputfieldAnimationFirstStep();
     }
+
+    /// <summary>
+    /// If the player typed the correct sentence go to next step
+    /// </summary>
 
     public void SecondStepOfTutorial()
     {
@@ -221,12 +261,20 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// For hands tutorial. Activates map and learns the player how to move the map.
+    /// </summary>
+
     public void StartThirdStepOfTutorial()
     {
         oculusAnimations.ShowExampleMoveMapFirstStep();
         BaseThirdStepOfTutorial();
         EnablePrimaryArrows(false);
     }
+
+    /// <summary>
+    /// For controller tutorial. Activates map and learns the player how to move the map.
+    /// </summary>
 
     public void StartThirdStepOfTutorialWithControllers()
     {
@@ -235,13 +283,22 @@ public class TutorialManager : MonoBehaviour
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableSteerStickArrow(true);
     }
 
+    /// <summary>
+    /// Base steps that always need to be done for the third step
+    /// </summary>
+
     private void BaseThirdStepOfTutorial()
     {
         table.gameObject.SetActive(true);
         map.gameObject.SetActive(true);
+        // makes sure map is visible for player
         map.SetNewMapCenter(abstractMap.CenterLatitudeLongitude);
         neededTutorialTransform = map.transform.position;
     }
+
+    /// <summary>
+    /// If the player changed the position of the map start the next step
+    /// </summary>
 
     public void ThirdStepOfTutorial()
     {
@@ -251,6 +308,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// For hands tutorial. Learns the player how to rotate the map.
+    /// </summary>
+
     public void StartFourthStepOfTutorial()
     {
         oculusAnimations.ShowExampleRotateMapFirstStep();
@@ -258,6 +319,10 @@ public class TutorialManager : MonoBehaviour
         EnablePrimaryArrows(false);
         EnableGripArrows(false);
     }
+
+    /// <summary>
+    /// For controller tutorial. Learns the player how to rotate the map.
+    /// </summary>
 
     public void StartFourthStepOfTutorialWithControllers()
     {
@@ -267,6 +332,10 @@ public class TutorialManager : MonoBehaviour
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableGripArrow(true);
     }
 
+    /// <summary>
+    /// Starts next step if player changed rotation of map
+    /// </summary>
+
     public void FourthStepOfTutorial()
     {
         if (neededTutorialTransform != map.transform.eulerAngles)
@@ -275,12 +344,20 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// For hands tutorial. Learns the player how to scale the map.
+    /// </summary>
+
     public void StartFifthStepOfTutorial()
     {
         oculusAnimations.ShowExampleScaleMapFirstStep();
         neededTutorialTransform = map.transform.lossyScale;
         EnablePrimaryArrows(true);
     }
+
+    /// <summary>
+    /// For controller tutorial. Learns the player how to scale the map.
+    /// </summary>
 
     public void StartFifthStepOfTutorialWithControllers()
     {
@@ -290,6 +367,10 @@ public class TutorialManager : MonoBehaviour
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Right).EnableSecondaryButtonArrow(true);
     }
 
+    /// <summary>
+    /// When player changes scale of map go to next step
+    /// </summary>
+
     public void FifthStepOfTutorial()
     {
         if (neededTutorialTransform != map.transform.lossyScale)
@@ -298,6 +379,11 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Create a POI in the center of the map. Show explanation text of what it is. Checks if the player has a primary button down,
+    /// so that player cannot accidentally skip this step of the tutorial by having the a button held from the previous step.
+    /// </summary>
+
     public void StartSixthStepOfTutorial()
     {
         gameManager.gameObject.SetActive(true);
@@ -305,6 +391,11 @@ public class TutorialManager : MonoBehaviour
 
         CheckIfPrimaryButtonIsDown();
     }
+
+    /// <summary>
+    /// If the primary button was previously down, check if none of the primary buttons are down. If that is the case perform 
+    /// introduction of tutorial step.
+    /// </summary>
 
     public void SixthStepOfTutorial()
     {
@@ -332,6 +423,10 @@ public class TutorialManager : MonoBehaviour
         IntroductionOfTutorial();
     }
 
+    /// <summary>
+    /// Learn the player that if the player hovers the POI that shows extra information
+    /// </summary>
+
     public void StartSeventhStepOfTutorial()
     {
         tutorialTitle.fontSize = 27;
@@ -339,6 +434,10 @@ public class TutorialManager : MonoBehaviour
         oculusAnimations.ShowExampleOpenPOIInformation();
         checkForPOIOpen = true;
     }
+
+    /// <summary>
+    /// If the POI has expanded its text go to next step of tutorial
+    /// </summary>
 
     public void SeventhStepOfTutorial()
     {
@@ -348,6 +447,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Learn the player how to pull the POI in front of the player
+    /// </summary>
+
     public void StartEightStepOfTutorial()
     {
         oculusAnimations.ShowExamplePullPOI();
@@ -355,6 +458,10 @@ public class TutorialManager : MonoBehaviour
         EnablePrimaryArrows(false);
         checkForPOIPull = true;
     }
+
+    /// <summary>
+    /// If the POI has performed its pull function go to next step of tutorial
+    /// </summary>
 
     public void EightStepOfTutorial()
     {
@@ -364,16 +471,29 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Explains grabbeble objects to the player (another explanation step, the player will have to hold a primary button to go to 
+    /// next step)
+    /// </summary>
+
     public void StartNinthStepOfTutorial()
     {
         BaseNinthStepOfTutorial();
     }
+
+    /// <summary>
+    /// Make sure the player cant scale the map when holding a primary button to go to the next step
+    /// </summary>
 
     public void StartNinthStepOfTutorialWithControllers()
     {
         BaseNinthStepOfTutorial();
         cantZoomMap = true;
     }
+
+    /// <summary>
+    /// Activate the playertable to show where the grabbeble objects will be
+    /// </summary>
 
     private void BaseNinthStepOfTutorial()
     {
@@ -382,20 +502,33 @@ public class TutorialManager : MonoBehaviour
         CheckIfPrimaryButtonIsDown();
     }
 
+    /// <summary>
+    /// Hold primary button to go to next step
+    /// </summary>
+
     public void NinthStepOfTutorial()
     {
         SixthStepOfTutorial();
     }
 
+    /// <summary>
+    /// Turn on the legenda. Learn the player how to grab objects
+    /// </summary>
+
     public void StartTenthStepOfTutorial()
     {
         legenda.gameObject.SetActive(true);
+        // Is the arrow that points at the legenda
         grabbebleObjectArrows[0].SetTweenPosition(legendaArrowBasePos);
         grabbebleObjectArrows[0].connectedGameObject = legenda;
         EnableGripArrows(false);
         grabbebleObjectArrows[0].gameObject.SetActive(true);
         oculusAnimations.ShowExampleGrabObjectFirstStep();
     }
+
+    /// <summary>
+    /// If legenda image has been turned on and then is deactivated again, go to next step
+    /// </summary>
 
     public void TenthStepOfTutorial()
     {
@@ -410,12 +543,20 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Learn player how to move grabbeble objects in hands tutorial
+    /// </summary>
+
     public void StartEleventhStepOfTutorial()
     {
         oculusAnimations.ShowExampleMoveGrabbedObjectFirstStep();
         BaseStartEleventhStepOfTutorial();
         EnablePrimaryArrows(false);
     }
+
+    /// <summary>
+    /// Learn player how to move grabbeble objects in controller tutorial
+    /// </summary>
 
     public void StartEleventhStepOfTutorialWithControllers()
     {
@@ -426,6 +567,10 @@ public class TutorialManager : MonoBehaviour
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnableSteerStickArrow(true);
     }
 
+    /// <summary>
+    /// Initialize data for 11th step of tutorial
+    /// </summary>
+
     private void BaseStartEleventhStepOfTutorial()
     {
         tutorialTitle.fontSize = 24f;
@@ -435,6 +580,10 @@ public class TutorialManager : MonoBehaviour
         completedCanvasStep = false;
         EnableGripArrows(false);
     }
+
+    /// <summary>
+    /// If the player changed the position of the legenda and turned the legenda off again, go to next step
+    /// </summary>
 
     public void EleventhStepOfTutorial()
     {
@@ -452,12 +601,20 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Learn the player how to scale grabbeble objects hand tutorial.
+    /// </summary>
+
     public void StartTwelvethStepOfTutorial()
     {
         oculusAnimations.ShowExampleScaleGrabbedObjectFirstStep();
         BaseStartTwelvethStepOfTutorial();
         EnablePrimaryArrows(true);
     }
+
+    /// <summary>
+    /// Learn the player how to scale grabbeble objects controller tutorial.
+    /// </summary>
 
     public void StartTwelvethStepOfTutorialWithControllers()
     {
@@ -467,6 +624,10 @@ public class TutorialManager : MonoBehaviour
         SearchForCorrectHand(TutorialHands.HandCharacteristic.Left).EnablePrimaryButtonArrow(true);
     }
 
+    /// <summary>
+    /// Initialize correct data for 12th step of tutorial
+    /// </summary>
+
     private void BaseStartTwelvethStepOfTutorial()
     {
         neededTutorialTransform = legendaImage.transform.lossyScale;
@@ -474,6 +635,10 @@ public class TutorialManager : MonoBehaviour
         completedCanvasStep = false;
         EnableGripArrows(false);
     }
+
+    /// <summary>
+    /// If the player changed the scale of the legenda and turned the legenda off again, go to next step
+    /// </summary>
 
     public void TwelvethStepOfTutorial()
     {
@@ -491,6 +656,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Explain the use of conclusions and indications in this step in hands tutorial
+    /// </summary>
+
     public void StartThirthteenthStepOfTutorial()
     {
         tutorialTitle.fontSize = 30;
@@ -499,6 +668,7 @@ public class TutorialManager : MonoBehaviour
             dataExplanations[i].gameObject.SetActive(true);
         }
 
+        // Point the arrows at conclusions and indications instead of legenda
         grabbebleObjectArrows[0].gameObject.SetActive(true);
         grabbebleObjectArrows[0].SetTweenPosition(conclusionArrowBasePos);
         grabbebleObjectArrows[0].connectedGameObject = 
@@ -511,6 +681,10 @@ public class TutorialManager : MonoBehaviour
         CheckIfPrimaryButtonIsDown();
     }
 
+    /// <summary>
+    /// Learn the user how to scroll throught dropdowns in the controller tutorial
+    /// </summary>
+
     public void StartThirthteenthStepOfTutorialWithControllers()
     {
         oculusAnimations.ShowExampleMoveDropdownFirstStepWithControllers();
@@ -520,11 +694,19 @@ public class TutorialManager : MonoBehaviour
         tutorialDropdown.gameObject.SetActive(true);
     }
 
+    /// <summary>
+    /// Standard explanation text step like step 6 & 9. Cant go to next step when an canvasobject is grabbed.
+    /// </summary>
+
     public void ThirthteenthStepOfTutorial()
     {
         TurnOffGrabbebleObjectArrows(dataExplanationSet);
         NewCanvasObjectStep();
     }
+
+    /// <summary>
+    /// If the player scrolled throught dropdown using the controller inputs finish the tutorial
+    /// </summary>
 
     public void ThirthteenthStepOfTutorialWithControllers()
     {
@@ -533,6 +715,10 @@ public class TutorialManager : MonoBehaviour
             CelebrateCurrentStepInTurorial();
         }
     }
+
+    /// <summary>
+    /// Explain the use of notes in this step of the tutorial
+    /// </summary>
 
     public void StartFourteenthStepOfTutorial()
     {
@@ -544,11 +730,19 @@ public class TutorialManager : MonoBehaviour
         CheckIfPrimaryButtonIsDown();
     }
 
+    /// <summary>
+    /// Standard explanation text step like step 6 & 9. Cant go to next step when an canvasobject is grabbed.
+    /// </summary>
+
     public void FourteenthStepOfTutorial()
     {
         TurnOffGrabbebleObjectArrows(notesSet);
         NewCanvasObjectStep();
     }
+
+    /// <summary>
+    /// Learns the player how to create a new stickynote and move it
+    /// </summary>
 
     public void StartFifteenthStepOfTutorial()
     {
@@ -559,6 +753,10 @@ public class TutorialManager : MonoBehaviour
         completedCanvasStep = false;
         tutorialTitle.fontSize = 28;
     }
+
+    /// <summary>
+    /// If the player created a stickynote and moved its position and then turned off the notes UI, go to next step
+    /// </summary>
 
     public void FifteenthStepOfTutorial()
     {
@@ -583,6 +781,10 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Learns the player how to edit a sticky note and how to stop editing a sticky note
+    /// </summary>
+
     public void StartSixteenthStepOfTutorial()
     {
         grabbebleObjectArrows[0].gameObject.SetActive(true);
@@ -592,6 +794,12 @@ public class TutorialManager : MonoBehaviour
         completedCanvasStep = false;
         tutorialTitle.fontSize = 25;
     }
+
+    /// <summary>
+    /// Double tap a primary button to start editing a sticky note, stop editing by double tapping beside the sticky note
+    /// If the UI is closed and the title and body of a stickynote have been edited and the the sticky note was not being edited
+    /// anymore, go to next step
+    /// </summary>
 
     public void SixteenthStepOfTutorial()
     {
@@ -632,6 +840,10 @@ public class TutorialManager : MonoBehaviour
             CelebrateCurrentStepInTurorial();
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
 
     public void StartSeventeenthStepOfTutorial()
     {

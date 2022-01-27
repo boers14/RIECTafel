@@ -6,6 +6,10 @@ public class TutorialRemoveStickyNoteButton : RemoveStickyNoteButton
 {
     private TutorialManager tutorialManager = null;
 
+    /// <summary>
+    /// Removes a stickynote from the list of stickynotes of the tutorial manager
+    /// </summary>
+
     public override void Start()
     {
         base.Start();

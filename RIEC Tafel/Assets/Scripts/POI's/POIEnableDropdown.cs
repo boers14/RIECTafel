@@ -17,6 +17,10 @@ public class POIEnableDropdown : DropdownSelection
 
     private POISelectionDropdown poiSelectionDropdown = null;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -24,6 +28,11 @@ public class POIEnableDropdown : DropdownSelection
         poiSelectionDropdown = FindObjectOfType<POISelectionDropdown>();
         dropdown.ClearOptions();
     }
+
+    /// <summary>
+    /// Fill dropdown with all different feature types and add them to the dictionary. Then check for all POI's which feature types
+    /// they have. For each feature type they have add them to the dictionary.
+    /// </summary>
 
     public void FillDropDownList(List<GameObject> allPOIs, List<string> featureTypes, POIManager poiManager)
     {
@@ -40,11 +49,13 @@ public class POIEnableDropdown : DropdownSelection
             string[] allFeaturesInPOI = featureTypes[i].Split(',');
             for (int j = 0; j < allFeaturesInPOI.Length; j++)
             {
+                // if feature type starts with an empty space, remove it
                 if (char.IsWhiteSpace(allFeaturesInPOI[j][0]))
                 {
                     allFeaturesInPOI[j] = allFeaturesInPOI[j].Remove(0, 1);
                 }
 
+                // Add new feature type to dictionary
                 if (!poisByFeatureType.ContainsKey(allFeaturesInPOI[j]))
                 {
                     allOptions.Add(allFeaturesInPOI[j]);
@@ -59,6 +70,7 @@ public class POIEnableDropdown : DropdownSelection
             POIText poiText = allPOIs[i].GetComponent<POIText>();
             for (int j = 1; j < allOptions.Count; j++)
             {
+                // Add POI to connected feature part of dictionary
                 if (poiText.textExtend.Contains(allOptions[j]))
                 {
                     poisByFeatureType[allOptions[j]].Add(poiText);
@@ -67,8 +79,14 @@ public class POIEnableDropdown : DropdownSelection
         }
 
         dropdown.AddOptions(allOptions);
+        // Shows given text here on the dropdown itself instead of an option
         dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te zien";
     }
+
+    /// <summary>
+    /// Unless the value is 0, disable all POI active states first. Then check which POI's have the selected feature and enable 
+    /// those poi active states.
+    /// </summary>
 
     public void EnablePOIs(int value)
     {
@@ -86,6 +104,7 @@ public class POIEnableDropdown : DropdownSelection
             }
         } else
         {
+            // Option 0 is enable all POI's
             for (int i = 0; i < poiActiveStates.Count; i++)
             {
                 poiActiveStates[i] = true;
@@ -94,6 +113,7 @@ public class POIEnableDropdown : DropdownSelection
 
         dropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "Selecteer POI's om te zien";
 
+        // Update all affected components of the program
         miniMap.SetActiveStateOfPOIs(poiActiveStates);
         poiSelectionDropdown.EnableOptionsCoordinatesList(poiActiveStates);
         poiManager.poiVisibility = poiActiveStates;

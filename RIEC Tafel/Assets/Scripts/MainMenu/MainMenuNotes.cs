@@ -11,6 +11,10 @@ public class MainMenuNotes : Notes
     [SerializeField]
     private TMP_Dropdown notesSelectionDropdown = null;
 
+    /// <summary>
+    /// Permission of microphone is needed if this program wants to use the microphone (does not yet use it)
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -21,11 +25,19 @@ public class MainMenuNotes : Notes
         }
     }
 
+    /// <summary>
+    /// Dont update if the user is planning to use the notes dropdown
+    /// </summary>
+
     public override void Update()
     {
         if (notesSelectionDropdown.transform.childCount == 4 || notesSelectionDropdownIsHovered) { return; }
         base.Update();
     }
+
+    /// <summary>
+    /// Set the hovered state of the notes dropdown (set in editor on player hand rays interactor)
+    /// </summary>
 
     public void SetNoteDropdownToBeingHovered()
     {

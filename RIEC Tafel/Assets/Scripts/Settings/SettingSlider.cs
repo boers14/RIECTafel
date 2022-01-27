@@ -19,6 +19,10 @@ public class SettingSlider : MonoBehaviour
 
     private float baseValue = 0;
 
+    /// <summary>
+    /// Set the slider to value gotten from the Setting manager
+    /// </summary>
+
     private void Start()
     {
         slider = GetComponent<Slider>();
@@ -28,8 +32,13 @@ public class SettingSlider : MonoBehaviour
         ReverseEngineerSetting();
     }
 
+    /// <summary>
+    /// Calculate the percentage progress on the bar of the slider based on the setting given in the setting manager
+    /// </summary>
+
     public void ReverseEngineerSetting()
     {
+        // Get value from setting manager based on which slider it is
         float currentValue = 0;
         switch (affectedSetting)
         {
@@ -50,35 +59,35 @@ public class SettingSlider : MonoBehaviour
                 break;
         }
 
-        float maxValue = 0;
-        float minValue = 0;
+        // Based on whether the value is lower then the standard value (1) or higher calculate the slider value
         bool isOverHundredPercent = false;
 
+        // Calculate what the current value would be percentually to the max value it could be
         if (currentValue <= 1)
         {
-            maxValue = baseValue;
-            minValue = 0;
-            currentValue = (currentValue - (1 / maxExtraPercentage)) / (1 / maxExtraPercentage);
+            currentValue = (currentValue - (1 / maxExtraPercentage)) / (1 - (1 / maxExtraPercentage));
         }
         else
         {
-            maxValue = slider.maxValue;
-            minValue = baseValue;
-            currentValue = 1 + ((currentValue - 1) - (maxExtraPercentage - 1) / (maxExtraPercentage - 1));
+            currentValue = (1 + ((currentValue - 1) - (maxExtraPercentage - 1) / (maxExtraPercentage - 1))) / (maxExtraPercentage - 1);
             isOverHundredPercent = true;
         }
 
-        float difference = maxValue - minValue;
-        float currentSettingValue = minValue + difference * currentValue;
         if (isOverHundredPercent)
         {
+            // Calculate the value where the min value of the slider has to be over 50%
             slider.value = baseValue + (currentValue * baseValue);
         }
         else
         {
-            slider.value = currentSettingValue;
+            // Calculate the value where the max value of the slider is 50%
+            slider.value = baseValue * currentValue;
         }
     }
+
+    /// <summary>
+    /// Calculate value of the setting based on how far the value is on the bar
+    /// </summary>
 
     private void ChangeAffectedSetting(float value)
     {
@@ -87,6 +96,7 @@ public class SettingSlider : MonoBehaviour
         float actualValue = 0;
         bool isOverHunderdPercent = false;
 
+        // Get min and max values. Actual value being the percentage from 50% of the slider.
         if (value <= baseValue)
         {
             maxValue = 1;
@@ -100,7 +110,9 @@ public class SettingSlider : MonoBehaviour
             isOverHunderdPercent = true;
         }
 
+        // Calculate the maximal added value
         float difference = maxValue - minValue;
+        // Percentage based calculation of what the value would be
         float addedValue = difference * (actualValue / maxValue);
         if (isOverHunderdPercent)
         {
@@ -108,8 +120,9 @@ public class SettingSlider : MonoBehaviour
         }
 
         float newSettingValue = minValue + addedValue;
-        valueText.text = Mathf.Round(newSettingValue * 100) + "%";
 
+        // Set new value based on type
+        valueText.text = Mathf.Round(newSettingValue * 100) + "%";
         switch (affectedSetting)
         {
             case SettingsManager.AffectedSetting.MoveMapFactor:

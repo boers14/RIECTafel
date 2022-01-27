@@ -27,10 +27,19 @@ public class PlayerHandRays : MonoBehaviour
 
     public Hand hand = 0;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         lineRenderer = GetComponent<XRInteractorLineVisual>();
-    } 
+    }
+
+    /// <summary>
+    /// Performs a raycats that checks whether an object is an interactor and then adds it to a list off currently hit interactors
+    /// After 2 frames of an objects not being hit the object is removed from the list
+    /// </summary>
 
     private void FixedUpdate()
     {
@@ -44,9 +53,11 @@ public class PlayerHandRays : MonoBehaviour
                     hoveredObjects.Add(interactor);
                     frameCounters.Add(2);
                     hitPoints.Add(hit.point);
+                    // Perform the on hovered events
                     interactor.objectHoverEnteredEvent.Invoke();
                 } else
                 {
+                    // Keep resetting frame counter if object is being hit
                     int index = hoveredObjects.IndexOf(interactor);
                     frameCounters[index] = 2;
                     hitPoints[index] = hit.point;
@@ -54,19 +65,26 @@ public class PlayerHandRays : MonoBehaviour
             }
         }
 
+        // Count down so it doesnt crash when removing an item from the list
         for (int i = hoveredObjects.Count - 1; i >= 0 ; i--)
         {
             frameCounters[i]--;
+            // Remove object from list
             if (frameCounters[i] <= 0)
             {
                 PlayerHandsRayInteractor interactor = hoveredObjects[i];
                 frameCounters.RemoveAt(i);
                 hoveredObjects.RemoveAt(i);
                 hitPoints.RemoveAt(i);
+                // Call on hover exit event
                 interactor.objectHoverExitedEvent.Invoke();
             }
         }
     }
+
+    /// <summary>
+    /// Change the invalid color gradient alpha to make the line visible or inviseble
+    /// </summary>
 
     public void ChangeInvalidColorGradientOfLineRenderer(float alpha)
     {
@@ -77,6 +95,11 @@ public class PlayerHandRays : MonoBehaviour
         );
         lineRenderer.invalidColorGradient = gradient;
     }
+
+    /// <summary>
+    /// Check if an interactor is being hit that would require turning on/ off handlines after switching hand controls in settings
+    /// manager
+    /// </summary>
 
     public void ChangeColorGradientOfRayIfHandRayIsHittingRegisteredObject(float alpha)
     {

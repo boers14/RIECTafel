@@ -72,6 +72,10 @@ public class POIManager : MonoBehaviour
     [System.NonSerialized]
     public bool allLocationDataIsInitialized = false;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         if (FindObjectOfType<ChooseSeatButton>())
@@ -90,8 +94,13 @@ public class POIManager : MonoBehaviour
         resource = new ForwardGeocodeResource("");
     }
 
-    public void SetLocationData(List<string> locationData, List<string> dataTypes, List<string> neededAmounts, List<string> neededExtraInfo, 
-        List<string> conclusions, List<string> indications, string cityName)
+    /// <summary>
+    /// Save the location data given from the game manager into the POI manager. Start transforming location names into 
+    /// unity positions
+    /// </summary>
+
+    public void SetLocationData(List<string> locationData, List<string> dataTypes, List<string> neededAmounts, 
+        List<string> neededExtraInfo, List<string> conclusions, List<string> indications, string cityName)
     {
         poiHits.Clear();
         locationCoordinates.Clear();
@@ -106,16 +115,19 @@ public class POIManager : MonoBehaviour
         this.conclusions = conclusions;
         this.indications = indications;
 
-        //allLocationDataIsInitialized = true;
-        //FindObjectOfType<PlayerConnection>().FetchOwnPlayer().EnableChooseSeatButtons();
         StartCoroutine(GetLocationData(locationData, 0, true, () => CreateAllPOIsConnectedToLocationData(dataTypes, cityName), 0));
     }
+
+    /// <summary>
+    /// Loop throught all location data and transform them in to world coordinates.
+    /// </summary>
 
     private IEnumerator GetLocationData(List<string> locationData, int currentLocation, bool addLocationData,
         UnityAction functionAfterLocationGettingAllLocationData, int amountOfTriesForCurrentLocation)
     {
         yield return new WaitForSeconds(0.15f);
 
+        // Transform location to a city name
         string locationCityName = "";
         locationCityName = locationData[currentLocation].Split(',')[1];
         locationCityName = regex.Replace(locationCityName, "");
@@ -124,20 +136,23 @@ public class POIManager : MonoBehaviour
             locationCityName = locationCityName.Remove(0, 1);
         }
 
+        // Queue the cityname for geocoding
         resource.Query = locationCityName;
         MapboxAccess.Instance.Geocoder.Geocode(resource, HandleGeocoderResponse);
         amountOfTriesForCurrentLocation++;
 
+        // If last location is almost equal to current gotten location, try again
         if (coordinateGotFromLocationData.x > lastLocation.x - 0.0001 && coordinateGotFromLocationData.x < lastLocation.x + 0.0001 &&
             coordinateGotFromLocationData.y > lastLocation.y - 0.0001 && coordinateGotFromLocationData.y < lastLocation.y + 0.0001 && 
-            amountOfTriesForCurrentLocation <= 3 || coordinateGotFromLocationData.x <= 0.0001 && coordinateGotFromLocationData.y <= 0.0001 &&
-            amountOfTriesForCurrentLocation <= 3)
+            amountOfTriesForCurrentLocation <= 3 || coordinateGotFromLocationData.x <= 0.0001 
+            && coordinateGotFromLocationData.y <= 0.0001 && amountOfTriesForCurrentLocation <= 3)
         {
             StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData,
                 amountOfTriesForCurrentLocation));
         }
         else
         {
+            // if the location was succesfully found, add the location to the list of currently found location coordinates
             if (addLocationData)
             {
                 locationNames.Add(locationCityName);
@@ -148,15 +163,21 @@ public class POIManager : MonoBehaviour
             currentLocation++;
             if (currentLocation >= locationData.Count)
             {
+                // If all locations are found, stop looking for more locations and continue with the next function
                 functionAfterLocationGettingAllLocationData.Invoke();
             }
             else
             {
+                // If there are still more locations to handle perform this function again
                 StartCoroutine(GetLocationData(locationData, currentLocation, addLocationData, functionAfterLocationGettingAllLocationData,
                     amountOfTriesForCurrentLocation));
             }
         }
     }
+
+    /// <summary>
+    /// Function from mapbox to find the location data
+    /// </summary>
 
     private void HandleGeocoderResponse(ForwardGeocodeResponse res)
     {
@@ -171,6 +192,10 @@ public class POIManager : MonoBehaviour
         onGeocoderResponse(res);
     }
 
+    /// <summary>
+    /// Create all required POI's, set their color, text and scale
+    /// </summary>
+
     private void CreateAllPOIsConnectedToLocationData(List<string> dataTypes, string cityName)
     {
         for (int i = 0; i < dataTypes.Count; i++)
@@ -178,6 +203,7 @@ public class POIManager : MonoBehaviour
             GameManager.DataType dataType = (GameManager.DataType)System.Enum.Parse(typeof(GameManager.DataType), dataTypes[i]);
             GameObject POI = null;
 
+            // Based on datatype create a POI
             switch (dataType)
             {
                 case GameManager.DataType.Regular:
@@ -199,12 +225,14 @@ public class POIManager : MonoBehaviour
             allPOIs.Add(POI);
             poiVisibility.Add(true);
 
+            // Based on amount of hits, decide scale of POI
             int amountOfHits = 3;
             string[] amountOfHitsString = featureAmounts[i].Split(new string[] { "Hoeveelheid hits:" }, System.StringSplitOptions.None);
             if (amountOfHitsString.Length > 1)
             {
                 amountOfHits = int.Parse(amountOfHitsString[1]);
             }
+            // has a minimum of 3 hits, and thus this needs to be a starting length of 1 when 3
             amountOfHits -= 2;
             poiHits.Add(amountOfHits);
 
@@ -218,8 +246,13 @@ public class POIManager : MonoBehaviour
         List<string> locationData = new List<string>();
         locationData.AddRange(new string[] { cityName, cityName });
 
+        // Finalize the map initialisation process by starting the player of at the selected starting city
         StartCoroutine(GetLocationData(locationData, 0, false, () => FinishMapInitialisation(), 0));
     }
+
+    /// <summary>
+    /// Sets the POI color to the given color and sets other POI variables based on the index of the POI
+    /// </summary>
 
     private GameObject CreatePOI(GameObject POI, Color32 color, int index)
     {
@@ -227,11 +260,15 @@ public class POIManager : MonoBehaviour
         Color32 selectedColor = color;
         selectedColor.a = 150;
         POI.GetComponent<MeshRenderer>().material.color = selectedColor;
-        POI.GetComponent<POIText>().SetText(locationNames[index] + ": " + featureAmounts[index], extraExplanations[index], transform, moveMap, 
-            moveMap.inputDevices);
+        POI.GetComponent<POIText>().SetText(locationNames[index] + ": " + featureAmounts[index], extraExplanations[index], transform, 
+            moveMap, moveMap.inputDevices);
 
         return POI;
     }
+
+    /// <summary>
+    /// Initialize the last variables, set the map center to the starting city and enable the player to choose a seat
+    /// </summary>
 
     private void FinishMapInitialisation()
     {
@@ -253,6 +290,11 @@ public class POIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Mapbox didnt work with parenting and thus scaling, rotating and moving need to be done manually
+    /// This moves the POI's based on the given movement and checks whether they should be on/ off
+    /// </summary>
+
     public void MovePOIs(Vector3 movement)
     {
         for (int i = 0; i < allPOIs.Count; i++)
@@ -263,13 +305,21 @@ public class POIManager : MonoBehaviour
         CheckPOIVisibility();
     }
 
-    public void ParentPOIs(Transform parentObject, bool rotateText)
+    /// <summary>
+    /// Parents the POI's to the rotation object before its starts rotating, then also unparents them
+    /// </summary>
+
+    public void ParentPOIs(Transform parentObject)
     {
         for (int i = 0; i < allPOIs.Count; i++)
         {
             allPOIs[i].transform.SetParent(parentObject);
         }
     }
+
+    /// <summary>
+    /// Updates the scale of the current POI's based on the new scale
+    /// </summary>
 
     public void SetPOIsScale(Vector3 newScale)
     {
@@ -280,7 +330,12 @@ public class POIManager : MonoBehaviour
         SetPOIMapPosition();
     }
 
-    public void SetPOIMapPosition()
+    /// <summary>
+    /// Calculate the position of all POI's on the map depending on the location coordinates.
+    /// Create a empty object for all POI's to be parented and rotate the object for all objects to have the correct position.
+    /// </summary>
+
+    private void SetPOIMapPosition()
     {
         GameObject rotationObject = Instantiate(emptyTransform, map.transform.position, Quaternion.identity);
         for (int i = 0; i < allPOIs.Count; i++)
@@ -305,11 +360,21 @@ public class POIManager : MonoBehaviour
         CheckPOIVisibility();
     }
 
+    /// <summary>
+    /// Set offset of POI's equal to mapoffset for when they are scaled they still have the map offset calculated in for their 
+    /// position
+    /// </summary>
+
     public void SetExtraOffset(Vector3 mapOffset)
     {
         extraOffset.x = mapOffset.x;
         extraOffset.z = mapOffset.z;
     }
+
+    /// <summary>
+    /// Cant be made visible when the choose seat menu is active.
+    /// Checks whether the current postion of the POI is on the table or outside of it. When on the tabel the POI is visible else not.
+    /// </summary>
 
     public void CheckPOIVisibility()
     {
@@ -320,6 +385,7 @@ public class POIManager : MonoBehaviour
 
         for (int i = 0; i < allPOIs.Count; i++)
         {
+            // POI's can be defualt invisble with the POI enable dropdown.
             if (!poiVisibility[i])
             {
                 allPOIs[i].SetActive(false);
@@ -340,6 +406,10 @@ public class POIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Returns the closest active POI to a given position
+    /// </summary>
+
     public Transform ReturnClosestPOIToTransform(Vector3 position)
     {
         Transform closestPOI = null;
@@ -359,6 +429,10 @@ public class POIManager : MonoBehaviour
 
         return closestPOI;
     }
+
+    /// <summary>
+    /// Change the rotation and position to one of a given transform (for when the player seats)
+    /// </summary>
 
     public void ChangePOIManagerTransform(Transform transform)
     {

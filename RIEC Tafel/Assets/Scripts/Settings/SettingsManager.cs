@@ -20,6 +20,10 @@ public static class SettingsManager
     public static float moveMapSpeedFactor = 1f, scaleMapFactor = 1f, rotateMapFactor = 1f, moveGrabbedObjectSpeedFactor = 1f, 
         scaleGrabbedObjectFactor = 1f;
 
+    /// <summary>
+    /// Reset all of the variables to theire default state
+    /// </summary>
+
     public static void ResetStats()
     {
         moveMapSpeedFactor = 1f;
@@ -31,6 +35,10 @@ public static class SettingsManager
         oneHandControls = true;
         rayKeyBoard = true;
     }
+
+    /// <summary>
+    /// Load all data from the player data and set required keyboard state
+    /// </summary>
 
     public static void LoadData(PlayerData data, KeyBoard keyBoard)
     {
@@ -44,6 +52,11 @@ public static class SettingsManager
         rayKeyBoard = data.rayKeyBoard;
         ChangeKeyBoardState(rayKeyBoard, keyBoard);
     }
+
+    /// <summary>
+    /// Changes the one button control variable in the send PlayerGrabs and depending on the oneHandControls shows or 
+    /// hides hand rays
+    /// </summary>
 
     public static void ChangeHandControls(bool oneHandsControl, PlayerGrab[] hands, PlayerHandRays[] handRays)
     {
@@ -67,6 +80,10 @@ public static class SettingsManager
             }
         }
     }
+
+    /// <summary>
+    /// Change the use state of the keyboard, swaps position based on what keyboard type it is
+    /// </summary>
 
     public static void ChangeKeyBoardState(bool rayKeyBoardIsOn, KeyBoard keyBoard)
     {

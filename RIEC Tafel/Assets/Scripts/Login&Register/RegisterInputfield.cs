@@ -16,6 +16,10 @@ public class RegisterInputfield : BaseInputField
     [System.NonSerialized]
     public bool isFilledIn = false;
 
+    /// <summary>
+    /// For all the required inputfields for registering a new user 
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -26,17 +30,16 @@ public class RegisterInputfield : BaseInputField
     private void CheckifCanRegister(string text)
     {
         this.text = text;
+        // Checks if everything is ready for registering the user
         registerButton.CheckIfCanRegister();
     }
 
+    /// <summary>
+    /// Enable warning text if required
+    /// </summary>
+
     public void CheckWarningStatus()
     {
-        if (isFilledIn)
-        {
-            warningText.enabled = false;
-        } else
-        {
-            warningText.enabled = true;
-        }
+        warningText.enabled = !isFilledIn;
     }
 }

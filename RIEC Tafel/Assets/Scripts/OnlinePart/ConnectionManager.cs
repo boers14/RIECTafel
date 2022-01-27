@@ -10,6 +10,10 @@ public static class ConnectionManager
         Client
     }
 
+    /// <summary>
+    /// Use connection function to start server or join discussion and use cityname as starting point for discussion
+    /// </summary>
+
     public static ConnectFunction connectFunction = ConnectFunction.Client;
 
     public static string cityName = "";

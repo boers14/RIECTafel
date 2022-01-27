@@ -37,6 +37,10 @@ public class AvatarChangebleBodypart : MonoBehaviour
 
     private Slider connectedAvatarCreationSlider = null;
 
+    /// <summary>
+    /// Initialize/ reset all required variables
+    /// </summary>
+
     public void Start()
     {
         if (avatarCreationButtons.Count == 0)
@@ -68,11 +72,19 @@ public class AvatarChangebleBodypart : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set variables for resetting the avatar
+    /// </summary>
+
     private void OnEnable()
     {
         meshAtStartOfCreation = GetComponent<MeshFilter>().mesh;
         newSizeFactorAtStartOfCreation = newSizeFactor;
     }
+
+    /// <summary>
+    /// Set mesh and scale to variables at start of creation and call change bodytype function
+    /// </summary>
 
     public void CancelAvatarCreation()
     {

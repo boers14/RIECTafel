@@ -20,6 +20,10 @@ public class EditebleText : MonoBehaviour
 
     private bool isInputField = false, changeYPos = true;
 
+    /// <summary>
+    /// Check if the edited text is an input field or regular text
+    /// </summary>
+
     public virtual void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -29,6 +33,10 @@ public class EditebleText : MonoBehaviour
             changeYPos = false;
         }
     }
+
+    /// <summary>
+    /// Edit y position if textblock changes in size and show the place where the text is edited
+    /// </summary>
 
     private void FixedUpdate()
     {
@@ -48,7 +56,9 @@ public class EditebleText : MonoBehaviour
             prevYSize = rectTransform.sizeDelta.y;
         }
 
+        // only show where the edit place if showEditPlace
         if (!isCurrentlyEdited || !showEditPlace) { return; }
+
         blinkTimer += Time.fixedDeltaTime;
         if (blinkTimer >= blinkSwitch)
         {
@@ -67,6 +77,10 @@ public class EditebleText : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set all texts to not being edited and turn it on for this
+    /// </summary>
+
     public void SetAsEditeble()
     {
         EditebleText[] editebleTexts = FindObjectsOfType<EditebleText>();
@@ -78,6 +92,10 @@ public class EditebleText : MonoBehaviour
 
         isCurrentlyEdited = true;
     }
+
+    /// <summary>
+    /// Add the addedText to the current text, if remove text, remove the last symbol instead
+    /// </summary>
 
     public void EditText(string addedText, bool removeText, KeyBoard keyBoard)
     {
@@ -113,11 +131,16 @@ public class EditebleText : MonoBehaviour
         }
 
         SetText(text);
+        // Swap the keyboard to the normal state if it was in capslock
         if (keyBoard.shiftState)
         {
             keyBoard.SwapKeyBoardState();
         }
     }
+
+    /// <summary>
+    /// Get the text component depending on what type of editeble text it is
+    /// </summary>
 
     private string GetText()
     {
@@ -129,6 +152,10 @@ public class EditebleText : MonoBehaviour
             return GetComponent<TMP_Text>().text;
         }
     }
+
+    /// <summary>
+    /// Set the text depending on what type of editeble text it is
+    /// </summary>
 
     private void SetText(string text)
     {

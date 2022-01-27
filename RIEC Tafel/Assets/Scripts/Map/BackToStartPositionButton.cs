@@ -18,6 +18,10 @@ public class BackToStartPositionButton : MonoBehaviour
     [System.NonSerialized]
     public Button button = null;
 
+    /// <summary>
+    /// Grab start position and apply it to the map functions whenever the start button is clicked
+    /// </summary>
+
     private void Start()
     {
         mapMovement = map.GetComponent<MoveMap>();

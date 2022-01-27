@@ -11,6 +11,10 @@ public class ResetSettingsButton : MonoBehaviour
     [SerializeField]
     private List<SettingsToggle> settingsToggles = new List<SettingsToggle>();
 
+    /// <summary>
+    /// On button click resets all settings to their default and updates the graphics to match that
+    /// </summary>
+
     private void Start()
     {
         GetComponent<Button>().onClick.AddListener(ResetSettings);

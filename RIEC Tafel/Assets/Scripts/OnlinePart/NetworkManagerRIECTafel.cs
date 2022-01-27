@@ -26,6 +26,10 @@ public class NetworkManagerRIECTafel : NetworkManager
     [System.NonSerialized]
     public bool hasFoundDiscussion = false;
 
+    /// <summary>
+    /// Start hosting if the connection manager is a server type else start searching for a discussion
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -39,6 +43,7 @@ public class NetworkManagerRIECTafel : NetworkManager
                 if (Application.platform != RuntimePlatform.WebGLPlayer)
                 {
                     StartHost();
+                    // Make the server visible for other clients by advertising it on the network
                     GetComponent<NetworkDiscovery>().AdvertiseServer();
                     hasFoundDiscussion = true;
                 }
@@ -58,6 +63,10 @@ public class NetworkManagerRIECTafel : NetworkManager
         }
     }
 
+    /// <summary>
+    /// Start the client if the player found a server and stop searching for a server
+    /// </summary>
+
     private void DisableNetworkDiscoveryOnServerFound(ServerResponse response)
     {
         GetComponent<NetworkDiscovery>().StopDiscovery();
@@ -65,8 +74,14 @@ public class NetworkManagerRIECTafel : NetworkManager
         hasFoundDiscussion = true;
     }
 
+    /// <summary>
+    /// Spawn a player on the network and if there is no game manager yet als spawn a game manager
+    /// </summary>
+
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
+        // This isnt actually always equal to the amount of players in the discussion, it is used to give each player connection
+        // a unique player ID
         numberOfPlayers++;
 
         GameObject player = Instantiate(playerPrefab, spawnPos.position, spawnPos.rotation);
@@ -78,9 +93,15 @@ public class NetworkManagerRIECTafel : NetworkManager
             gameManager = Instantiate(gameManagerPrefab);
             NetworkServer.Spawn(gameManager.gameObject);
             gameManager.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+            // The start of retrieving city data for the game manager
             StartCoroutine(player.GetComponent<PlayerConnection>().StartConnectionWithGamemanager(cityName));
         }
     }
+
+    /// <summary>
+    /// Refill the map owner dropdown with all actual players in the discussion and if there a players still selecting a seat
+    /// Open up the seat of the player that left for those players
+    /// </summary>
 
     public override void OnServerDisconnect(NetworkConnection conn)
     {
@@ -89,9 +110,12 @@ public class NetworkManagerRIECTafel : NetworkManager
         PlayerConnection connection = FindObjectOfType<PlayerConnection>();
         PlayerConnection ownConnection = connection.FetchOwnPlayer();
 
-        if (ownConnection.isServer)
+        if (ownConnection)
         {
-            ownConnection.CmdRefillPlayerMapControlDropdown();
+            if (ownConnection.isServer)
+            {
+                ownConnection.CmdRefillPlayerMapControlDropdown();
+            }
         }
 
         if (!ownConnection || ownConnection.isServer || playerConnectedToNumber.Count == 1) { return; }

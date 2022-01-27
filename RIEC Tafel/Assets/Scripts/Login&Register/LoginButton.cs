@@ -16,6 +16,12 @@ public class LoginButton : SwitchSceneButton
     [SerializeField]
     private string tutorialScene = "";
 
+    private bool isLoggingIn = false;
+
+    /// <summary>
+    /// If there is no save file send to user to the tutorial of the program, else load all data
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -30,10 +36,21 @@ public class LoginButton : SwitchSceneButton
         }
     }
 
+    /// <summary>
+    /// Start logging in the user
+    /// </summary>
+
     public override void SwitchScene()
     {
+        if (isLoggingIn) { return; }
+
+        isLoggingIn = true;
         StartCoroutine(Login());
     }
+
+    /// <summary>
+    /// Login the user
+    /// </summary>
 
     private IEnumerator Login()
     {
@@ -46,6 +63,9 @@ public class LoginButton : SwitchSceneButton
         UnityWebRequest www = UnityWebRequest.Post("https://riectafel.000webhostapp.com/login.php", form);
         yield return www.SendWebRequest();
 
+        isLoggingIn = false;
+
+        // If all went well, set all correct data else state that something went wrong
         if (www.downloadHandler.text[0] == '0')
         {
             string[] webTexts = www.downloadHandler.text.Split('\t');

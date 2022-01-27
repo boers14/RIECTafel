@@ -36,6 +36,10 @@ public class DataGenerator : MonoBehaviour
 
     private string location = "";
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         string[] words = new string[]{"lorem", "ipsum", "dolor", "sit", "amet", "consectetuer",
@@ -47,6 +51,10 @@ public class DataGenerator : MonoBehaviour
         geocoder = MapboxAccess.Instance.Geocoder;
     }
 
+    /// <summary>
+    /// Create new fake data when q is pressed
+    /// </summary>
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q) && !isProcessingAddingData)
@@ -55,11 +63,20 @@ public class DataGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Start creating new fake data
+    /// </summary>
+
     private void StartCreatingData()
     {
         isProcessingAddingData = true;
         StartCoroutine(SelectRandomCityLocation());
     }
+
+    /// <summary>
+    /// Selects a random location a random distance away from the starting center
+    /// Proceed further if the random location is in the netherlands in a city, else try again
+    /// </summary>
 
     private IEnumerator SelectRandomCityLocation()
     {
@@ -88,8 +105,8 @@ public class DataGenerator : MonoBehaviour
         }
         yield return new WaitForSeconds(0.15f);
 
-        if (!location.EndsWith("Belgium") && !location.EndsWith("Germany") && !location.StartsWith("{") && location != "null" && location != ""
-            && location.Split(',').Length > 2)
+        if (!location.EndsWith("Belgium") && !location.EndsWith("Germany") && !location.StartsWith("{") && location != "null" 
+            && location != "" && location.Split(',').Length > 2)
         {
             StartCoroutine(AddDataToDatabase());
         } else
@@ -97,6 +114,11 @@ public class DataGenerator : MonoBehaviour
             StartCoroutine(SelectRandomCityLocation());
         }
     }
+
+    /// <summary>
+    /// Add the selected location to the database with a random amount of hits, between the 3 and 10
+    /// For every hit select a randomly non-selected feat, give every feat a conclusion and indication
+    /// </summary>
 
     private IEnumerator AddDataToDatabase()
     {
@@ -142,15 +164,22 @@ public class DataGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set mapbox response to response
+    /// </summary>
+
     private void HandleGeocoderResponse(ReverseGeocodeResponse res)
     {
         response = res;
         if (onGeocoderResponse != null)
         {
-            print("hi");
             onGeocoderResponse(this, System.EventArgs.Empty);
         }
     }
+
+    /// <summary>
+    /// Create random lorem ipsum dialogue for each added feat
+    /// </summary>
 
     private string LoremIpsum(int minWords, int maxWords, int minSentences, int maxSentences, List<string> addedFeats)
     {
@@ -158,6 +187,7 @@ public class DataGenerator : MonoBehaviour
 
         for (int p = 0; p < addedFeats.Count; p++)
         {
+            // Make added feat a bold title
             result.Append("<b>" + addedFeats[p] + ":</b>\n");
             int numSentences = Random.Range(minSentences, maxSentences + 1);
             for (int s = 0; s < numSentences; s++)
@@ -169,6 +199,7 @@ public class DataGenerator : MonoBehaviour
                     result.Append(" ");
                     string word = loremIpsumWords[Random.Range(0, loremIpsumWords.Count)];
 
+                    // The first word of each sentence is capatalized
                     if (w == 0)
                     {
                         word = word[0].ToString().ToUpper() + word.Substring(1);
@@ -176,8 +207,10 @@ public class DataGenerator : MonoBehaviour
 
                     result.Append(word);
                 }
+                // Put space between each sentence
                 result.Append(". \n");
             }
+            // Put extra space between each feat
             result.Append("\n");
         }
 

@@ -15,6 +15,10 @@ public class SettingsToggle : MonoBehaviour
     [SerializeField]
     private SettingsManager.AffectedSetting affectedSetting = 0;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         hands = FindObjectsOfType<PlayerGrab>();
@@ -23,6 +27,10 @@ public class SettingsToggle : MonoBehaviour
 
         SwitchToggleSetting();
     }
+
+    /// <summary>
+    /// Sets toggled state equal to the setting in the setting manager
+    /// </summary>
 
     public void SwitchToggleSetting()
     {
@@ -39,6 +47,10 @@ public class SettingsToggle : MonoBehaviour
 
         GetComponent<Toggle>().isOn = isOn;
     }
+
+    /// <summary>
+    /// Switch the toggled state and activate the required functions
+    /// </summary>
 
     private void SwitchSettings(bool isOn)
     {

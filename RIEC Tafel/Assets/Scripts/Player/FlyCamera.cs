@@ -12,6 +12,11 @@ public class FlyCamera : MonoBehaviour
 
     public bool hover;
 
+    /// <summary>
+    /// Basic move camera script from the internet. Used to move around in the scene if there is no connected VR headset.
+    /// Use WSAD to move and press left mousebutton and P to rotate the camera
+    /// </summary>
+
     void Update()
     {
         if (Input.GetMouseButton(0) && !hover && Input.GetKey(KeyCode.P))

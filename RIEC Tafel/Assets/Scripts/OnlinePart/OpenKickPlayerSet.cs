@@ -33,6 +33,10 @@ public class OpenKickPlayerSet : MonoBehaviour
 
     private List<bool> buttonIsDown = new List<bool>();
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     private void Start()
     {
         InitializeControllers.InitializeControllersBasedOnHandRays(inputDevices, handRays, rightCharacteristics, leftCharacteristics);
@@ -51,12 +55,18 @@ public class OpenKickPlayerSet : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Only perform the update if its the server and the player is hovered. 
+    /// If the primary button is down then perform the on button down action
+    /// </summary>
+
     private void Update()
     {
         if (inputDevices.Count < 2)
         {
             inputDevices.Clear();
-            InitializeControllers.InitializeControllersBasedOnHandRays(inputDevices, handRays, rightCharacteristics, leftCharacteristics);
+            InitializeControllers.InitializeControllersBasedOnHandRays(inputDevices, handRays, rightCharacteristics, 
+                leftCharacteristics);
             return;
         }
 
@@ -70,6 +80,7 @@ public class OpenKickPlayerSet : MonoBehaviour
             if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton && 
                 handRays[i].hoveredObjects.Contains(interactor))
             {
+                // Make sure event only fires once
                 if (!buttonIsDown[i])
                 {
                     buttonIsDown[i] = true;
@@ -82,10 +93,16 @@ public class OpenKickPlayerSet : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Virtual so it can be used for kick player script. Set correct variables for what enable set is set to.
+    /// </summary>
+
     public virtual void OnButtonClickAction()
     {
         if (kickPlayerSet.activeSelf == enableSet) { return; }
 
+        // Change player layer to a layer that wont block ray for the UI of kick player to be selected
+        // Change it back when the UI is turned off
         player.gameObject.layer = maskAfterClickingButton;
 
         kickPlayerSet.SetActive(enableSet);
@@ -99,11 +116,20 @@ public class OpenKickPlayerSet : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set name text and alignment to selected option
+    /// </summary>
+
     private void SetNameTextStats(string text, VerticalAlignmentOptions alignmentOption)
     {
         nameText.text = text;
         nameText.verticalAlignment = alignmentOption;
     }
+
+    /// <summary>
+    /// Set object to being hovered/ unhovered. Change the alpha of the line so that it is visible when the player is
+    /// hovering the object. Set it to inviseble when not hovering the object.
+    /// </summary>
 
     private void SetToBeingHovered()
     {

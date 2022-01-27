@@ -21,6 +21,11 @@ public class RetrieveNotes : MonoBehaviour
     [System.NonSerialized]
     public List<string> allNotes = new List<string>();
 
+    /// <summary>
+    /// Start retrieving notes from database
+    /// Only have button interacteble if the user succefully retrieved the notes
+    /// </summary>
+
     private void Start()
     {
         notesOptionDropdown.ClearOptions();
@@ -28,6 +33,10 @@ public class RetrieveNotes : MonoBehaviour
         button.interactable = false;
         StartCoroutine(RetrieveAllNotes());
     }
+
+    /// <summary>
+    /// Retrieve notes from database, split them up based on each notes section and set them as options in the dropdown
+    /// </summary>
 
     private IEnumerator RetrieveAllNotes()
     {
@@ -51,6 +60,7 @@ public class RetrieveNotes : MonoBehaviour
                 this.allNotes.Add(allNotes[i]);
             }
 
+            // Activate notes selection UI
             notesOptionDropdown.AddOptions(allOptions);
             notesOptionDropdown.onValueChanged.AddListener(ShowNotesSet);
             button.onClick.AddListener(OpenSavedNotesSet);
@@ -66,15 +76,27 @@ public class RetrieveNotes : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Shows selected notes set
+    /// </summary>
+
     public void ShowNotesSet(int value)
     {
         notesText.text = allNotes[value];
     }
 
+    /// <summary>
+    /// Sets notes text to empty in case there are no more notes to show
+    /// </summary>
+
     public void SetTextToEmpty()
     {
         notesText.text = "";
     }
+
+    /// <summary>
+    /// Open the saved notes game object
+    /// </summary>
 
     private void OpenSavedNotesSet()
     {

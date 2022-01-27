@@ -79,6 +79,10 @@ public class PlayerConnection : NetworkBehaviour
 
     private ObjectHolder objectHolder = null;
 
+    /// <summary>
+    /// Initialize variables. If the player owns this object, initialize player specific variables
+    /// </summary>
+
     private void Start()
     {
         nameText.text = playerName;
@@ -126,6 +130,7 @@ public class PlayerConnection : NetworkBehaviour
         actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Left).transform);
         actualHands.Add(handRays.Find(hand => hand.hand == PlayerHandRays.Hand.Right).transform);
 
+        // Server sets some variables extra for itsself to start the discussion
         if (isServer)
         {
             mapManager = this;
@@ -133,6 +138,11 @@ public class PlayerConnection : NetworkBehaviour
             CmdSetServerAsMapOwner();
         }
     }
+
+    /// <summary>
+    /// The local players updates the hands position/ rotation, head rotation over the network
+    /// If the player owns the map update map position/ scale/ rotation over the network
+    /// </summary>
 
     private void FixedUpdate()
     {
@@ -178,6 +188,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Set the map on the same position for everyone on the server. Skip the person with the same player number.
+    /// </summary>
+
     [Command]
     private void CmdMoveMapOnServer(int playerNumber, Vector3 newPos, float yRotationMapOwner)
     {
@@ -191,6 +205,11 @@ public class PlayerConnection : NetworkBehaviour
 
         MoveMapOnCorrectAngle(newPos, yRotationMapOwner, false);
     }
+
+    /// <summary>
+    /// Switches around position based on difference between map owner rotation and player rotation, so its looks the same for
+    /// all the players
+    /// </summary>
 
     private void MoveMapOnCorrectAngle(Vector3 newPos, float yRotationMapOwner, bool ignoreIsTweeningCheck)
     {
@@ -218,6 +237,10 @@ public class PlayerConnection : NetworkBehaviour
         map.SetMapToNewPos(newPos, true, ignoreIsTweeningCheck);
     }
 
+    /// <summary>
+    /// Set the map on the same rotation for everyone on the server. Skip the person with the same player number.
+    /// </summary>
+
     [Command]
     private void CmdRotateMapOnServer(int playerNumber, Vector3 nextRotation, float yRotationMapOwner)
     {
@@ -231,6 +254,11 @@ public class PlayerConnection : NetworkBehaviour
 
         RotateMapOnCorrectAngle(nextRotation, yRotationMapOwner, false);
     }
+
+    /// <summary>
+    /// Switches around rotation based on difference between map owner rotation and player rotation, so its looks the same for
+    /// all the players
+    /// </summary>
 
     private void RotateMapOnCorrectAngle(Vector3 nextRotation, float yRotationMapOwner, bool ignoreIsTweeningCheck)
     {
@@ -253,6 +281,10 @@ public class PlayerConnection : NetworkBehaviour
         map.RotateTowardsAngle(nextRotation, ignoreIsTweeningCheck);
     }
 
+    /// <summary>
+    /// Set the map on the same scale for everyone on the server. Skip the person with the same player number.
+    /// </summary>
+
     [Command]
     private void CmdScaleMapOnServer(int playerNumber, Vector3 newScale)
     {
@@ -266,6 +298,10 @@ public class PlayerConnection : NetworkBehaviour
 
         map.ChangeMapScaleToChosenScale(newScale);
     }
+
+    /// <summary>
+    /// Set the map on the same center lat/long value for everyone on the server. Skip the person with the same player number.
+    /// </summary>
 
     [Command]
     public void CmdSetNewMapCenter(int playerNumber, Vector2d newCenter)
@@ -281,11 +317,19 @@ public class PlayerConnection : NetworkBehaviour
         map.SetNewMapCenter(newCenter, false);
     }
 
+    /// <summary>
+    /// Called at the start by the server to make the server the starting map owner.
+    /// </summary>
+
     [Command]
     private void CmdSetServerAsMapOwner()
     {
         playerIsInControlOfMap = true;
     }
+
+    /// <summary>
+    /// Set line renderer visuals for given hand of the player with given player number. Skip if the own player has this playernumber. 
+    /// </summary>
 
     [Command]
     public void CmdDrawHandLines(int handSide, int playerNumber, Vector3 tableLocalPos, float playerYRot)
@@ -309,6 +353,12 @@ public class PlayerConnection : NetworkBehaviour
                 break;
         }
     }
+
+    /// <summary>
+    /// Set the linerenderer visuals based on the local position of the connection point that the ray touched the table.
+    /// Switch around these position so they always point to the same point based on the rotational difference, then calculate them
+    /// to real world positions.
+    /// </summary>
 
     private void DrawHandLines(LineRenderer handSide, Vector3 tableLocalPos, float playerYRot)
     {
@@ -347,6 +397,10 @@ public class PlayerConnection : NetworkBehaviour
         handSide.SetPositions(new Vector3[] { handSide.transform.position, endPos });
     }
 
+    /// <summary>
+    /// Turn off the line renderer for the player with the given player number. Skip the person with the same player number.
+    /// </summary>
+
     [Command]
     public void CmdTurnOffhandLine(int handSide, int playerNumber)
     {
@@ -371,6 +425,11 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Set the head of given playernumber on the same rotation for everyone on the server. 
+    /// Skip the person with the same player number.
+    /// </summary>
+
     [Command]
     private void CmdSetHeadRotation(int playerNumber, Vector3 newRot)
     {
@@ -391,6 +450,11 @@ public class PlayerConnection : NetworkBehaviour
             FetchPlayerConnectionBasedOnNumber(playerNumber).head.transform.eulerAngles = newRot;
         }
     }
+
+    /// <summary>
+    /// Set the hands of given playernumber on the same position/ rotation for everyone on the server. 
+    /// Skip the person with the same player number.
+    /// </summary>
 
     [Command]
     private void CmdSetHandPosAndRot(int playerNumber, Vector3 newPos, Vector3 newRot, Vector3 rotOffset, int handIndex)
@@ -415,6 +479,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Accept the given playernumber to the discussion and enable that player to choose a seat
+    /// </summary>
+
     [Command]
     public void CmdAcceptPlayerToDiscussion(int playerNumber)
     {
@@ -430,6 +498,11 @@ public class PlayerConnection : NetworkBehaviour
         ownPlayer.playerIsAcceptedToDiscussion = true;
         ownPlayer.EnableChooseSeatButtons();
     }
+
+    /// <summary>
+    /// Disconnect the given player number from the discussion by stopping the network client (if server stops everyone gets 
+    /// disconnected automatically) and send that player to main menu
+    /// </summary>
 
     public void StartDisconnectPlayerFromDiscussion(PlayerConnection connection)
     {
@@ -452,6 +525,10 @@ public class PlayerConnection : NetworkBehaviour
         SceneManager.LoadScene(mainMenuScene);
     }
 
+    /// <summary>
+    /// Called once in network manager when game manager is created. Game manager retrieves all required data from database.
+    /// </summary>
+
     public IEnumerator StartConnectionWithGamemanager(string cityName)
     {
         yield return new WaitForEndOfFrame();
@@ -465,11 +542,22 @@ public class PlayerConnection : NetworkBehaviour
         gameManager.CmdStartRetrieveCityData(cityName);
     }
 
+    /// <summary>
+    /// Sets the playernumber for the player. This is a unique ID for the player for the program to recognize the player.
+    /// NumberOfPlayers isnt actually always equal to the amount of players in the discussion, it never counts down when a player
+    /// leaves
+    /// </summary>
+
     [Command]
     private void CmdSetPlayerNumber()
     {
         playerNumber = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManagerRIECTafel>().numberOfPlayers;
     }
+
+    /// <summary>
+    /// Asks for the location data on server side from the game manager
+    /// Also begin setting player personal data for all other players
+    /// </summary>
 
     private IEnumerator StartRequestLocationData()
     {
@@ -499,6 +587,10 @@ public class PlayerConnection : NetworkBehaviour
         CmdSetPlayerName(nameString, LogInManager.avatarData, poiManager.dataType.ToString());
     }
 
+    /// <summary>
+    /// (de)Activate all childeren of an object
+    /// </summary>
+
     private void EnableChildsOfObject(Transform parent, bool enabled)
     {
         for (int i = 0; i < parent.childCount; i++)
@@ -506,6 +598,11 @@ public class PlayerConnection : NetworkBehaviour
             parent.GetChild(i).gameObject.SetActive(enabled);
         }
     }
+
+    /// <summary>
+    /// Based on if the player is accepted to the discussion and if the POI manager has all location data turn on the choose seat
+    /// buttons that arent seated yet
+    /// </summary>
 
     public void EnableChooseSeatButtons()
     {
@@ -525,12 +622,21 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Start the request for location data from the game manager based on the given data type
+    /// </summary>
+
     [Command]
     private void CmdRequestLocationData(string dataType)
     {
         FetchGameManager();
         gameManager.CmdGiveBackLocationData(dataType, playerNumber);
     }
+
+    /// <summary>
+    /// After the location data is gotten call this function to set location data in POI manager to initialize it there further.
+    /// Only perform that function if the player is the given playernumber.
+    /// </summary>
 
     [ClientRpc]
     public void RpcSetLocationDataForPlayer(List<string> locationData, List<string> dataTypes, List<string> neededAmounts,
@@ -542,6 +648,10 @@ public class PlayerConnection : NetworkBehaviour
         poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, conclusions, indications, cityName);
     }
 
+    /// <summary>
+    /// Sets the playername and avatar data on server so syncvar will line data up for later connecting players
+    /// </summary>
+
     [Command]
     public void CmdSetPlayerName(string name, string avatarData, string dataType)
     {
@@ -550,6 +660,11 @@ public class PlayerConnection : NetworkBehaviour
 
         RpcSetPlayerName(name, avatarData, dataType, playerNumber);
     }
+
+    /// <summary>
+    /// Also set personal data instantly on other connected players. If the newly connected player is not the server turn the accept
+    /// player to discussion menu on for the server player.
+    /// </summary>
 
     [ClientRpc]
     private void RpcSetPlayerName(string name, string avatarData, string dataType, int playerNumber)
@@ -571,6 +686,11 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Turn on accept player to discussion menu with required text. Dont always change the text, because when a new player joins
+    /// the old players could not be handled yet
+    /// </summary>
+
     public void TurnOnAcceptPlayerToDiscussionMenu(string name, bool alwaysChangeText)
     {
         TMP_Text text = networkManager.acceptPlayerToDiscussionUI.GetComponentInChildren<TMP_Text>();
@@ -588,8 +708,14 @@ public class PlayerConnection : NetworkBehaviour
         networkManager.acceptPlayerToDiscussionUI.SetActive(true);
     }
 
+    /// <summary>
+    /// Sets given avatar to player, changes body color of player to body color of faction, sets hitbox of player, rotates name text
+    /// to own player
+    /// </summary>
+
     private void ChangeBodyColorOfPlayer(string avatarData, GameManager.DataType dataType, PlayerConnection player)
     {
+        // Set body part data
         string[] differentBodyParts = avatarData.Split(new string[] { "/*nextbodypart*/" }, System.StringSplitOptions.None);
 
         for (int i = 0; i < differentBodyParts.Length; i++)
@@ -601,18 +727,23 @@ public class PlayerConnection : NetworkBehaviour
             switch (bodyType)
             {
                 case AvatarCreationManager.TargetedBodyType.Body:
+                    // Perform same type of calculation for y position of body as in avatar manager for the body
                     Transform ground = GameObject.FindGameObjectWithTag("Ground").transform;
 
+                    // Parent head to body while remember old variables
                     Vector3 currentHeadScale = player.head.transform.localScale;
                     Vector3 oldBodyScale = player.body.transform.localScale;
                     player.head.transform.SetParent(player.body.transform);
 
+                    // Set new model and scale
                     SetCorrectModelAndScaleForMesh(player.body, bodyPartData);
 
+                    // Set body on correct y position on the floor
                     Vector3 newBodyPos = player.body.transform.position;
                     string[] standardScale = bodyPartData[3].Split('.');
                     if (float.Parse(standardScale[1]) > float.Parse(standardScale[0]))
                     {
+                        // Cubical bodies worked differently due to their y scale being twice as large
                         newBodyPos.y = ground.position.y + player.body.transform.localScale.y / 2;
 
                         Vector3 newHeadPos = player.head.transform.localPosition;
@@ -634,10 +765,12 @@ public class PlayerConnection : NetworkBehaviour
                     }
                     player.body.transform.position = newBodyPos;
 
+                    // Unparent head and set its scale correct again
                     player.head.transform.SetParent(player.body.transform.parent);
                     player.head.transform.localScale = currentHeadScale;
                     break;
                 case AvatarCreationManager.TargetedBodyType.Head:
+                    // Make sure name text doesnt get a weird scale by parenting it to player
                     player.nameText.transform.SetParent(player.transform);
                     SetCorrectModelAndScaleForMesh(player.head, bodyPartData);
                     player.nameText.transform.SetParent(player.head.transform);
@@ -645,6 +778,7 @@ public class PlayerConnection : NetworkBehaviour
             }
         }
 
+        // Change avatar body color
         List<MeshRenderer> bodyPartsRenderers = new List<MeshRenderer>();
         bodyPartsRenderers.AddRange(new MeshRenderer[] { player.head.GetComponent<MeshRenderer>(), player.body.GetComponent<MeshRenderer>() });
         FetchVRPlayer();
@@ -667,9 +801,11 @@ public class PlayerConnection : NetworkBehaviour
                 break;
         }
 
+        // Change avatar hitbox
         Vector3 newHitboxSize = Vector3.zero;
         Vector3 newHitboxCenter = Vector3.zero;
 
+        // The star has a scale of 35 instead of 1
         if (player.head.sharedMesh.name == "star1")
         {
             newHitboxSize.x = player.head.transform.localScale.x / 35;
@@ -690,6 +826,7 @@ public class PlayerConnection : NetworkBehaviour
         player.hitbox.size = newHitboxSize;
         player.hitbox.center = newHitboxCenter;
 
+        // Rotate name text to own player
         player.nameText.transform.SetParent(player.transform);
         player.nameText.transform.LookAt(FindObjectOfType<POIManager>().transform);
         Vector3 lookRotation = player.nameText.transform.eulerAngles;
@@ -698,6 +835,10 @@ public class PlayerConnection : NetworkBehaviour
         lookRotation.y += 180;
         player.nameText.transform.eulerAngles = lookRotation;
     }
+
+    /// <summary>
+    /// Set mesh to the given mesh name (all meshes listed in allUsableBodyMeshes), set scale to given body scale
+    /// </summary>
 
     private void SetCorrectModelAndScaleForMesh(MeshFilter bodyPart, string[] bodyPartData)
     {
@@ -709,6 +850,10 @@ public class PlayerConnection : NetworkBehaviour
         newScale.z = float.Parse(bodyScale[2]);
         bodyPart.transform.localScale = newScale;
     }
+
+    /// <summary>
+    /// Change the given body parts and hands material color to the given color
+    /// </summary>
 
     private void ChangeBodyColor(List<MeshRenderer> bodyParts, Color32 bodyColor, List<Transform> hands)
     {
@@ -723,6 +868,11 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Set given position/ rotation/ seatindex to the given player on all players in the discussion when a choose seat button
+    /// is pressed.
+    /// </summary>
+
     [Command]
     public void CmdChangePlayerPos(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
@@ -736,6 +886,13 @@ public class PlayerConnection : NetworkBehaviour
         SetPlayerPosition(playerNumber, newPos, newRot, seatIndex);
     }
 
+    /// <summary>
+    /// Set given rotation/ position/ seatindex to given player.
+    /// If a player is still choosing a seat disable all chosen seats.
+    /// If its the own player initialize the new position and initialize all other players in the discussion.
+    /// If it another player and a seat is chosen, initialize the new player.
+    /// </summary>
+
     private void SetPlayerPosition(int playerNumber, Vector3 newPos, Vector3 newRot, int seatIndex)
     {
         PlayerConnection player = FetchPlayerConnectionBasedOnNumber(playerNumber);
@@ -748,6 +905,7 @@ public class PlayerConnection : NetworkBehaviour
             chooseSeatButtons.AddRange(FindObjectsOfType<ChooseSeatButton>());
         }
         
+        // Disable chosen seats
         for (int i = 0; i < chooseSeatButtons.Count; i++)
         {
             chooseSeatButtons[i].CheckIfSeatIsOpen();
@@ -756,10 +914,12 @@ public class PlayerConnection : NetworkBehaviour
         PlayerConnection ownPlayer = FetchOwnPlayer();
         if (playerNumber == ownPlayer.playerNumber && isLocalPlayer)
         {
+            // Set room object correctly visible for new position/ rotation of player
             FetchVRPlayer();
             poiManager.ChangePOIManagerTransform(player.transform);
             poiManager.GetComponent<SetCanvasPosition>().ChangeCanvasPosition();
 
+            // Enable all other players and set their variables
             PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
             for (int i = 0; i < currentConnections.Length; i++)
             {
@@ -769,19 +929,28 @@ public class PlayerConnection : NetworkBehaviour
                 ChangeBodyColorOfPlayer(currentConnections[i].avatarData, currentConnections[i].dataType, currentConnections[i]);
             }
 
+            // Initialize the map control UI on the canvas
             StartCoroutine(SetPOIUIObjectAndStats());
         }
         else
         {
+            // If the player is seated enable the new player and set their variables
             if (ownPlayer.chosenSeat != -1)
             {
                 EnableChildsOfObject(player.transform, true);
                 ChangeBodyColorOfPlayer(player.avatarData, player.dataType, player);
 
+                // Refill the player map owner dropdown for the server
                 StartCoroutine(SetPOIUIObjectAndStats());
             }
         }
     }
+
+    /// <summary>
+    /// If its the server disable the mapowner text the first time and always update map owner dropdown
+    /// If its client disable all map control UI and map owner dropdown. Check for a map owner and if there is one,
+    /// set the current map variables to the variables of the map owner
+    /// </summary>
 
     private IEnumerator SetPOIUIObjectAndStats()
     {
@@ -803,11 +972,10 @@ public class PlayerConnection : NetworkBehaviour
                 poiSelectionDropdown.dropdown.interactable = false;
                 playerMapControlDropdown.gameObject.SetActive(false);
 
-                List<PlayerConnection> players = new List<PlayerConnection>();
-                players.AddRange(FindObjectsOfType<PlayerConnection>());
-
+                List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
                 PlayerConnection mapOwner = players.Find(player => player.playerIsInControlOfMap);
 
+                // If its a free for all map, there is no map owner
                 if (mapOwner)
                 {
                     SetMapOwnerText(mapOwner, ownPlayer);
@@ -830,6 +998,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Starts the process of retrieving the current map data from the map owner
+    /// </summary>
+
     [Command]
     private void CmdRetrieveCurrentMapStats(int playerNumber, bool targetPlayerNumber)
     {
@@ -838,6 +1010,10 @@ public class PlayerConnection : NetworkBehaviour
 
         RpcRetrieveCurrentMapStats(mapOwner.playerNumber, playerNumber, targetPlayerNumber);
     }
+
+    /// <summary>
+    /// Go down on client side to retrieve the latest map data and the player rotation of the map owner
+    /// </summary>
 
     [ClientRpc]
     private void RpcRetrieveCurrentMapStats(int playerNumberMapOwner, int playerNumber, bool targetPlayerNumber)
@@ -854,14 +1030,18 @@ public class PlayerConnection : NetworkBehaviour
             lastMapScale = map.transform.localScale;
             isSendingData = false;
 
-            ownPlayer.CmdSetCurrentMapStats(playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), map.offset, map.transform.eulerAngles, 
-                poiManager.transform.eulerAngles.y, map.transform.localScale);
+            ownPlayer.CmdSetCurrentMapStats(playerNumber, targetPlayerNumber, map.RetrieveMapCenter(), map.offset, 
+                map.transform.eulerAngles, poiManager.transform.eulerAngles.y, map.transform.localScale);
         }
     }
 
+    /// <summary>
+    /// Based on if the map variables are set for all players in the server or a player in specific perform a different RPC
+    /// </summary>
+
     [Command]
-    private void CmdSetCurrentMapStats(int playerNumber, bool targetPlayerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
-        float yRotationMapOwner, Vector3 mapScale)
+    private void CmdSetCurrentMapStats(int playerNumber, bool targetPlayerNumber, Vector2d mapCenter, Vector3 mapOffset, 
+        Vector3 mapRotation, float yRotationMapOwner, Vector3 mapScale)
     {
         if (targetPlayerNumber)
         {
@@ -873,6 +1053,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Only if the own player has the playernumber perform the function for setting map variables
+    /// </summary>
+
     [ClientRpc]
     private void RpcSetCurrentMapStatsForTargetedPlayer(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation, 
         float yRotationMapOwner, Vector3 mapScale)
@@ -882,6 +1066,10 @@ public class PlayerConnection : NetworkBehaviour
             SetCurrentMapStats(mapCenter, mapOffset, mapRotation, yRotationMapOwner, mapScale);
         }
     }
+
+    /// <summary>
+    /// Perform the map setting function for all players except the player with the given number
+    /// </summary>
 
     [ClientRpc]
     private void RpcSetCurrentMapStatsForAllPlayers(int playerNumber, Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation,
@@ -893,6 +1081,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// First set the new map center and then rotate the map
+    /// </summary>
+
     private void SetCurrentMapStats(Vector2d mapCenter, Vector3 mapOffset, Vector3 mapRotation, float yRotationMapOwner, Vector3 mapScale)
     {
         map.SetNewMapCenter(mapCenter, false);
@@ -900,12 +1092,21 @@ public class PlayerConnection : NetworkBehaviour
         StartCoroutine(SetCurrentMapStatsAfterRotation(mapOffset, mapScale, yRotationMapOwner));
     }
 
+    /// <summary>
+    /// After a small interval where the rotation is correctly being set, set the new position and scale
+    /// </summary>
+
     private IEnumerator SetCurrentMapStatsAfterRotation(Vector3 mapOffset, Vector3 mapScale, float yRotationMapOwner)
     {
         yield return new WaitForSeconds(0.175f);
         map.ChangeMapScaleToChosenScale(mapScale, true);
         MoveMapOnCorrectAngle(mapOffset, yRotationMapOwner, true);
     }
+
+    /// <summary>
+    /// Called in the network manager when a player leaves. If a player is still choosing a seat, the seat of the leaving player 
+    /// will open up.
+    /// </summary>
 
     [Command]
     public void CmdCheckIfSeatsOpenedUp(int playerNumber)
@@ -917,6 +1118,8 @@ public class PlayerConnection : NetworkBehaviour
     private void RpcCheckIfSeatsOpenedUp(int playerNumber)
     {
         PlayerConnection ownPlayer = FetchOwnPlayer();
+
+        // Disable leaving player so it cant be found anymore when searching for all players
         PlayerConnection leavingPlayer = FetchPlayerConnectionBasedOnNumber(playerNumber);
         if (leavingPlayer != null)
         {
@@ -942,6 +1145,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Gives the player with the given playernumber map control, removes control from the old player in control if there is one
+    /// </summary>
+
     [Command]
     public void CmdSetNewMapOwner(int playerNumber)
     {
@@ -961,6 +1168,7 @@ public class PlayerConnection : NetworkBehaviour
 
         List<PlayerConnection> players = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
 
+        // Remove control from the old player in control
         PlayerConnection oldPlayerInControl = players.Find(player => player.playerIsInControlOfMap);
         if (oldPlayerInControl)
         {
@@ -969,10 +1177,12 @@ public class PlayerConnection : NetworkBehaviour
             oldPlayerInControl.rightLineRenderer.enabled = false;
         }
 
+        // Find the new player to give control
         PlayerConnection newPlayerInControl = players.Find(i => i.playerNumber == playerNumber);
 
         newPlayerInControl.playerIsInControlOfMap = true;
 
+        // Enable map UI functions if the player has control else turn them off
         if (newPlayerInControl.hasAuthority)
         {
             EnablePOIUI(true);
@@ -981,6 +1191,7 @@ public class PlayerConnection : NetworkBehaviour
             EnablePOIUI(false);
         }
 
+        // Change map owner text if the player isnt the server
         PlayerConnection ownPlayer = FetchOwnPlayer();
         if (!ownPlayer.isServer)
         {
@@ -989,12 +1200,17 @@ public class PlayerConnection : NetworkBehaviour
 
         ownPlayer.mapManager = newPlayerInControl;
 
+        // Set new map variables to this player map variables for all players in the server
         if (newPlayerInControl.playerNumber == ownPlayer.playerNumber && newPlayerInControl.hasAuthority)
         {
             ownPlayer.isSendingData = true;
             ownPlayer.CmdRetrieveCurrentMapStats(ownPlayer.playerNumber, false);
         }
     }
+
+    /// <summary>
+    /// Set the map to free for all, remove control from the player that is in control. Enable map control UI.
+    /// </summary>
 
     [Command]
     public void CmdSetMapToFreeForAll()
@@ -1030,6 +1246,10 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Set the map owner text to show who owns the map
+    /// </summary>
+
     private void SetMapOwnerText(PlayerConnection mapOwner, PlayerConnection ownPlayer)
     {
         if (mapOwnerText)
@@ -1044,6 +1264,11 @@ public class PlayerConnection : NetworkBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Whenever a player leaves call in the network manager a refill for the player map owner dropdown with all current players.
+    /// Set the map owner to be the server if the map owner left.
+    /// </summary>
 
     [Command]
     public void CmdRefillPlayerMapControlDropdown()
@@ -1065,6 +1290,10 @@ public class PlayerConnection : NetworkBehaviour
         ownPlayer.playerMapControlDropdown.FillDropdownWithPlayers();
     }
 
+    /// <summary>
+    /// (de)Activates the map control UI
+    /// </summary>
+
     private void EnablePOIUI(bool enabled)
     {
         if (backToStartPositionButton)
@@ -1074,19 +1303,29 @@ public class PlayerConnection : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Grabs the player with the given playernumber
+    /// </summary>
+
     private PlayerConnection FetchPlayerConnectionBasedOnNumber(int playerNumber)
     {
-        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
         return playerConnections.Find(i => i.playerNumber == playerNumber);
     }
 
+    /// <summary>
+    /// Grabs the player that the player owns
+    /// </summary>
+
     public PlayerConnection FetchOwnPlayer()
     {
-        PlayerConnection[] currentConnections = FindObjectsOfType<PlayerConnection>();
-        List<PlayerConnection> playerConnections = new List<PlayerConnection>(currentConnections);
+        List<PlayerConnection> playerConnections = new List<PlayerConnection>(FindObjectsOfType<PlayerConnection>());
         return playerConnections.Find(i => i.hasAuthority);
     }
+
+    /// <summary>
+    /// Fethes the POI manager if its still null
+    /// </summary>
 
     private void FetchVRPlayer()
     {
@@ -1095,6 +1334,10 @@ public class PlayerConnection : NetworkBehaviour
             poiManager = GameObject.FindGameObjectWithTag("Player").GetComponent<POIManager>();
         }
     }
+
+    /// <summary>
+    /// Fethes the gameManager if its still null
+    /// </summary>
 
     private void FetchGameManager()
     {

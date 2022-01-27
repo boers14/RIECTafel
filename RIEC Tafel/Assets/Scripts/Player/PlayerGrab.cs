@@ -28,6 +28,10 @@ public class PlayerGrab : MonoBehaviour
 
     private Transform grabbedParentObject = null, grabbedObject = null;
 
+    /// <summary>
+    /// Initialize variables, doesnt always need to check with settings manager, in tutorials the controls version is set
+    /// </summary>
+
     private void Start()
     {
         inputDevice = InitializeControllers.ReturnInputDeviceBasedOnCharacteristics(characteristics, inputDevice);
@@ -39,6 +43,12 @@ public class PlayerGrab : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// If hand has grabbed object, let the grabbed object follow the position and rotation of the hand. Also check if the button 
+    /// is pressed drop the object.
+    /// If there is no grabbed object shoot a ray and it hit something check if the grip is down. In that case grab the object.
+    /// </summary>
+
     private void Update()
     {
         if (!inputDevice.isValid)
@@ -49,6 +59,7 @@ public class PlayerGrab : MonoBehaviour
 
         if (grabbedObject)
         {
+            // Set a grab timer so a dropped object cant instantly be grabbed again
             grabTimer = grabTimerCooldown;
             if (followHand)
             {
@@ -61,6 +72,7 @@ public class PlayerGrab : MonoBehaviour
                 OnDetach();
             } else if (!grip)
             {
+                // Player first needs to release the grip button again before he can drop the object
                 pressedButton = false;
             }
         }
@@ -78,40 +90,53 @@ public class PlayerGrab : MonoBehaviour
         grabTimer -= Time.deltaTime;
     }
 
+    /// <summary>
+    /// If the object contains a grab interacteble, perform the connected functions of the select entered. 
+    /// Disable linerenderer if grabbed object contains the DontDisableLineOnGrab tag
+    /// </summary>
+
     private void OnGrab(Transform grabbedObject)
     {
         pressedButton = true;
         this.grabbedObject = grabbedObject;
 
-        if (grabbedObject.GetComponent<XRGrabInteractable>())
+        XRGrabInteractable grabInteractable = grabbedObject.GetComponent<XRGrabInteractable>();
+        if (grabInteractable)
         {
-            grabbedObject.GetComponent<XRGrabInteractable>().selectEntered.Invoke(new SelectEnterEventArgs());
-            if (grabbedObject.GetComponent<XRGrabInteractable>().trackPosition)
+            grabInteractable.selectEntered.Invoke(new SelectEnterEventArgs());
+            // Move object to hand only if track position is set to true in XRGrabInteractable
+            if (grabInteractable.trackPosition)
             {
                 iTween.MoveTo(grabbedObject.gameObject, iTween.Hash("position", transform.position, "time",
-                grabbedObject.GetComponent<XRGrabInteractable>().attachEaseInTime, "easetype", iTween.EaseType.linear,
+                grabInteractable.attachEaseInTime, "easetype", iTween.EaseType.linear,
                 "oncomplete", "StartGrabbedObjectFollowHand", "oncompletetarget", gameObject));
             }
         }
-
-        if (grabbedObject.tag == "DontDisableLineOnGrab")
-        {
-            EnableHandModel(false);
-        }
-        else if (grabbedObject.tag != "DontDisableHandOnGrab")
+        
+        if (grabbedObject.tag != "DontDisableHandOnGrab")
         {
             lineRenderer.enabled = false;
-            EnableHandModel(false);
         }
 
+        EnableHandModel(false);
+
+        // Remember the parent so it can be set back again later
         grabbedParentObject = grabbedObject.parent;
         grabbedObject.SetParent(null);
     }
+
+    /// <summary>
+    /// Follow hand set  to true after tween is complete, so the object doesnt instantly go to the hand
+    /// </summary>
 
     private void StartGrabbedObjectFollowHand()
     {
         followHand = true;
     }
+
+    /// <summary>
+    /// Reset the hand to what it was before grabbing an object
+    /// </summary>
 
     private void OnDetach()
     {
@@ -119,12 +144,17 @@ public class PlayerGrab : MonoBehaviour
         grabbedObject.SetParent(grabbedParentObject);
         if (grabbedObject.GetComponent<XRGrabInteractable>())
         {
+            // Invoke the select exit event before setting the object to null
             grabbedObject.GetComponent<XRGrabInteractable>().selectExited.Invoke(new SelectExitEventArgs());
         }
         grabbedObject = null;
         lineRenderer.enabled = true;
         EnableHandModel(true);
     }
+
+    /// <summary>
+    /// (de)Activate hand model. Check for skinned meshrenderer for regular hand, regular mesh renderer for tutorial hand
+    /// </summary>
 
     private void EnableHandModel(bool enabled)
     {
@@ -137,6 +167,10 @@ public class PlayerGrab : MonoBehaviour
             DisableAllSpriteRenderers(transform, enabled);
         }
     }
+
+    /// <summary>
+    /// On the tutorial hand also disable all arrows to the buttons
+    /// </summary>
 
     private void DisableAllSpriteRenderers(Transform child, bool enabled)
     {

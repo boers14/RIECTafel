@@ -5,7 +5,11 @@ using UnityEngine;
 public class Table : MonoBehaviour
 {
     [SerializeField]
-    private Transform maskObject = null; 
+    private Transform maskObject = null;
+
+    /// <summary>
+    /// Place four masks around the table that block all transparent object from being visible (mostly the map)
+    /// </summary>
 
     private void Start()
     {

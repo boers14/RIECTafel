@@ -9,6 +9,10 @@ public class AvatarCreationSlider : MonoBehaviour
 
     public AvatarCreationManager.TargetedBodyType targetedBodyType = 0;
 
+    /// <summary>
+    /// Change the avatar body size based on the value of the slider
+    /// </summary>
+
     private void Start()
     {
         avatarCreationManager = FindObjectOfType<AvatarCreationManager>();

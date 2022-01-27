@@ -10,6 +10,10 @@ public class GameSceneSettingsButton : MeetingButton
     [SerializeField]
     private bool checkMiniMapEnabledStateOnEnable = false;
 
+    /// <summary>
+    /// (de)Activates minimap when the button is pressed or enabled
+    /// </summary>
+
     public override void ActivateMeetingSet()
     {
         base.ActivateMeetingSet();

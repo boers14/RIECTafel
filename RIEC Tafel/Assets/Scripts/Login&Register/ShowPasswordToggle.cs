@@ -16,6 +16,10 @@ public class ShowPasswordToggle : MonoBehaviour
     [SerializeField]
     private TMP_InputField passwordField = null;
 
+    /// <summary>
+    /// Change the password visual state to letters or stars
+    /// </summary>
+
     private void Start()
     {
         currentCheckboxVisual = GetComponentInChildren<Image>();

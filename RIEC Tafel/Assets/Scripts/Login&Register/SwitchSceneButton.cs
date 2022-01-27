@@ -11,6 +11,10 @@ public class SwitchSceneButton : MonoBehaviour
     [System.NonSerialized]
     public Button button = null;
 
+    /// <summary>
+    /// Switch scene to given scene, set to virtual to perform extra needed functions
+    /// </summary>
+
     public virtual void Start()
     {
         button = GetComponent<Button>();

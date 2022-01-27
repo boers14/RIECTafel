@@ -9,6 +9,12 @@ public class RejectPlayerFromDicussionButton : MonoBehaviour
 
     private AcceptPlayerToDiscussionButton acceptPlayerToDiscussionButton = null;
 
+    /// <summary>
+    /// Keep track of all players that just joined the discussion with the connections list
+    /// If the player is rejected, start disconnecting the player and deactivate the meeting set if there is no next player
+    /// else show this UI for that player
+    /// </summary>
+
     private void Start()
     {
         acceptPlayerToDiscussionButton = FindObjectOfType<AcceptPlayerToDiscussionButton>();

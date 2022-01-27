@@ -14,6 +14,10 @@ public class RegisterToggle : MonoBehaviour
     [SerializeField]
     private TMP_Text warningText = null;
 
+    /// <summary>
+    /// Sets the agreed to privacy statement to true
+    /// </summary>
+
     private void Start()
     {
         registerButton = FindObjectOfType<RegisterButton>();
@@ -26,15 +30,12 @@ public class RegisterToggle : MonoBehaviour
         registerButton.CheckIfCanRegister();
     }
 
+    /// <summary>
+    /// Changes the active state of the warning text
+    /// </summary>
+
     public void CheckWarningStatus()
     {
-        if (isOn)
-        {
-            warningText.enabled = false;
-        }
-        else
-        {
-            warningText.enabled = true;
-        }
+        warningText.enabled = !isOn;
     }
 }

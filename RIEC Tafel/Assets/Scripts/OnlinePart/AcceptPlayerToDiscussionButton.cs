@@ -16,8 +16,11 @@ public class AcceptPlayerToDiscussionButton : MeetingButton
 
     private bool settingButtonActiveState = false;
 
-    [System.NonSerialized]
-    public bool playerIsRejected = false;
+    public bool playerIsRejected { get; set; } = false;
+
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
 
     public override void Start()
     {
@@ -32,19 +35,26 @@ public class AcceptPlayerToDiscussionButton : MeetingButton
         rejectPlayerButton = FindObjectOfType<RejectPlayerFromDicussionButton>();
     }
 
+    /// <summary>
+    /// Accept player to discussion if the player isnt rejected, turn on the accept player to a discussion UI again if there are
+    /// more players to accept to the discussion else turn it off and turn all other required UI on
+    /// </summary>
+
     public override void ActivateMeetingSet()
     {
         if (!playerIsRejected)
         {
-            rejectPlayerButton.connections[0].FetchOwnPlayer().CmdAcceptPlayerToDiscussion(rejectPlayerButton.connections[0].playerNumber);
+            rejectPlayerButton.connections[0].FetchOwnPlayer().CmdAcceptPlayerToDiscussion(
+                rejectPlayerButton.connections[0].playerNumber);
         }
 
         rejectPlayerButton.connections.RemoveAt(0);
         if (rejectPlayerButton.connections.Count > 0)
         {
+            // Reset player is rejected if the last player was rejected
             playerIsRejected = false;
-            rejectPlayerButton.connections[0].FetchOwnPlayer().TurnOnAcceptPlayerToDiscussionMenu(rejectPlayerButton.connections[0].playerName, 
-                true);
+            rejectPlayerButton.connections[0].FetchOwnPlayer().TurnOnAcceptPlayerToDiscussionMenu(
+                rejectPlayerButton.connections[0].playerName, true);
             return;
         }
 
@@ -56,6 +66,10 @@ public class AcceptPlayerToDiscussionButton : MeetingButton
 
         settingsButton.gameObject.SetActive(settingButtonActiveState);
     }
+
+    /// <summary>
+    /// Set active state of objects that should deactivate/ activate
+    /// </summary>
 
     private void OnEnable()
     {

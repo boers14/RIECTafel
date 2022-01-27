@@ -7,6 +7,10 @@ public class ConnectButton : SwitchSceneButton
     [SerializeField]
     private ConnectionManager.ConnectFunction buttonFunction = 0;
 
+    /// <summary>
+    /// Sets the selected connect function equal to the connect function in the connection manager
+    /// </summary>
+
     public override void Start()
     {
         base.Start();

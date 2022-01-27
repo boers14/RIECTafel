@@ -37,6 +37,10 @@ public class POIText : MonoBehaviour
 
     private SpriteRenderer textBoxRenderer = null;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     public virtual void Start()
     {
         if (originalPos != Vector3.zero) { return; }
@@ -58,6 +62,12 @@ public class POIText : MonoBehaviour
         SetPoiTextComponent();
     }
 
+    /// <summary>
+    /// Rotate POI text to always look at player cam.
+    /// Once the text is expanded color the text from red to white. Once the timer is at 0 set background to white and with a
+    /// primary button press the player can pull the POI in front of him.
+    /// </summary>
+
     private void Update()
     {
         transform.LookAt(cameraTransform);
@@ -69,6 +79,7 @@ public class POIText : MonoBehaviour
 
         if (!expanded) 
         { 
+            // Keep setting defualt not hovered values while not expanded
             for (int i = 0; i < canInteractWithController.Count; i++)
             {
                 canInteractWithController[i] = false;
@@ -79,16 +90,21 @@ public class POIText : MonoBehaviour
 
         for (int i = 0; i < inputDevices.Count; i++)
         {
-            if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton && canInteractWithController[i]
-                && canInteractWithControllerTimer < 0)
+            if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButton) && primaryButton 
+                && canInteractWithController[i] && canInteractWithControllerTimer < 0)
             {
+                // Pull POI to player if the button is pressed and the timer is done
                 PullPOIToPlayer(i);
             } else if (!primaryButton)
             {
+                // can only start pulling POI to player if the player didnt have the button pressed before hovering the POI
+                // else the player first has to release the button before pressing it again (can also happen if timer is still going
+                // down)
                 canInteractWithController[i] = true;
             }
         }
 
+        // Color the background of the POI text from red to white based on time left
         if (canInteractWithControllerTimer > 0)
         {
             canInteractWithControllerTimer -= Time.deltaTime;
@@ -106,6 +122,11 @@ public class POIText : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Virtual for tutorial. Calculates the new position in front of the player and the difference between the current pos and the
+    /// new pos. Uses that as map movement.
+    /// </summary>
+
     public virtual void PullPOIToPlayer(int index)
     {
         Vector3 newPos = player.position + (player.forward * 1.5f);
@@ -115,6 +136,10 @@ public class POIText : MonoBehaviour
         map.MoveTheMap(diffInPos, true, true);
         canInteractWithController[index] = false;
     }
+
+    /// <summary>
+    /// Initialize more variables set throught the POI manager
+    /// </summary>
 
     public void SetText(string text, string textExtend, Transform player, MoveMap map, List<InputDevice> inputDevices)
     {
@@ -127,6 +152,12 @@ public class POIText : MonoBehaviour
         this.inputDevices = inputDevices;
     }
 
+    /// <summary>
+    /// Check whether width if the text is bigger then the current background. If so increase the width of the background and move
+    /// it to the right side.
+    /// Activate the textbox and add the extra text. Add a content size fitter to calculate a new rect transform size.
+    /// </summary>
+
     public virtual void ExpandText(HoverEnterEventArgs args)
     {
         startUnExpand = false;
@@ -137,6 +168,7 @@ public class POIText : MonoBehaviour
             checkTextBoxWidth = false;
             if (poiText.textBounds.size.x > poiText.rectTransform.sizeDelta.x)
             {
+                // Calculate how much bigger the text is percentually and move/ scale the textbox based on this percentual increase
                 float percentualIncrease = poiText.textBounds.size.x / poiText.rectTransform.sizeDelta.x;
                 Vector3 textBoxScale = textBox.transform.localScale;
                 Vector3 oldTextBoxScale = textBox.transform.localScale;
@@ -159,6 +191,11 @@ public class POIText : MonoBehaviour
         StartCoroutine(ChangeTextPos());
     }
 
+    /// <summary>
+    /// At the end of the frame the new y-size is known and can be used to move the textbox upward. 
+    /// The textbox is also scaled upward
+    /// </summary>
+
     private IEnumerator ChangeTextPos()
     {
         yield return new WaitForEndOfFrame();
@@ -172,11 +209,20 @@ public class POIText : MonoBehaviour
         textBox.localScale = newTextboxScale;
     }
 
+    /// <summary>
+    /// Did look buggy (if the ray didnt detect this object for a fraction of a second) if it instantly performed this function 
+    /// and thus it start with a little delay
+    /// </summary>
+
     private void StartUnExpandText(HoverExitEventArgs args)
     {
         startUnExpand = true;
         StartCoroutine(UnExpandText());
     }
+
+    /// <summary>
+    /// Only perform function if player didnt hover again. Resets all variables to their base values. Removes content size fitter.
+    /// </summary>
 
     private IEnumerator UnExpandText()
     {
@@ -190,6 +236,11 @@ public class POIText : MonoBehaviour
             poiText.rectTransform.localPosition = originalPos;
         }
     }
+
+    /// <summary>
+    /// Calculates the original value of the y position that the text requires to be above the POI.
+    /// Moves the POI text up/ down based on the if new scale is bigger/ smaller. Use this scale to also scale the POI.
+    /// </summary>
 
     public void UpdateScaleOfPoi(Vector3 newScale, int amountOfHits, float minMapScale, float maxMapScale, float poiScale)
     {
@@ -215,6 +266,7 @@ public class POIText : MonoBehaviour
             originalScale = newScale.x * poiScale;
         }
 
+        // Calculate added Y based on if th scale is smaller or bigger then the original scale
         float addedY = 0;
         if (newScale.x * poiScale < originalScale - 0.01f)
         {
@@ -226,7 +278,9 @@ public class POIText : MonoBehaviour
         }
         originalPos.y = originalYvalue + addedY;
 
+        // Unparent poi text to not deform it
         poiText.transform.SetParent(null);
+        // The y scale of an POI is also linked to the amount of hits and thus is differently calculates then z/ x
         newScale.y = newScale.y * 0.1f * amountOfHits;
         newScale.x *= poiScale;
         newScale.z *= poiScale;
@@ -234,6 +288,10 @@ public class POIText : MonoBehaviour
         poiText.transform.SetParent(transform);
         poiText.rectTransform.localPosition = originalPos;
     }
+
+    /// <summary>
+    /// Gets text component from POI 
+    /// </summary>
 
     private void SetPoiTextComponent()
     {

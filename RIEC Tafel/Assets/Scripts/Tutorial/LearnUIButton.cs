@@ -8,6 +8,10 @@ public class LearnUIButton : MonoBehaviour
     [System.NonSerialized]
     public bool hasBeenClicked = false;
 
+    /// <summary>
+    /// Turns a bool to true when the buttons has been clicked for the tutorial
+    /// </summary>
+
     private void Start()
     {
         GetComponent<Button>().onClick.AddListener(SetBeingClicked);

@@ -10,6 +10,10 @@ public class TutorialPOIText : POIText
 
     private TutorialManager tutorialManager = null;
 
+    /// <summary>
+    /// Has two extra bools that turn true when POI is hovered and pulled respectivly
+    /// </summary>
+
     public override void Start()
     {
         tutorialManager = FindObjectOfType<TutorialManager>();

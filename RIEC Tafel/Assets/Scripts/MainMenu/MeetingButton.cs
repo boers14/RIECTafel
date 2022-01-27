@@ -10,6 +10,10 @@ public class MeetingButton : MonoBehaviour
     [System.NonSerialized]
     public Button button = null;
 
+    /// <summary>
+    /// Switch active state of objectToAcivate and always deactivate objectToDeactivate
+    /// </summary>
+
     public virtual void Start()
     {
         button = GetComponent<Button>();

@@ -12,6 +12,10 @@ public static class LogInManager
 
     public static bool loggedIn { get { return username != null; } }
 
+    /// <summary>
+    /// Reset all the values of the manager
+    /// </summary>
+
     public static void LogOut(MonoBehaviour monoBehaviour)
     {
         monoBehaviour.StartCoroutine(LogOutUser());
@@ -25,6 +29,10 @@ public static class LogInManager
 
         SaveSytem.SaveGame();
     }
+
+    /// <summary>
+    /// Log the user out in the database
+    /// </summary>
 
     private static IEnumerator LogOutUser()
     {

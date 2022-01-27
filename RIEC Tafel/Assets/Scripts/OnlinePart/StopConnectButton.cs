@@ -8,6 +8,10 @@ public class StopConnectButton : SwitchSceneButton
     [SerializeField]
     private NetworkManagerRIECTafel networkManager = null;
 
+    /// <summary>
+    /// Disconnetct the player from the discussion scene if the player is in one and the clint isnt active anymore
+    /// </summary>
+
     private void FixedUpdate()
     {
         if (!NetworkClient.active && networkManager.hasFoundDiscussion)
@@ -15,6 +19,10 @@ public class StopConnectButton : SwitchSceneButton
             SwitchScene();
         }
     }
+
+    /// <summary>
+    /// Stop the required function and save the notes to the database
+    /// </summary>
 
     public override void SwitchScene()
     {

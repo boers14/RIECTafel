@@ -25,6 +25,10 @@ public class GameManager : NetworkBehaviour
     [SyncVar]
     private string cityName = "Utrecht";
 
+    /// <summary>
+    /// Start retrieving city data
+    /// </summary>
+
     [Command]
     public void CmdStartRetrieveCityData(string cityName)
     {
@@ -34,6 +38,10 @@ public class GameManager : NetworkBehaviour
         }
         StartCoroutine(RetrieveCityData());
     }
+
+    /// <summary>
+    /// Clear all data lists and fill these lists with all the retrieved data
+    /// </summary>
 
     public IEnumerator RetrieveCityData()
     {
@@ -63,13 +71,15 @@ public class GameManager : NetworkBehaviour
                 string[] dataType = location[1].Split(new string[] { "/*featureAmount*/" }, System.StringSplitOptions.None);
                 dataTypes.Add((DataType)System.Enum.Parse(typeof(DataType), dataType[0]));
 
-                string[] featureAmount = dataType[1].Split(new string[] { "/*extraDataExplanation*/" }, System.StringSplitOptions.None);
+                string[] featureAmount = dataType[1].Split(new string[] { "/*extraDataExplanation*/" }, 
+                    System.StringSplitOptions.None);
                 featureAmounts.Add(featureAmount[0]);
 
                 string[] extraExplanation = featureAmount[1].Split(new string[] { "/*conclusion*/" }, System.StringSplitOptions.None);
                 extraExplanations.Add(extraExplanation[0]);
 
-                string[] conclusionAndIndication = extraExplanation[1].Split(new string[] { "/*indication*/" }, System.StringSplitOptions.None);
+                string[] conclusionAndIndication = extraExplanation[1].Split(new string[] { "/*indication*/" }, 
+                    System.StringSplitOptions.None);
                 conclusions.Add(conclusionAndIndication[0]);
                 indications.Add(conclusionAndIndication[1]);
             }
@@ -79,6 +89,10 @@ public class GameManager : NetworkBehaviour
             Debug.LogError("Error#" + www.downloadHandler.text);
         }
     }
+
+    /// <summary>
+    /// Create the data for the tutorial, based on the first piece of retrieved information gotten
+    /// </summary>
 
     public void CreateTutorialLocationData(string dataType, POIManager poiManager, AbstractMap abstractMap)
     {
@@ -90,11 +104,13 @@ public class GameManager : NetworkBehaviour
         List<string> neededConclusions = new List<string>();
         List<string> neededIndications = new List<string>();
 
-        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, DataType.Regular);
+        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, 
+            DataType.Regular);
 
         if (requiredDatatype != DataType.Regular)
         {
-            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, requiredDatatype);
+            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, 
+                requiredDatatype);
         }
 
         for (int i = locationData.Count - 1; i > 0; i--)
@@ -107,14 +123,21 @@ public class GameManager : NetworkBehaviour
             neededIndications.RemoveAt(i);
         }
 
+        // Set the retrieved tutorial location data to the center of the map
         Vector2d coordinate = abstractMap.CenterLatitudeLongitude;
         double xCoordinate = coordinate.x;
         coordinate.x = coordinate.y;
         coordinate.y = xCoordinate;
         locationData[0] = ", 1111 AA " + cityName;
-        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, cityName);
+        poiManager.SetLocationData(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, 
+            cityName);
     }
 
+    /// <summary>
+    /// Retrieve required location data based on the datatype of the player asking. All players need data, so no authority
+    /// is required over this object to ask for the required data.
+    /// </summary>
+    
     [Command (channel = 0, requiresAuthority = false)]
     public void CmdGiveBackLocationData(string dataType, int playerNumber)
     {
@@ -130,16 +153,25 @@ public class GameManager : NetworkBehaviour
         List<string> neededConclusions = new List<string>();
         List<string> neededIndications = new List<string>();
 
-        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, DataType.Regular);
+        AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, 
+            DataType.Regular);
 
         if (requiredDatatype != DataType.Regular)
         {
-            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, requiredDatatype);
+            AddDataToLists(locationData, dataTypes, neededConclusions, neededIndications, neededAmounts, neededExtraInfo, 
+                requiredDatatype);
         }
 
-        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, neededIndications, 
-            playerNumber, cityName);
+        // Send all data throught the network with the playernumber given at the start so it can be identified which player asked for
+        // the data
+        player.RpcSetLocationDataForPlayer(locationData, dataTypes, neededAmounts, neededExtraInfo, neededConclusions, 
+            neededIndications, playerNumber, cityName);
     }
+
+    /// <summary>
+    /// If the datatype aligns with the required datatype then add the data from the list to the list that will be send to the player
+    /// that asked for the data (based on player number)
+    /// </summary>
 
     private void AddDataToLists(List<string> locationData, List<string> dataTypes, List<string> neededConclusions, List<string> neededIndications,
         List<string> neededAmounts, List<string> neededExtraInfo, DataType requiredDatatype)
@@ -157,6 +189,10 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Logout user in the discussion scene if the player quits the application here
+    /// </summary>
 
     private void OnApplicationQuit()
     {

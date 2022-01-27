@@ -19,6 +19,10 @@ public class RemoveNotesButton : MeetingButton
     [SerializeField]
     private Button yesButton = null;
 
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
@@ -27,10 +31,18 @@ public class RemoveNotesButton : MeetingButton
         notesOptionDropdown.onValueChanged.AddListener(ChangeCurrentlyChosenOption);
     }
 
+    /// <summary>
+    /// Select the current option to remove
+    /// </summary>
+
     private void ChangeCurrentlyChosenOption(int value)
     {
         currentlyChosenOption = value;
     }
+
+    /// <summary>
+    /// Start removing the currently selected notes
+    /// </summary>
 
     private void StartRemoveNotes()
     {
@@ -38,6 +50,11 @@ public class RemoveNotesButton : MeetingButton
         isCurrentlyRemovingNotes = true;
         StartCoroutine(RemoveNotes());
     }
+
+    /// <summary>
+    /// Remove the currently selected notes by removing this option from the notes lists, then create new all notes text
+    /// and update the database to that text
+    /// </summary>
 
     private IEnumerator RemoveNotes()
     {
@@ -52,6 +69,7 @@ public class RemoveNotesButton : MeetingButton
             notesOptionDropdown.value = currentlyChosenOption;
         } else
         {
+            // Set text to empty string if no more notes are left
             notesOptionDropdown.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
             retrieveNotes.SetTextToEmpty();
         }

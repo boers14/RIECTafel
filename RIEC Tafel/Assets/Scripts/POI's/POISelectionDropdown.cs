@@ -10,9 +10,13 @@ public class POISelectionDropdown : DropdownSelection
     [SerializeField]
     private MoveMap map = null;
 
-    private List<Vector2d> allPOICoordinates = new List<Vector2d>(), currenSelectionPOICoordinates = new List<Vector2d>();
+    private List<Vector2d> allPOICoordinates = new List<Vector2d>(), currentSelectionPOICoordinates = new List<Vector2d>();
 
     private List<string> optionNames = new List<string>();
+
+    /// <summary>
+    /// Initialize variables
+    /// </summary>
 
     public override void Start()
     {
@@ -21,10 +25,19 @@ public class POISelectionDropdown : DropdownSelection
         dropdown.onValueChanged.AddListener(SetPOIAsCenterCoordinate);
     }
 
+    /// <summary>
+    /// Uses the current selection of poi coordinates to grab the selected option as the new map center
+    /// </summary>
+
     private void SetPOIAsCenterCoordinate(int selectedPOI)
     {
-        map.SetNewMapCenter(currenSelectionPOICoordinates[selectedPOI]);
+        map.SetNewMapCenter(currentSelectionPOICoordinates[selectedPOI]);
     }
+
+    /// <summary>
+    /// Creates a list of all coordinates and options names to remember. Then it loops throught them and adds them to dropdown
+    /// list and current use of coordinates.
+    /// </summary>
 
     public void FillAllCoordinatesList(List<Vector2d> allCoordinates, List<string> featureTypes, List<string> locationNames)
     {
@@ -34,7 +47,7 @@ public class POISelectionDropdown : DropdownSelection
         List<string> options = new List<string>();
         for (int i = 0; i < allPOICoordinates.Count; i++)
         {
-            currenSelectionPOICoordinates.Add(allPOICoordinates[i]);
+            currentSelectionPOICoordinates.Add(allPOICoordinates[i]);
             optionNames.Add(locationNames[i] + ": " + featureTypes[i]);
             options.Add(locationNames[i] + ": " + featureTypes[i]);
         }
@@ -42,10 +55,14 @@ public class POISelectionDropdown : DropdownSelection
         dropdown.AddOptions(options);
     }
 
+    /// <summary>
+    /// Based on what options are availeble adjusts the current selection of POI coordinates
+    /// </summary>
+
     public void EnableOptionsCoordinatesList(List<bool> enabledOptions)
     {
         dropdown.ClearOptions();
-        currenSelectionPOICoordinates.Clear();
+        currentSelectionPOICoordinates.Clear();
 
         List<string> options = new List<string>();
         for (int i = 0; i < optionNames.Count; i++)
@@ -53,7 +70,7 @@ public class POISelectionDropdown : DropdownSelection
             if (enabledOptions[i])
             {
                 options.Add(optionNames[i]);
-                currenSelectionPOICoordinates.Add(allPOICoordinates[i]);
+                currentSelectionPOICoordinates.Add(allPOICoordinates[i]);
             }
         }
 

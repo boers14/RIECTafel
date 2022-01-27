@@ -36,6 +36,10 @@ public class KeyBoard : MonoBehaviour
     [System.NonSerialized]
     public List<XRNode> targetedControllerNodes = new List<XRNode>();
 
+    /// <summary>
+    /// Create the keyboards and set the keyboard to the normal state. Set keyboard to the position required for rays or touch.
+    /// </summary>
+
     private void Start()
     {
         originalPosition = transform.localPosition;
@@ -56,6 +60,10 @@ public class KeyBoard : MonoBehaviour
 
         SetSelectedKeyBoardPos();
     }
+
+    /// <summary>
+    /// Only perform if its a ray keyboard. Check if keyboard is hovered. Check if keyboardkey is pressed.
+    /// </summary>
 
     private void FixedUpdate()
     {
@@ -78,6 +86,7 @@ public class KeyBoard : MonoBehaviour
         {
             if (inputDevices[i].TryGetFeatureValue(CommonUsages.primaryButton, out bool button) && button && !usedInputDevices[i])
             {
+                // Can only press button once before it will work again for the next key
                 usedInputDevices[i] = true;
                 KeyBoardKey selectedKey = null;
 
@@ -101,6 +110,10 @@ public class KeyBoard : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Check if the keyboard is hovered by checking if one of the keys is hovered
+    /// </summary>
+
     private void CheckIfKeyboardIsHovered(List<KeyBoardKey> keyBoardKeys)
     {
         targetedControllerNodes.Clear();
@@ -109,6 +122,7 @@ public class KeyBoard : MonoBehaviour
         {
             if (keyBoardKeys[i].isHovered)
             {
+                // For checking which hand is hovering the keyboard
                 targetedControllerNodes.AddRange(keyBoardKeys[i].targetedNodes);
                 isHovered = true;
             }
@@ -116,6 +130,12 @@ public class KeyBoard : MonoBehaviour
 
         keyBoardIsHovered = isHovered;
     }
+
+    /// <summary>
+    /// Depending on the index of the hovering hand grab the selected key
+    /// 0 = Right
+    /// 1 = Left
+    /// </summary>
 
     private KeyBoardKey GetSelectedKey(KeyBoardKey selectedKey, List<KeyBoardKey> keyBoardKeys, int index)
     {
@@ -131,12 +151,20 @@ public class KeyBoard : MonoBehaviour
         return selectedKey;
     }
 
+    /// <summary>
+    /// Add input devices depending on their characteristics
+    /// </summary>
+
     private void AddInputDevices()
     {
         inputDevices.Clear();
         AddInputDevice(rightCharacteristics);
         AddInputDevice(leftCharacteristics);
     }
+
+    /// <summary>
+    /// Add the inputdevice to the list only if its valid
+    /// </summary>
 
     private void AddInputDevice(InputDeviceCharacteristics characteristics)
     {
@@ -147,6 +175,10 @@ public class KeyBoard : MonoBehaviour
             inputDevices.Add(inputDevice);
         }
     }
+
+    /// <summary>
+    /// Create the keyboard based on a starting position of x and z and the given keyboard keys
+    /// </summary>
 
     private void CreateKeyBoard(float xScale, float zScale, List<string> keyBoardKeysInString, List<KeyBoardKey> keyBoardKeys)
     {
@@ -162,6 +194,7 @@ public class KeyBoard : MonoBehaviour
             int actualIndex = i - 1;
 
             KeyBoardKey newKey = null;
+            // Check if its a special functions key
             if (specialKeys.Contains(keyBoardKeysInString[actualIndex]))
             {
                 newKey = Instantiate(specialKeyBoardKeys[specialKeys.IndexOf(keyBoardKeysInString[actualIndex])], transform.position, 
@@ -174,15 +207,18 @@ public class KeyBoard : MonoBehaviour
 
             newKey.transform.SetParent(transform);
 
+            // Set position of key based on where it is in the row
             Vector3 pos = Vector3.zero;
             pos.x = -startXPos + xScale * placeInRow + (xScale * (((float)newKey.keySize - 1) / 2));
             pos.z = startZPos - zScale * rowCounter;
             newKey.transform.localPosition = pos;
 
+            // Set text and update place in row based on key size
             newKey.textForKey = keyBoardKeysInString[actualIndex];
             placeInRow += newKey.keySize;
             keyBoardKeys.Add(newKey);
 
+            // Update row counter if row gets too big
             if (placeInRow >= keysPerRow[rowCounter])
             {
                 rowCounter++;
@@ -194,6 +230,10 @@ public class KeyBoard : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Enable the keyboards based on what the shiftstate is
+    /// </summary>
 
     public void SwapKeyBoardState()
     {
@@ -212,11 +252,19 @@ public class KeyBoard : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Keyboard cant be hovered when touch keyboard
+    /// </summary>
+
     private IEnumerator SwapHoverState()
     {
         yield return new WaitForSeconds(0.05f);
         keyBoardIsHovered = false;
     }
+
+    /// <summary>
+    /// Enable the needed keyboard and disable the other keyboard
+    /// </summary>
 
     private void EnableKeyBoardState(List<KeyBoardKey> keyBoardKeysToEnable, List<KeyBoardKey> keyBoardKeysToDisable)
     {
@@ -227,10 +275,18 @@ public class KeyBoard : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Enable the entire keyboard object
+    /// </summary>
+
     public void EnableKeyBoard(bool enabled)
     {
         gameObject.SetActive(enabled);
     }
+
+    /// <summary>
+    /// Set the position of the keyboard based on if its a touch keyboard or a ray keyboard
+    /// </summary>
 
     public void SetSelectedKeyBoardPos()
     {

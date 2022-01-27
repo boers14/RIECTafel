@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class AvatarCreationManager : MonoBehaviour
 {
@@ -17,6 +16,10 @@ public class AvatarCreationManager : MonoBehaviour
         Body
     }
 
+    /// <summary>
+    /// Change the model of the targeted object based on its standard size
+    /// </summary>
+
     public void ChangeBodyType(Mesh newModel, TargetedBodyType targetedBodyType, Vector3 newBodySize)
     {
         switch (targetedBodyType)
@@ -30,6 +33,10 @@ public class AvatarCreationManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set new model and reset its variables. Set its position correctly.
+    /// </summary>
+
     private void SetNewModel(AvatarChangebleBodypart bodypart, TargetedBodyType targetedBodyType, Mesh newModel, Vector3 newBodySize)
     {
         bodypart.GetComponent<MeshFilter>().mesh = newModel;
@@ -37,6 +44,10 @@ public class AvatarCreationManager : MonoBehaviour
         bodypart.Start();
         ChangeBodySize(bodypart.newSizeFactor, targetedBodyType);
     }
+
+    /// <summary>
+    /// Change the size of the body and if its of the body type change the y position accordingly
+    /// </summary>
 
     public void ChangeBodySize(float newSizeFactor, TargetedBodyType targetedBodyType)
     {
@@ -46,6 +57,7 @@ public class AvatarCreationManager : MonoBehaviour
                 avatarHead.transform.localScale = ReturnNewShapeSize(newSizeFactor, avatarHead);
                 break;
             case TargetedBodyType.Body:
+                // Parent head to body so that its moves accordingly upward as the y scale changes, remember the old scales
                 Vector3 currentHeadScale = avatarHead.transform.localScale;
                 Vector3 currentHeadPos = avatarHead.transform.position;
                 float oldSizeFactor = avatarBody.newSizeFactor;
@@ -53,6 +65,7 @@ public class AvatarCreationManager : MonoBehaviour
 
                 avatarBody.transform.localScale = ReturnNewShapeSize(newSizeFactor, avatarBody);
 
+                // Move body based on its body type and new scale
                 Vector3 newBodyPos = avatarBody.transform.position;
                 if (avatarBody.standardScale.y > avatarBody.standardScale.x)
                 {
@@ -64,9 +77,11 @@ public class AvatarCreationManager : MonoBehaviour
                 }
                 avatarBody.transform.position = newBodyPos;
 
+                // Set old scale of head
                 avatarHead.transform.SetParent(avatarBody.transform.parent);
                 avatarHead.transform.localScale = currentHeadScale;
 
+                // Make sure head doesnt move if the scale stays the same
                 if (oldSizeFactor == newSizeFactor)
                 {
                     avatarHead.transform.position = currentHeadPos;
@@ -74,6 +89,10 @@ public class AvatarCreationManager : MonoBehaviour
                 break;
         }
     }
+
+    /// <summary>
+    /// Return the size of the new model based on the value of the standard size and percentage of the changed size
+    /// </summary>
 
     private Vector3 ReturnNewShapeSize(float newSizeFactor, AvatarChangebleBodypart bodypart)
     {
@@ -98,6 +117,10 @@ public class AvatarCreationManager : MonoBehaviour
 
         return newSize;
     }
+
+    /// <summary>
+    /// Return new size based standard size + the min size + the max size * percentage
+    /// </summary>
 
     private float ReturnAddedSize(float newSizeFactor, float sizeChangePercentage, float standardSize)
     {

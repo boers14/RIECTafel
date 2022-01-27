@@ -17,12 +17,20 @@ public class SendNotesToMailButton : MonoBehaviour
         GetComponent<Button>().onClick.AddListener(StartSentNotesToMail);
     }
 
+    /// <summary>
+    /// Start sending notes to email
+    /// </summary>
+
     private void StartSentNotesToMail()
     {
         if (isCurrentlySendingMail || notesText.text == "") { return; }
         isCurrentlySendingMail = true;
         StartCoroutine(SentNotesToMail());
     }
+
+    /// <summary>
+    /// Send notes to the user email without rich text functions
+    /// </summary>
 
     private IEnumerator SentNotesToMail()
     {

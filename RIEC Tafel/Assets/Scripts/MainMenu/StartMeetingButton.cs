@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class StartMeetingButton : MeetingButton
 {
+    /// <summary>
+    /// Is only active when user is known to work at iCOV
+    /// </summary>
+
     public override void Start()
     {
         if (!LogInManager.iCOVWorker)

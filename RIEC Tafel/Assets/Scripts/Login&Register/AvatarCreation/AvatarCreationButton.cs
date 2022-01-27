@@ -13,6 +13,10 @@ public class AvatarCreationButton : MonoBehaviour
 
     public Vector3 newBodyScale = Vector3.one;
 
+    /// <summary>
+    /// Change the bodytype of the avatar based on selected model
+    /// </summary>
+
     private void Start()
     {
         avatarCreationManager = FindObjectOfType<AvatarCreationManager>();

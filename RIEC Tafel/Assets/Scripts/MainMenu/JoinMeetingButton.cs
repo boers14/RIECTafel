@@ -10,6 +10,10 @@ public class JoinMeetingButton : MeetingButton
     [SerializeField]
     private List<RectTransform> otherButtons = new List<RectTransform>();
 
+    /// <summary>
+    /// Move the button to start meeting button pos and move al the other buttons up with it
+    /// </summary>
+
     public override void Start()
     {
         base.Start();
