@@ -8,7 +8,6 @@ TagManager:
   - PlayerConnection
   - NetworkManager
   - DontDisableLineOnGrab
-  - DontDisableHandOnGrab
   - Hand
   - Ground
   layers:

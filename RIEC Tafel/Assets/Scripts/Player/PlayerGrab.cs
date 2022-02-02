@@ -113,7 +113,7 @@ public class PlayerGrab : MonoBehaviour
             }
         }
         
-        if (grabbedObject.tag != "DontDisableHandOnGrab")
+        if (grabbedObject.tag != "DontDisableLineOnGrab")
         {
             lineRenderer.enabled = false;
         }
